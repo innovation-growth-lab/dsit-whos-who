@@ -2,3 +2,38 @@
 #
 # Documentation for this file format can be found in "The Data Catalog"
 # Link: https://docs.kedro.org/en/stable/data/data_catalog.html
+
+# -> 0. Global catalog variables:
+_pq: &_pq
+  type: pandas.ParquetDataset
+  credentials: s3_credentials
+  filepath: None
+  load_args:
+    engine: pyarrow
+
+_xlsx: &_xlsx
+  type: pandas.ExcelDataset
+  credentials: s3_credentials
+  filepath: None
+
+_pq_ptd: &_pq_ptd
+  type: partitions.PartitionedDataset
+  dataset:
+    type: pandas.ParquetDataset
+    save_args:
+      engine: pyarrow
+    load_args:
+      engine: pyarrow
+  filename_suffix: ".parquet"
+  credentials: s3_credentials
+
+_js_ptd: &_js_ptd
+  type: partitions.PartitionedDataset
+  dataset: json.JSONDataset
+  filename_suffix: ".json"
+  credentials: s3_credentials
+
+# -> 1. Raw GTR data:
+"gtr.data_collection.{endpoint}.raw":
+  <<: *_pq_ptd
+  path: s3://igl-public/02_whos_who/data/01_raw/gtr/{endpoint}/
