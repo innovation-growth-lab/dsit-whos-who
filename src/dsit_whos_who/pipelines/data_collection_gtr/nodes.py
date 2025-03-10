@@ -19,7 +19,7 @@ import logging
 import random
 import time
 import datetime
-from typing import Dict, Union, Generator, Any, Optional, Callable
+from typing import Dict, Union, Generator, Optional, Callable
 from joblib import Parallel, delayed
 import numpy as np
 import pandas as pd
@@ -30,6 +30,7 @@ from .utils import (
     api_config,
     extract_main_address,
     extract_value_from_nested_dict,
+    extract_date,
     transform_nested_dict,
 )
 
@@ -184,13 +185,13 @@ class GtRDataPreprocessor:
 
         # extract start and end dates from FUND, FURTHER_FUNDING
         projects_df["start_date"] = projects_df["links"].apply(
-            lambda x: _extract_date(x, "start", "FUND")
+            lambda x: extract_date(x, "start", "FUND")
         )
         projects_df["end_date"] = projects_df["links"].apply(
-            lambda x: _extract_date(x, "end", "FUND")
+            lambda x: extract_date(x, "end", "FUND")
         )
         projects_df["extended_end"] = projects_df["links"].apply(
-            lambda x: _extract_date(x, "end", "FURTHER_FUNDING")
+            lambda x: extract_date(x, "end", "FURTHER_FUNDING")
         )
 
         projects_df["publications"] = projects_df["links"].apply(
@@ -428,35 +429,3 @@ def _load_publication(
     except Exception as e:  # pylint: disable=broad-except
         logger.error("Failed to load DataFrame for %s: %s", key, e)
         return None
-
-
-def _extract_date(
-    links: Dict[str, Any], extract_key: str, inner_value: str
-) -> Optional[str]:
-    """
-    Extract a date from links data.
-
-    Args:
-        links: The links data.
-        extract_key: The key to extract.
-        inner_value: The inner value to match.
-
-    Returns:
-        The extracted date as a string in YYYY-MM-DD format or None if extraction fails.
-    """
-    timestamp = extract_value_from_nested_dict(
-        data=links,
-        outer_key="link",
-        inner_key="rel",
-        inner_value=inner_value,
-        extract_key=extract_key,
-        split_on_slash=False,
-    )
-    try:
-        if timestamp:
-            return datetime.datetime.fromtimestamp(timestamp / 1000).strftime(
-                "%Y-%m-%d"
-            )
-    except (TypeError, ValueError):
-        pass
-    return None
