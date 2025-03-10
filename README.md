@@ -1,101 +1,81 @@
-# dsit-whos-who
+# Who's Who in UK Research
 
-[![Powered by Kedro](https://img.shields.io/badge/powered_by-kedro-ffc900?logo=kedro)](https://kedro.org)
+## Connecting funded projects with authorship data for new metrics
 
-## Overview
+### Overview
 
-This is your new Kedro project, which was generated using `kedro 0.19.10`.
+This project aims to create data suitable for mapping the impacts of UKRI-funded research at the person-level. We develop a methodology to disambiguate and link persons named in UKRI-funded projects listed in the Gateway to Research (GtR) database with open publication authorship data. Additionally, we outline metrics that can be used to understand the characteristics of funding recipients and their research outputs.
 
-Take a look at the [Kedro documentation](https://docs.kedro.org) to get started.
+### Project Objectives
 
-## Rules and guidelines
+1. Develop a robust person disambiguation and linking methodology
+2. Create a linked dataset connecting GtR person IDs with OpenAlex and ORCID IDs
+3. Implement and evaluate metrics for studying the research impact at the person level
+4. Deliver scalable, reusable code following open-source principles
 
-In order to get the best out of the template:
+### Methodology
 
-* Don't remove any lines from the `.gitignore` file we provide
-* Make sure your results can be reproduced by following a data engineering convention
-* Don't commit data to your repository
-* Don't commit any credentials or your local configuration to your repository. Keep all your credentials and local configuration in `conf/local/`
+#### Person Disambiguation and Linking
 
-## How to install dependencies
+Our approach to linking and disambiguation leverages multiple data points:
 
-Declare any dependencies in `requirements.txt` for `pip` installation.
+- **Initial Matching**: For each person in GtR with a unique ID, we perform author searches using OpenAlex's API to generate match candidates
+- **Filtering Criteria**:
+  - Research topic overlap between OpenAlex author topics and GtR project descriptions
+  - Institutional affiliation matching between GtR and OpenAlex records
+  - Time window restrictions for considering institutional affiliations
+- **Refinement Process**:
+  - If no matches are found, we relax topic matching requirements
+  - If multiple equivalent matches are found, we tighten criteria by comparing semantic similarity of publication abstracts to project descriptions
 
-To install them, run:
+#### Evaluation
 
-```
-pip install -r requirements.txt
-```
+- Creation of a gold standard dataset using ORCID IDs present in both GtR and OpenAlex
+- Implementation of model accuracy metrics to monitor performance
+- Validation across research domains and publication activity levels
 
-## How to run your Kedro pipeline
+### Metrics Development
 
-You can run your Kedro project with:
+#### Basic Metrics
+- Number of papers and citations by author
+- Number of collaborators by author
+- Other simple aggregations of available metadata
 
-```
-kedro run
-```
+#### Advanced Metrics
+We will implement 2-3 of the following advanced metrics:
 
-## How to test your Kedro project
+1. **Disciplinary Diversity**
+   - Variety of disciplines in which authors publish
+   - Balance between publishing behavior across disciplines
+   - Disparity between disciplines
 
-Have a look at the file `src/tests/test_run.py` for instructions on how to write your tests. You can run your tests as follows:
+2. **Collaborator Centrality Measures**
+   - Network centrality measures to assess individuals' positions in collaboration networks
 
-```
-pytest
-```
+3. **UKRI Reliance**
+   - Estimation of the fraction of publications linked to UKRI funding compared to other sources
 
-You can configure the coverage threshold in your project's `pyproject.toml` file under the `[tool.coverage.report]` section.
+4. **Consolidation-Disruption Index**
+   - Variant of the CD index to compare distribution of disruptive research
 
+5. **Research Alignment**
+   - Semantic similarity between project and publication abstracts to assess adherence to original research plans
 
-## Project dependencies
+### Expected Outcomes
 
-To see and update the dependency requirements for your project use `requirements.txt`. You can install the project requirements with `pip install -r requirements.txt`.
+- **Linked Dataset**: A dataset linking person IDs in GtR data to OpenAlex IDs and ORCID IDs
+- **Scalable Code**: Python-written, user-friendly code following Open Source principles and Nesta's code writing guidelines
+- **Documentation**: Accessible notebooks detailing methodologies, code functionalities, and troubleshooting tips
 
-[Further information about project dependencies](https://docs.kedro.org/en/stable/kedro_project_setup/dependencies.html#project-specific-dependencies)
+### Project Timeline
 
-## How to work with Kedro and notebooks
+- Project Start: June 25, 2024
+- [Additional timeline milestones to be determined]
 
-> Note: Using `kedro jupyter` or `kedro ipython` to run your notebook provides these variables in scope: `context`, 'session', `catalog`, and `pipelines`.
->
-> Jupyter, JupyterLab, and IPython are already included in the project requirements by default, so once you have run `pip install -r requirements.txt` you will not need to take any extra steps before you use them.
+### Contributors
 
-### Jupyter
-To use Jupyter notebooks in your Kedro project, you need to install Jupyter:
+[To be added]
 
-```
-pip install jupyter
-```
+### License
 
-After installing Jupyter, you can start a local notebook server:
-
-```
-kedro jupyter notebook
-```
-
-### JupyterLab
-To use JupyterLab, you need to install it:
-
-```
-pip install jupyterlab
-```
-
-You can also start JupyterLab:
-
-```
-kedro jupyter lab
-```
-
-### IPython
-And if you want to run an IPython session:
-
-```
-kedro ipython
-```
-
-### How to ignore notebook output cells in `git`
-To automatically strip out all output cell contents before committing to `git`, you can use tools like [`nbstripout`](https://github.com/kynan/nbstripout). For example, you can add a hook in `.git/config` with `nbstripout --install`. This will run `nbstripout` before anything is committed to `git`.
-
-> *Note:* Your output cells will be retained locally.
-
-## Package your Kedro project
-
-[Further information about building project documentation and packaging your project](https://docs.kedro.org/en/stable/tutorial/package_a_project.html)
+[To be determined]
