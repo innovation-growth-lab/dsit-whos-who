@@ -287,7 +287,7 @@ def fetch_gtr_data(
 
     while page <= total_pages:
         page_data = []
-        url = f"{config['base_url']}{endpoint}?page={page}&fetchSize={config['page_size']}"
+        url = f"{config['base_url']}{endpoint}?p={page}&s={config['page_size']}"
         session = requests.Session()
         retries = Retry(
             total=config["max_retries"], backoff_factor=config["backoff_factor"]
@@ -318,7 +318,7 @@ def fetch_gtr_data(
 
         logger.info("Fetched page %s / %s", page, total_pages)
         page += 1
-        time.sleep(random.uniform(0.1, 0.3))  # [HACK] Respect web etiquette
+        time.sleep(random.uniform(0.1, 0.5))  # [HACK] Respect web etiquette
 
         # preprocess before save
         page_df = pd.DataFrame(page_data)
