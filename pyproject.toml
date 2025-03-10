@@ -1,0 +1,30 @@
+[build-system]
+requires = [ "setuptools",]
+build-backend = "setuptools.build_meta"
+
+[project]
+requires-python = ">=3.9"
+name = "dsit_whos_who"
+readme = "README.md"
+dynamic = [ "version",]
+dependencies = [ "ipython>=8.10", "jupyterlab>=3.0", "notebook", "kedro~=0.19.10",]
+
+[project.scripts]
+dsit-whos-who = "dsit_whos_who.__main__:main"
+
+[tool.kedro]
+package_name = "dsit_whos_who"
+project_name = "dsit-whos-who"
+kedro_init_version = "0.19.10"
+tools = "['Custom Logging']"
+example_pipeline = "False"
+source_dir = "src"
+
+[project.entry-points."kedro.hooks"]
+
+[tool.setuptools.dynamic.version]
+attr = "dsit_whos_who.__version__"
+
+[tool.setuptools.packages.find]
+where = [ "src",]
+namespaces = false
