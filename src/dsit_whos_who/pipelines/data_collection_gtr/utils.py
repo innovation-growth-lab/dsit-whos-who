@@ -93,6 +93,7 @@ def extract_value_from_nested_dict(
     inner_key: str,
     inner_value: Any,
     extract_key: str,
+    split_on_slash: bool = True
 ) -> Any:
     """Extracts a value from a nested dictionary based on the given keys and value.
 
@@ -109,7 +110,9 @@ def extract_value_from_nested_dict(
     matched_dict = next(
         (item for item in data[outer_key] if item[inner_key] == inner_value), None
     )
-    return matched_dict[extract_key].split("/")[-1] if matched_dict else None
+    if split_on_slash:
+        return matched_dict[extract_key].split("/")[-1] if matched_dict else None
+    return matched_dict[extract_key] if matched_dict else None
 
 
 def transform_nested_dict(

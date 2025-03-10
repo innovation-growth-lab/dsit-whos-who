@@ -161,14 +161,43 @@ class GtRDataPreprocessor:
         projects_df["persons"] = projects_df["links"].apply(
             lambda x: [
                 {
-                    "id": item["href"].replace(
+                    "id": item.get("href", "").replace(
                         "http://gtr.ukri.org/gtr/apipersons/", ""
                     ),
-                    "role": item["rel"],
+                    "role": item.get("rel", ""),
                 }
                 for item in x["link"]
                 if "apipersons" in item["href"]
             ]
+        )
+
+        # extract the start and end date from the FUND
+        projects_df["start_date"] = projects_df["links"].apply(
+            lambda x: datetime.datetime.fromtimestamp(
+                extract_value_from_nested_dict(
+                    data=x,
+                    outer_key="link",
+                    inner_key="rel",
+                    inner_value="FUND",
+                    extract_key="start",
+                    split_on_slash=False,
+                )
+                / 1000
+            ).strftime("%Y-%m-%d")
+        )
+
+        projects_df["end_date"] = projects_df["links"].apply(
+            lambda x: datetime.datetime.fromtimestamp(
+                extract_value_from_nested_dict(
+                    data=x,
+                    outer_key="link",
+                    inner_key="rel",
+                    inner_value="FUND",
+                    extract_key="end",
+                    split_on_slash=False,
+                )
+                / 1000
+            ).strftime("%Y-%m-%d")
         )
 
         # rename cols
@@ -212,6 +241,8 @@ class GtRDataPreprocessor:
                 "research_subjects",
                 "publications",
                 "persons",
+                "start_date",
+                "end_date",
             ]
         ]
 
@@ -312,8 +343,9 @@ def fetch_gtr_data(
             else:
                 logger.error("No '%s' key found in the response", config["key"])
                 continue
-        except ValueError:  # [HACK] includes simplejson.decoder.JSONDecodeError
-            logger.error("Failed to decode JSON response")
+        except ValueError as e:
+            logger.error("Failed to decode JSON response: %s", e)
+            time.sleep(random.uniform(10, 180))
             continue
 
         logger.info("Fetched page %s / %s", page, total_pages)
