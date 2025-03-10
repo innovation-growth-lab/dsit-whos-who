@@ -171,33 +171,25 @@ class GtRDataPreprocessor:
             ]
         )
 
-        # extract the start and end date from the FUND
+        # extract start and end dates from FUND, FURTHER_FUNDING
         projects_df["start_date"] = projects_df["links"].apply(
-            lambda x: datetime.datetime.fromtimestamp(
-                extract_value_from_nested_dict(
-                    data=x,
-                    outer_key="link",
-                    inner_key="rel",
-                    inner_value="FUND",
-                    extract_key="start",
-                    split_on_slash=False,
-                )
-                / 1000
-            ).strftime("%Y-%m-%d")
+            lambda x: _extract_date(x, "start", "FUND")
+        )
+        projects_df["end_date"] = projects_df["links"].apply(
+            lambda x: _extract_date(x, "end", "FUND")
+        )
+        projects_df["extended_end"] = projects_df["links"].apply(
+            lambda x: _extract_date(x, "end", "FURTHER_FUNDING")
         )
 
-        projects_df["end_date"] = projects_df["links"].apply(
-            lambda x: datetime.datetime.fromtimestamp(
-                extract_value_from_nested_dict(
-                    data=x,
-                    outer_key="link",
-                    inner_key="rel",
-                    inner_value="FUND",
-                    extract_key="end",
-                    split_on_slash=False,
+        projects_df["publications"] = projects_df["links"].apply(
+            lambda x: [
+                item["href"].replace(
+                    "http://gtr.ukri.org/gtr/api/outcomes/publications/", ""
                 )
-                / 1000
-            ).strftime("%Y-%m-%d")
+                for item in x["link"]
+                if item["rel"] == "PUBLICATION"
+            ]
         )
 
         # rename cols
@@ -213,16 +205,6 @@ class GtRDataPreprocessor:
                 "researchSubjects": "research_subjects",
                 "id": "project_id",
             }
-        )
-
-        projects_df["publications"] = projects_df["links"].apply(
-            lambda x: [
-                item["href"].replace(
-                    "http://gtr.ukri.org/gtr/api/outcomes/publications/", ""
-                )
-                for item in x["link"]
-                if item["rel"] == "PUBLICATION"
-            ]
         )
 
         return projects_df[
@@ -243,6 +225,7 @@ class GtRDataPreprocessor:
                 "persons",
                 "start_date",
                 "end_date",
+                "extended_end",
             ]
         ]
 
@@ -299,18 +282,18 @@ class GtRDataPreprocessor:
 
 
 def fetch_gtr_data(
-    parameters: Dict[str, Union[str, int]], endpoint: str, **kwargs
+    parameters: Dict[str, Union[str, int]], url_endpoint: str, **kwargs
 ) -> Generator[pd.DataFrame, None, None]:
     """Fetch data from the GtR API.
 
     Args:
         parameters (Dict[str, Union[str, int]]): Parameters for the API request.
-        endpoint (str): The endpoint to fetch data from.
+        url_endpoint (str): The endpoint to fetch data from.
 
     Returns:
         List[Dict[str, Any]]: The fetched data.
     """
-    config = api_config(parameters, endpoint)
+    config = api_config(parameters, url_endpoint)
 
     page = 1
     total_pages = 1
@@ -318,7 +301,7 @@ def fetch_gtr_data(
 
     while page <= total_pages:
         page_data = []
-        url = f"{config['base_url']}{endpoint}?p={page}&s={config['page_size']}"
+        url = f"{url_endpoint}?p={page}&s={config['page_size']}"
         session = requests.Session()
         retries = Retry(
             total=config["max_retries"], backoff_factor=config["backoff_factor"]
@@ -341,7 +324,12 @@ def fetch_gtr_data(
                     item["page_fetched_from"] = page  # add page info
                     page_data.append(item)
             else:
-                logger.error("No '%s' key found in the response", config["key"])
+                logger.error(
+                    "No '%s' key found in the response. Response: %s",
+                    config["key"],
+                    response.json(),
+                )
+                time.sleep(random.uniform(10, 60))
                 continue
         except ValueError as e:
             logger.error("Failed to decode JSON response: %s", e)
@@ -350,12 +338,12 @@ def fetch_gtr_data(
 
         logger.info("Fetched page %s / %s", page, total_pages)
         page += 1
-        time.sleep(random.uniform(0.1, 0.5))  # [HACK] Respect web etiquette
+        time.sleep(random.uniform(0.3, 1))  # [HACK] Respect web etiquette
 
         # preprocess before save
         page_df = pd.DataFrame(page_data)
         preprocessor = GtRDataPreprocessor()
-        page_df = preprocessor.methods[endpoint.split("/")[-1]](page_df)
+        page_df = preprocessor.methods[url_endpoint.split("/")[-1]](page_df)
         yield {f"p{page}": page_df}
 
 
@@ -399,3 +387,22 @@ def _load_publication(key, load_function):
     except Exception as e:  # pylint: disable=broad-except
         logger.error("Failed to load DataFrame for %s: %s", key, e)
         return None
+
+
+def _extract_date(links, extract_key, inner_value):
+    timestamp = extract_value_from_nested_dict(
+        data=links,
+        outer_key="link",
+        inner_key="rel",
+        inner_value=inner_value,
+        extract_key=extract_key,
+        split_on_slash=False,
+    )
+    try:
+        if timestamp:
+            return datetime.datetime.fromtimestamp(timestamp / 1000).strftime(
+                "%Y-%m-%d"
+            )
+    except (TypeError, ValueError):
+        pass
+    return None
