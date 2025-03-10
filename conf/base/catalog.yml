@@ -37,3 +37,7 @@ _js_ptd: &_js_ptd
 "gtr.data_collection.{endpoint}.raw":
   <<: *_pq_ptd
   path: s3://igl-public/02_whos_who/data/01_raw/gtr/{endpoint}/
+
+"gtr.data_collection.{endpoint}.intermediate":
+  <<: *_pq
+  path: s3://igl-public/02_whos_who/data/02_intermediate/gtr/{endpoint}.parquet

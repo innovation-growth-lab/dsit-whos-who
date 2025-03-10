@@ -46,7 +46,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                 func=fetch_gtr_data,
                 inputs={
                     "parameters": "params:param_requests",
-                    "endpoint": "params:label",
+                    "url_endpoint": "params:url_endpoint",
                     "test_mode": "params:test_mode",
                 },
                 outputs="raw",

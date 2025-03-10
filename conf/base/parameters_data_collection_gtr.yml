@@ -4,7 +4,6 @@
 gtr:
   # Data collection parameters
   data_collection:
-
     # Common request parameters
     _param_requests:
       gtr_config:
@@ -18,13 +17,13 @@ gtr:
     # Specific data endpoints
     projects:
       param_requests: ${.._param_requests}
-      label: projects
+      url_endpoint: ${.._param_requests.gtr_config.base_url}projects
       test_mode: ${test._false}
     persons:
       param_requests: ${.._param_requests}
-      label: persons
+      url_endpoint: ${.._param_requests.gtr_config.base_url}persons
       test_mode: ${test._false}
     publications:
       param_requests: ${.._param_requests}
-      label: outcomes/publications
+      url_endpoint: https://gtr.ukri.org/gtr/apioutcomes/publications # V2 endpoints no longer work
       test_mode: ${test._false}
