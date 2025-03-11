@@ -9,25 +9,10 @@ from joblib import Parallel, delayed
 from kedro.io import AbstractDataset
 from .utils.common import fetch_openalex_objects, preprocess_ids
 from .utils.authors import json_loader_authors
-from .utils.publications import json_loader_works
+from .utils.publications import preprocess_publication_doi, json_loader_works
 
 
 logger = logging.getLogger(__name__)
-
-
-def preprocess_publication_doi(df: pd.DataFrame) -> pd.DataFrame:
-    """Preprocess the Gateway to Research publication data to include
-    doi values that are compatible with OA filter module.
-
-    Args:
-        df (pd.DataFrame): The Gateway to Research publication data.
-
-    Returns:
-        pd.DataFrame: The preprocessed publication data.
-    """
-    if "doi" in df.columns:
-        df["doi"] = df["doi"].str.extract(r"(10\..+)")
-    return df
 
 
 def create_list_doi_inputs(df: pd.DataFrame, **kwargs) -> list:
@@ -39,6 +24,10 @@ def create_list_doi_inputs(df: pd.DataFrame, **kwargs) -> list:
     Returns:
         list: A list of doi values.
     """
+    # remove https sectio
+    df = preprocess_publication_doi(df)
+
+    # create unique list
     doi_singleton_list = df[df["doi"].notnull()]["doi"].drop_duplicates().tolist()
 
     # concatenate doi values to create group querise
@@ -76,6 +65,7 @@ def create_list_author_names_inputs(df: pd.DataFrame, **kwargs) -> list:
     name_list = preprocess_ids(name_singleton_list, kwargs.get("grouped", True))
     return name_list
 
+
 def fetch_openalex(
     ids: Union[List[str], List[List[str]]],
     mails: List[str],
@@ -104,7 +94,9 @@ def fetch_openalex(
     logger.info("Slicing data. Number of oa_id_chunks: %s", len(oa_id_chunks))
     return {
         f"s{str(i)}": lambda chunk=chunk: Parallel(n_jobs=parallel_jobs, verbose=10)(
-            delayed(fetch_openalex_objects)(oa_id, mails, perpage, filter_criteria, endpoint)
+            delayed(fetch_openalex_objects)(
+                oa_id, mails, perpage, filter_criteria, endpoint
+            )
             for oa_id in chunk
         )
         for i, chunk in enumerate(oa_id_chunks)
@@ -112,9 +104,7 @@ def fetch_openalex(
 
 
 def concatenate_openalex(
-    data: Dict[str, AbstractDataset],
-    endpoint: str = "authors",
-    **kwargs
+    data: Dict[str, AbstractDataset], endpoint: str = "authors", **kwargs
 ) -> pd.DataFrame:
     """
     Load the partitioned JSON dataset, iterate transforms, return dataframe.

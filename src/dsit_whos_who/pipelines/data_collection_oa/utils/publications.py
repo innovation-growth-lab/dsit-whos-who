@@ -38,6 +38,21 @@ def _revert_abstract_index(abstract_inverted_index: Dict[str, Sequence[int]]) ->
         return ""
 
 
+def preprocess_publication_doi(df: pd.DataFrame) -> pd.DataFrame:
+    """Preprocess the Gateway to Research publication data to include
+    doi values that are compatible with OA filter module.
+
+    Args:
+        df (pd.DataFrame): The Gateway to Research publication data.
+
+    Returns:
+        pd.DataFrame: The preprocessed publication data.
+    """
+    if "doi" in df.columns:
+        df["doi"] = df["doi"].str.extract(r"(10\..+)")
+    return df
+
+
 def parse_works_results(
     response: List[Dict], keys_to_include: Optional[List[str]] = None
 ) -> List[Dict]:
