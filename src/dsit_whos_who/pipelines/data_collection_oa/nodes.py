@@ -66,6 +66,16 @@ def create_list_orcid_inputs(df: pd.DataFrame, **kwargs) -> list:
     return orcid_list
 
 
+def create_list_author_names_inputs(df: pd.DataFrame, **kwargs) -> list:
+    """Create a list of author names from the Gateway to Research author data.
+
+    Args:
+        df (pd.DataFrame): The Gateway to Research author data.
+    """
+    name_singleton_list = list(set(df["first_name"] + " " + df["surname"]))
+    name_list = preprocess_ids(name_singleton_list, kwargs.get("grouped", True))
+    return name_list
+
 def fetch_openalex(
     ids: Union[List[str], List[List[str]]],
     mails: List[str],
@@ -104,6 +114,7 @@ def fetch_openalex(
 def concatenate_openalex(
     data: Dict[str, AbstractDataset],
     endpoint: str = "authors",
+    **kwargs
 ) -> pd.DataFrame:
     """
     Load the partitioned JSON dataset, iterate transforms, return dataframe.
@@ -119,7 +130,7 @@ def concatenate_openalex(
     for i, (key, batch_loader) in enumerate(data.items()):
         data_batch = batch_loader()
         if endpoint == "authors":
-            df_batch = json_loader_authors(data_batch)
+            df_batch = json_loader_authors(data_batch, **kwargs)
         else:
             df_batch = json_loader_works(data_batch)
         outputs.append(df_batch)

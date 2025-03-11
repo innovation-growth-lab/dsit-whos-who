@@ -115,7 +115,7 @@ def openalex_generator(
 
             while response.status_code == 429:  # needs testing (try with 200)
                 logger.info("Waiting for 1 hour...")
-                time.sleep(3600)
+                time.sleep(30)
                 response = session.get(cursor_url.format(1), timeout=20)
                 data = response.json()
 
@@ -150,7 +150,10 @@ def fetch_openalex_objects(
         perpage (str): Number of results per page.
         filter_criteria (Union[str, List[str]]): Filter criteria for the query.
         endpoint (str): OpenAlex endpoint (works, authors, institutions, etc).
-        **kwargs: Additional arguments including sample_size and keys_to_include.
+        **kwargs: Additional arguments including:
+            - sample_size: Number of random samples to return
+            - keys_to_include: List of keys to include in results
+            - gtr_author_names: For author search, the original GTR names to match against
 
     Returns:
         List[dict]: List of fetched objects from OpenAlex.
@@ -173,9 +176,14 @@ def fetch_openalex_objects(
             sample_size=kwargs.get("sample_size", -1),
         )
     ):
-        if endpoint == "authors":
+        if endpoint == "authors" and filter_criteria == "orcid":
             parsed_objects = parse_author_results(
-                objects, kwargs.get("keys_to_include", None)
+                objects
+            )
+        elif endpoint == "authors" and filter_criteria == "display_name.search":
+            # For author name search, pass through the original search names for matching
+            parsed_objects = parse_author_results(
+                objects, oa_id
             )
         elif endpoint == "works":
             parsed_objects = parse_works_results(

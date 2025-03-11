@@ -1,31 +1,60 @@
 """Author-specific utilities for OpenAlex data collection."""
 
 import logging
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
+from difflib import SequenceMatcher
 import pandas as pd
 
 logger = logging.getLogger(__name__)
 
 
+def _normalise_name(name: str) -> str:
+    """Normalise a name for comparison by lowercasing and removing punctuation."""
+    return "".join(c.lower() for c in name if c.isalnum())
+
+
+def _name_similarity(name1: str, name2: str) -> float:
+    """Calculate similarity between two names using SequenceMatcher."""
+    return SequenceMatcher(None, _normalise_name(name1), _normalise_name(name2)).ratio()
+
+
+def _find_best_name_match(display_name: str, gtr_names: List[str]) -> Tuple[str, float]:
+    """Find the closest matching GTR name for a given OpenAlex display name.
+    
+    Args:
+        display_name (str): The display name from OpenAlex
+        gtr_names (List[str]): List of author names from GTR
+        
+    Returns:
+        Tuple[str, float]: The best matching GTR name and the similarity score
+    """
+    if not gtr_names:
+        return "", 0.0
+        
+    similarities = [(name, _name_similarity(display_name, name)) for name in gtr_names]
+    best_match = max(similarities, key=lambda x: x[1])
+    return best_match
+
 def parse_author_results(
-    response: List[Dict], keys_to_include: Optional[List[str]] = None
+    response: List[Dict],
+    gtr_author_names: Optional[str] = None,
 ) -> List[Dict]:
-    """Parses OpenAlex API author response to retain specified keys or all if keys_to_include
-     is None.
+    """Parses OpenAlex API author search response and matches results to GTR author names.
 
     Args:
         response (List[Dict]): The response from the OpenAlex API.
-        keys_to_include (Optional[List[str]]): List of keys to include in the
-            result. Returns full dictionary if None.
+        gtr_author_names (str): Pipe-separated list of GTR author names to match against.
 
     Returns:
-        List[Dict]: A list of dictionaries containing the parsed author information.
+        List[Dict]: List of dictionaries containing parsed author information with GTR matches.
     """
+    
     parsed_response = []
     for author in response:
+
         parsed_author = {
             "id": author.get("id", "").replace("https://openalex.org/", ""),
-            "orcid": author.get("orcid", "").replace("https://orcid.org/", ""),
+            "orcid": author.get("orcid") and author.get("orcid").replace("https://orcid.org/", ""),
             "display_name": author.get("display_name", ""),
             "display_name_alternatives": author.get("display_name_alternatives", []),
             "works_count": author.get("works_count", 0),
@@ -79,23 +108,27 @@ def parse_author_results(
             ],
             "counts_by_year": author.get("counts_by_year", []),
         }
-        if keys_to_include is not None:
-            # Filter the dictionary to only include specified keys
-            parsed_author = {
-                key: parsed_author[key]
-                for key in keys_to_include
-                if key in parsed_author
-            }
+        
+        # Add GTR name matching if we have GTR names
+        if gtr_author_names:
+            gtr_names = gtr_author_names.split("|")
+            display_name = author.get("display_name", "")
+            matched_name, similarity = _find_best_name_match(display_name, gtr_names)
+            parsed_author["gtr_author_name"] = matched_name
+            parsed_author["name_match_score"] = similarity
+        
         parsed_response.append(parsed_author)
+    
     return parsed_response
 
 
-def json_loader_authors(data: List[List[Dict]]) -> pd.DataFrame:
+def json_loader_authors(data: List[List[Dict]], include_match_info: bool = False) -> pd.DataFrame:
     """
     Load authors JSON data, transform it into a DataFrame, and wrangle data.
 
     Args:
         data (List[List[Dict]]): The authors JSON data in batches.
+        include_match_info (bool): Whether to include name matching columns.
 
     Returns:
         pandas.DataFrame: The transformed DataFrame.
@@ -120,6 +153,8 @@ def json_loader_authors(data: List[List[Dict]]) -> pd.DataFrame:
                     "last_known_institutions",
                     "topics",
                     "counts_by_year",
+                    "gtr_author_name",
+                    "name_match_score",
                 ]
             }
             for item in batch
@@ -205,6 +240,13 @@ def json_loader_authors(data: List[List[Dict]]) -> pd.DataFrame:
                 else None
             )
         )
+
+        # Remove matching columns if not needed
+        if not include_match_info:
+            df = df.drop(columns=["gtr_author_name", "name_match_score"], errors="ignore")
+
         output.append(df)
 
     return pd.concat(output) if output else pd.DataFrame()
+
+

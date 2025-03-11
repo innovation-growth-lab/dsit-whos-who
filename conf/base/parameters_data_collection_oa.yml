@@ -4,7 +4,7 @@
 oa:
   data_collection:
     authors_endpoint: authors
-    papers_endpoint: works
+    publications_endpoint: works
     institutions_endpoint: institutions
 
     api: &api
@@ -22,4 +22,5 @@ oa:
     filter_doi: doi
     filter_oa: "ids.openalex"
     filter_orcid: orcid
+    filter_author_search: "display_name.search"
     n_jobs: 1

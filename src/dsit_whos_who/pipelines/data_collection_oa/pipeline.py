@@ -31,7 +31,9 @@ Note:
 
 from kedro.pipeline import Pipeline, node, pipeline
 from .nodes import (
+    create_list_doi_inputs,
     create_list_orcid_inputs,
+    create_list_author_names_inputs,
     fetch_openalex,
     concatenate_openalex,
 )
@@ -43,7 +45,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
     Returns:
         Pipeline: The data collection pipeline.
     """
-    return pipeline(
+    orcid_pipeline = pipeline(
         [
             node(
                 func=create_list_orcid_inputs,
@@ -76,3 +78,72 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
         ],
         tags="fetch_orcid",
     )
+
+    author_search_pipeline = pipeline(
+        [
+            node(
+                func=create_list_author_names_inputs,
+                inputs="gtr.data_collection.persons.intermediate",
+                outputs="oa.data_collection.gtr.author_search_list",
+            ),
+            node(
+                func=fetch_openalex,
+                inputs={
+                    "perpage": "params:oa.data_collection.api.perpage",
+                    "mails": "params:oa.data_collection.api.mails",
+                    "ids": "oa.data_collection.gtr.author_search_list",
+                    "filter_criteria": "params:oa.data_collection.filter_author_search",
+                    "parallel_jobs": "params:oa.data_collection.n_jobs",
+                    "endpoint": "params:oa.data_collection.authors_endpoint",
+                },
+                outputs="oa.data_collection.author_search.raw",
+                name="fetch_author_names",
+            ),
+            node(
+                func=concatenate_openalex,
+                inputs={
+                    "data": "oa.data_collection.author_search.raw",
+                    "endpoint": "params:oa.data_collection.authors_endpoint",
+                    "include_match_info": "params:global.true",
+                },
+                outputs="oa.data_collection.author_search.intermediate",
+                name="parse_author_names",
+            ),
+        ],
+        tags="fetch_author_names",
+    )
+
+    publications_pipeline = pipeline(
+        [
+            node(
+                func=create_list_doi_inputs,
+                inputs="gtr.data_collection.publications.intermediate",
+                outputs="oa.data_collection.gtr.doi_list",
+            ),
+            node(
+                fetch_openalex,
+                inputs={
+                    "perpage": "params:oa.data_collection.api.perpage",
+                    "mails": "params:oa.data_collection.api.mails",
+                    "ids": "oa.data_collection.gtr.doi_list",
+                    "filter_criteria": "params:oa.data_collection.filter_doi",
+                    "parallel_jobs": "params:oa.data_collection.n_jobs",
+                    "endpoint": "params:oa.data_collection.publications_endpoint",
+                },
+                outputs="oa.data_collection.publications.raw",
+                name="fetch_doi",
+            ),
+            node(
+                concatenate_openalex,
+                inputs={
+                    "data": "oa.data_collection.publications.raw",
+                    "endpoint": "params:oa.data_collection.publications_endpoint",
+                },
+                outputs="oa.data_collection.publications.intermediate",
+                name="concatenate_publications",
+            ),
+        ],
+        tags="fetch_doi_publications",
+    )
+
+    return orcid_pipeline + author_search_pipeline + publications_pipeline
