@@ -107,7 +107,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                     "include_match_info": "params:global.true",
                 },
                 outputs="oa.data_collection.author_search.intermediate",
-                name="parse_author_names",
+                name="concatenate_author_names",
             ),
         ],
         tags="fetch_author_names",

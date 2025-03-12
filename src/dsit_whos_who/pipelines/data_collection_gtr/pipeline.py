@@ -66,7 +66,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
             pipeline(
                 template_pipeline,
                 namespace=f"gtr.data_collection.{endpoint}",
-                tags=["gtr"],
+                tags=[f"gtr_{endpoint}"],
             )
         )
     return sum(pipelines)

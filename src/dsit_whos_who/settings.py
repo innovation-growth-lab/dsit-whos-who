@@ -37,7 +37,7 @@ CONFIG_LOADER_ARGS = {
     # }
 }
 
-GTR_ENDPOINTS = ["projects", "persons", "publications"]
+GTR_ENDPOINTS = ["projects", "persons", "publications", "organisations"]
 
 # Class that manages Kedro's library components.
 # from kedro.framework.context import KedroContext
