@@ -62,6 +62,10 @@ def create_list_author_names_inputs(df: pd.DataFrame, **kwargs) -> list:
         df (pd.DataFrame): The Gateway to Research author data.
     """
     name_singleton_list = list(set(df["first_name"] + " " + df["surname"]))
+    # remove commas and colons
+    name_singleton_list = [
+        name.translate(str.maketrans("", "", ",.;:")) for name in name_singleton_list
+    ]
     name_list = preprocess_ids(name_singleton_list, kwargs.get("grouped", True))
     return name_list
 
