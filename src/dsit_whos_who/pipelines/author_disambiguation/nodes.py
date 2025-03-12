@@ -15,7 +15,7 @@ from .utils.preprocessing.gtr import (
 logger = logging.getLogger(__name__)
 
 
-def aggregate_author_information(
+def aggregate_person_information(
     gtr_persons: pd.DataFrame,
     gtr_projects: pd.DataFrame,
     gtr_project_topics: pd.DataFrame,

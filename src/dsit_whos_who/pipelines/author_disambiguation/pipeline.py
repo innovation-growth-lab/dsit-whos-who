@@ -3,11 +3,7 @@
 from kedro.pipeline import Pipeline, node, pipeline
 
 from .nodes import (
-    aggregate_author_information,
-    create_feature_matrix,
-    train_disambiguation_model,
-    predict_author_matches,
-    evaluate_model_performance,
+    aggregate_person_information,
 )
 
 
@@ -20,7 +16,7 @@ def create_pipeline(**kwargs) -> Pipeline:
     return pipeline(
         [
             node(
-                aggregate_author_information,
+                aggregate_person_information,
                 inputs={
                     "gtr_persons": "gtr.data_collection.persons.intermediate",
                     "gtr_projects": "gtr.data_collection.projects.intermediate",
