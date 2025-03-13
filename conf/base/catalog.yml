@@ -33,6 +33,19 @@ _js_ptd: &_js_ptd
   filename_suffix: ".json"
   credentials: s3_credentials
 
+_js: &_js
+  type: json.JSONDataset
+  credentials: s3_credentials
+
+# -> 0. External data:
+cwts.taxonomy:
+  <<: *_pq
+  filepath: s3://igl-public/01_taxonomies/data/02_intermediate/taxonomies/cwts.parquet
+
+projects.cwts.topics:
+  <<: *_pq
+  filepath: s3://igl-public/01_taxonomies/data/04_output/gtr/projects/scores/cwts_final.parquet
+
 # -> 1. Raw GTR data:
 "gtr.data_collection.{endpoint}.raw":
   <<: *_pq_ptd
@@ -43,6 +56,10 @@ _js_ptd: &_js_ptd
   filepath: s3://igl-public/02_whos_who/data/02_intermediate/gtr/{endpoint}.parquet
 
 # -> 2. OpenAlex data:
+"oa.data_collection.{filter}.list":
+  <<: *_js
+  filepath: s3://igl-public/02_whos_who/data/01_raw/tmp/{filter}/
+
 "oa.data_collection.{filter}.raw":
   <<: *_js_ptd
   path: s3://igl-public/02_whos_who/data/01_raw/oa/{filter}/
@@ -50,3 +67,8 @@ _js_ptd: &_js_ptd
 "oa.data_collection.{filter}.intermediate":
   <<: *_pq
   filepath: s3://igl-public/02_whos_who/data/02_intermediate/oa/{filter}.parquet
+
+# -> 3. Labelled candidates:
+"author_disambiguation.{group}.intermediate":
+  <<: *_pq
+  filepath: s3://igl-public/02_whos_who/data/02_intermediate/author_disambiguation/{group}.parquet

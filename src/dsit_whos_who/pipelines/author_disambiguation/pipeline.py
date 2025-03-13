@@ -2,9 +2,7 @@
 
 from kedro.pipeline import Pipeline, node, pipeline
 
-from .nodes import (
-    aggregate_person_information,
-)
+from .nodes import aggregate_person_information, preprocess_oa_candidates
 
 
 def create_pipeline(**kwargs) -> Pipeline:
@@ -26,8 +24,17 @@ def create_pipeline(**kwargs) -> Pipeline:
                     "cwts_taxonomy": "cwts.taxonomy",
                     "oa_publications": "oa.data_collection.publications.intermediate",
                 },
-                outputs="author_disambiguation.aggregated_authors",
-                name="aggregate_author_information",
+                outputs="author_disambiguation.aggregated_persons.intermediate",
+                name="aggregate_person_information",
+            ),
+            node(
+                preprocess_oa_candidates,
+                inputs={
+                    "oa_candidates": "oa.data_collection.author_search.raw",
+                    "institutions": "oa.data_collection.institutions.intermediate",
+                },
+                outputs="author_disambiguation.preprocessed_oa_candidates.intermediate",
+                name="preprocess_oa_candidates",
             ),
             # node(
             #     func=create_feature_matrix,

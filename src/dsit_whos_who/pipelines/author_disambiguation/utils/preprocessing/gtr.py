@@ -146,30 +146,28 @@ def preprocess_gtr_publications(
     oa_publications = oa_publications.drop_duplicates(subset="doi")
 
     # Merge publications and extract author info in one step
-    merged = gtr_publications.merge(oa_publications, on="doi", how="inner").assign(
-        authors=lambda df: df["authorships"].apply(
-            lambda x: [item[0] for item in x] if isinstance(x, np.ndarray) else []
-        )
+    merged = gtr_publications.merge(
+        oa_publications[["doi", "id", "authorships"]], on="doi", how="inner"
     )
 
-    # Group by project_id to get authors and publications
-    result = (
-        merged.explode("authors")
-        .groupby("project_id")
-        .agg(
-            authors=(
-                "authors",
-                lambda x: [
-                    [author, count] for author, count in x.value_counts().items()
-                ],
-            ),
-            id=("id", list),
-        )
-        .reset_index()
-    )
+    result = {}
+    # Process each project group separately to reduce memory usage
+    for project_id, group in merged.groupby("project_id"):
+        author_counts = {}
+        publication_ids = []
 
-    # return a dictionary of project_id as key and authors and publications as value
-    return result.set_index("project_id").to_dict(orient="index")
+        for _, row in group.iterrows():
+            if isinstance(row["authorships"], np.ndarray):
+                for author_id in [item[0] for item in row["authorships"]]:
+                    author_counts[author_id] = author_counts.get(author_id, 0) + 1
+            publication_ids.append(row["id"])
+
+        result[project_id] = {
+            "authors": [[author, count] for author, count in author_counts.items()],
+            "id": publication_ids,
+        }
+
+    return result
 
 
 def map_project_info(project_id: str, projects_dict: Dict, topics_dict: Dict) -> Dict:
@@ -191,7 +189,57 @@ def map_project_info(project_id: str, projects_dict: Dict, topics_dict: Dict) ->
             "end_date": projects_dict[project_id][2],
             "topics": topics_dict.get(project_id, []),
         }
-    return None
+    return {
+        "project_id": "",
+        "publications": [],
+        "start_date": "",
+        "end_date": "",
+        "topics": [],
+    }
+
+
+def flatten_and_aggregate_authors(authors_list: List) -> List[List[str]]:
+    """Flatten and aggregate authors from deeply nested lists.
+
+    Args:
+        authors_list: List of lists containing author IDs and counts, structured as:
+            [
+                [[[A1234, 2], [A5678, 1]]],  # First project
+                [[[A1234, 1], [A9012, 3]]]   # Second project
+            ]
+            Can also contain empty lists [[]] or other invalid data
+
+    Returns:
+        List of [author_id, total_count] pairs, e.g.:
+            [[A1234, 3], [A5678, 1], [A9012, 3]]
+    """
+    author_counts = {}
+
+    # Handle non-list input
+    if not isinstance(authors_list, list):
+        return []
+
+    # iterate through the nested structure
+    for project_list in authors_list:
+        if not isinstance(project_list, list):  # skip non-list items
+            continue
+
+        for author_pair in project_list:
+            if (
+                not isinstance(author_pair, list) or len(author_pair) != 2
+            ):  # skip invalid pairs
+                continue
+            try:
+                author_id, count = author_pair
+                if isinstance(count, (int, float)):
+                    if author_id not in author_counts:
+                        author_counts[author_id] = 0
+                    author_counts[author_id] += count
+            except (ValueError, TypeError):
+                continue
+
+    # convert to sorted list of [author_id, total_count] pairs
+    return sorted([[str(author_id), str(count)] for author_id, count in author_counts.items()])
 
 
 def _create_topic_list(hierarchy: List[str], id_path: str) -> Optional[tuple]:
