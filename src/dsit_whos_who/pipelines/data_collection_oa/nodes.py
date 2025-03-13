@@ -10,7 +10,7 @@ from kedro.io import AbstractDataset
 from .utils.common import fetch_openalex_objects, preprocess_ids
 from .utils.authors import json_loader_authors
 from .utils.publications import preprocess_publication_doi, json_loader_works
-
+from .utils.institutions import json_loader_institutions
 
 logger = logging.getLogger(__name__)
 
@@ -115,7 +115,7 @@ def concatenate_openalex(
 
     Args:
         data (Dict[str, AbstractDataset]): The partitioned JSON dataset.
-        endpoint (str): The OpenAlex endpoint type (works, authors, etc).
+        endpoint (str): The OpenAlex endpoint type (works, authors, institutions).
 
     Returns:
         pd.DataFrame: The concatenated OpenAlex dataset.
@@ -125,10 +125,50 @@ def concatenate_openalex(
         data_batch = batch_loader()
         if endpoint == "authors":
             df_batch = json_loader_authors(data_batch, **kwargs)
-        else:
+        elif endpoint == "works":
             df_batch = json_loader_works(data_batch)
+        elif endpoint == "institutions":
+            df_batch = json_loader_institutions(data_batch)
+        else:
+            raise ValueError(f"Unknown endpoint: {endpoint}")
+
         outputs.append(df_batch)
         logger.info("Loaded %s. Progress: %s/%s", key, i + 1, len(data))
     outputs = pd.concat(outputs)
 
     return outputs
+
+
+def extract_institution_ids(
+    author_search_data: Dict[str, AbstractDataset],
+    **kwargs,
+) -> List[str]:
+    """Extract unique institution IDs from author search results.
+
+    Args:
+        author_search_data: Raw author search results from OpenAlex
+
+    Returns:
+        List of unique institution IDs
+    """
+    institution_ids = set()
+
+    for slice_, batch_loader in author_search_data.items():
+        data_batch = batch_loader()
+        logger.info("Extracting institution IDs from slice: %s", slice_)
+        for author_batch in data_batch:
+            for author in author_batch:
+                # Extract from affiliations
+                for affiliation in author.get("affiliations", []):
+                    if isinstance(affiliation, list) and affiliation:
+                        inst_id = affiliation[0]
+                        if inst_id:
+                            institution_ids.add(inst_id)
+
+    logger.info("Extracted %d unique institution IDs", len(institution_ids))
+
+    # create OR syntaxed list
+    institution_list = preprocess_ids(
+        list(institution_ids), kwargs.get("grouped", True)
+    )
+    return institution_list

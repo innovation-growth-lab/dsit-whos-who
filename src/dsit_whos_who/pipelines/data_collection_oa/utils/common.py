@@ -9,6 +9,7 @@ from requests.adapters import HTTPAdapter, Retry
 
 from .publications import parse_works_results
 from .authors import parse_author_results
+from .institutions import parse_institution_results
 
 logger = logging.getLogger(__name__)
 
@@ -177,18 +178,15 @@ def fetch_openalex_objects(
         )
     ):
         if endpoint == "authors" and filter_criteria == "orcid":
-            parsed_objects = parse_author_results(
-                objects
-            )
+            parsed_objects = parse_author_results(objects)
         elif endpoint == "authors" and filter_criteria == "display_name.search":
-            # For author name search, pass through the original search names for matching
-            parsed_objects = parse_author_results(
-                objects, oa_id
-            )
+            parsed_objects = parse_author_results(objects, oa_id)
         elif endpoint == "works":
             parsed_objects = parse_works_results(
                 objects, kwargs.get("keys_to_include", None)
             )
+        elif endpoint == "institutions":
+            parsed_objects = parse_institution_results(objects)
         else:
             raise ValueError(f"Parsing for endpoint '{endpoint}' not implemented yet")
 

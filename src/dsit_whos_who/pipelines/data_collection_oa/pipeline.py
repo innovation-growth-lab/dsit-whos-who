@@ -36,6 +36,7 @@ from .nodes import (
     create_list_author_names_inputs,
     fetch_openalex,
     concatenate_openalex,
+    extract_institution_ids,
 )
 
 
@@ -50,7 +51,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
             node(
                 func=create_list_orcid_inputs,
                 inputs="gtr.data_collection.persons.intermediate",
-                outputs="oa.data_collection.gtr.orcid_list",
+                outputs="oa.data_collection.gtr.orcid.list",
                 name="create_nested_orcid_list",
             ),
             node(
@@ -58,7 +59,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                 inputs={
                     "perpage": "params:oa.data_collection.api.perpage",
                     "mails": "params:oa.data_collection.api.mails",
-                    "ids": "oa.data_collection.gtr.orcid_list",
+                    "ids": "oa.data_collection.gtr.orcid.list",
                     "filter_criteria": "params:oa.data_collection.filter_orcid",
                     "parallel_jobs": "params:oa.data_collection.n_jobs",
                     "endpoint": "params:oa.data_collection.authors_endpoint",
@@ -84,30 +85,20 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
             node(
                 func=create_list_author_names_inputs,
                 inputs="gtr.data_collection.persons.intermediate",
-                outputs="oa.data_collection.gtr.author_search_list",
+                outputs="oa.data_collection.gtr.author_search.list",
             ),
             node(
                 func=fetch_openalex,
                 inputs={
                     "perpage": "params:oa.data_collection.api.perpage",
                     "mails": "params:oa.data_collection.api.mails",
-                    "ids": "oa.data_collection.gtr.author_search_list",
+                    "ids": "oa.data_collection.gtr.author_search.list",
                     "filter_criteria": "params:oa.data_collection.filter_author_search",
                     "parallel_jobs": "params:oa.data_collection.n_jobs",
                     "endpoint": "params:oa.data_collection.authors_endpoint",
                 },
                 outputs="oa.data_collection.author_search.raw",
                 name="fetch_author_names",
-            ),
-            node(
-                func=concatenate_openalex,
-                inputs={
-                    "data": "oa.data_collection.author_search.raw",
-                    "endpoint": "params:oa.data_collection.authors_endpoint",
-                    "include_match_info": "params:global.true",
-                },
-                outputs="oa.data_collection.author_search.intermediate",
-                name="concatenate_author_names",
             ),
         ],
         tags="fetch_author_names",
@@ -118,14 +109,14 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
             node(
                 func=create_list_doi_inputs,
                 inputs="gtr.data_collection.publications.intermediate",
-                outputs="oa.data_collection.gtr.doi_list",
+                outputs="oa.data_collection.publications.list",
             ),
             node(
                 fetch_openalex,
                 inputs={
                     "perpage": "params:oa.data_collection.api.perpage",
                     "mails": "params:oa.data_collection.api.mails",
-                    "ids": "oa.data_collection.gtr.doi_list",
+                    "ids": "oa.data_collection.publications.list",
                     "filter_criteria": "params:oa.data_collection.filter_doi",
                     "parallel_jobs": "params:oa.data_collection.n_jobs",
                     "endpoint": "params:oa.data_collection.publications_endpoint",
@@ -146,4 +137,43 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
         tags="fetch_doi_publications",
     )
 
-    return orcid_pipeline + author_search_pipeline + publications_pipeline
+    institutions_pipeline = pipeline(
+        [
+            node(
+                func=extract_institution_ids,
+                inputs="oa.data_collection.author_search.raw",
+                outputs="oa.data_collection.institutions.list",
+                name="extract_institution_ids",
+            ),
+            node(
+                func=fetch_openalex,
+                inputs={
+                    "perpage": "params:oa.data_collection.api.perpage",
+                    "mails": "params:oa.data_collection.api.mails",
+                    "ids": "oa.data_collection.institutions.list",
+                    "filter_criteria": "params:oa.data_collection.filter_oa",
+                    "parallel_jobs": "params:oa.data_collection.n_jobs",
+                    "endpoint": "params:oa.data_collection.institutions_endpoint",
+                },
+                outputs="oa.data_collection.institutions.raw",
+                name="fetch_institutions",
+            ),
+            node(
+                func=concatenate_openalex,
+                inputs={
+                    "data": "oa.data_collection.institutions.raw",
+                    "endpoint": "params:oa.data_collection.institutions_endpoint",
+                },
+                outputs="oa.data_collection.institutions.intermediate",
+                name="concatenate_institutions",
+            ),
+        ],
+        tags="fetch_institutions",
+    )
+
+    return (
+        orcid_pipeline
+        + author_search_pipeline
+        + publications_pipeline
+        + institutions_pipeline
+    )
