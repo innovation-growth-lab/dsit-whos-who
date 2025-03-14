@@ -231,7 +231,7 @@ def preprocess_oa_candidates(
             errors="ignore",
         )
 
-        yield candidate_batch_df
+        yield {key: candidate_batch_df}
 
 
 def merge_and_filter_by_orcid(
