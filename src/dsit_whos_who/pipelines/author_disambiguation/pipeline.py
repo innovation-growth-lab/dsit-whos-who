@@ -54,9 +54,9 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
             node(
                 func=create_feature_matrix,
                 inputs={
-                    "input_data": "ad.orcid_labelled_persons.intermediate"
+                    "input_data": "ad.orcid_labelled_persons.raw.ptd"
                 },
-                outputs="ad.features",
+                outputs="ad.feature_matrix.intermediate",
                 name="create_feature_matrix",
             ),
             # node(

@@ -14,6 +14,7 @@ from .utils.preprocessing.gtr import (
     flatten_and_aggregate_authors,
 )
 from .utils.preprocessing.oa import process_affiliations, get_associated_institutions
+from .utils.feature_engineering.compute_features import compute_all_features
 
 logger = logging.getLogger(__name__)
 
@@ -330,19 +331,29 @@ def merge_candidates_with_gtr(
         yield {key: batch_merged}
 
 
-def create_feature_matrix(input_data: pd.DataFrame) -> pd.DataFrame:
+def create_feature_matrix(
+    input_data: AbstractDataset,
+) -> Iterator[pd.DataFrame]:
     """Create feature matrix for author pairs.
 
     Args:
-        gtr_persons: DataFrame containing GtR author information
-        oa_candidates: DataFrame containing OpenAlex author candidates
+        input_data: Partitioned dataset containing matched GTR-OA pairs
 
     Returns:
-        DataFrame containing computed features for each author pair
+        Iterator yielding DataFrames with computed features for each batch
     """
-    logger.info("Computing features for %d persons", len(input_data))
+    aggregated_features = []
+    logger.info("Starting feature computation")
+    for key, batch_loader in input_data.items():
+        logger.info("Processing batch %s", key)
+        batch_df = batch_loader()
 
-    return input_data
+        # compute features for the batch
+        features = compute_all_features(batch_df)
+
+        aggregated_features.append(features)
+
+    return pd.concat(aggregated_features)
 
 
 def train_disambiguation_model(
