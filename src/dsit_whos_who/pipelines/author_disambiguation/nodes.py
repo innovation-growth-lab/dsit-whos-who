@@ -1,7 +1,7 @@
 """Nodes for author disambiguation pipeline."""
 
 import logging
-from typing import Dict
+from typing import Dict, Iterator
 import pandas as pd
 from kedro.io import AbstractDataset
 from .utils.preprocessing.gtr import (
@@ -170,7 +170,7 @@ def aggregate_person_information(
 
 def preprocess_oa_candidates(
     oa_candidates: AbstractDataset, institutions: pd.DataFrame
-) -> pd.DataFrame:
+) -> Iterator[pd.DataFrame]:
     """Preprocess OpenAlex author candidates.
 
     Args:
@@ -178,9 +178,9 @@ def preprocess_oa_candidates(
         institutions: DataFrame with institution IDs and their associated institutions
 
     Returns:
-        DataFrame containing all OpenAlex author information plus:
+        Iterator yielding DataFrames for each batch of OpenAlex author information plus:
         - List of institution names
-        - List of associated institution names
+        - List of associated institution names 
         - GB affiliation indicators and proportions
     """
     logger.info("Starting preprocessing of OpenAlex candidates")
@@ -189,7 +189,6 @@ def preprocess_oa_candidates(
         "associated_institutions"
     ].to_dict()
 
-    processed_batches = []
     for key, batch_loader in oa_candidates.items():
         logger.info("Processing batch %s", key)
         candidates = batch_loader()
@@ -232,13 +231,7 @@ def preprocess_oa_candidates(
             errors="ignore",
         )
 
-        processed_batches.append(candidate_batch_df)
-        logger.info("Processed batch %s", key)
-
-    # Combine all processed batches
-    result = pd.concat(processed_batches, ignore_index=True)
-
-    return result
+        yield candidate_batch_df
 
 
 def merge_and_filter_by_orcid(

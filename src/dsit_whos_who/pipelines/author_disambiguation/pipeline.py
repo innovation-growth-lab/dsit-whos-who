@@ -38,7 +38,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                     "oa_candidates": "oa.data_collection.author_search.raw",
                     "institutions": "oa.data_collection.institutions.intermediate",
                 },
-                outputs="ad.preprocessed_oa_candidates.intermediate",
+                outputs="ad.preprocessed_oa_candidates.intermediate.ptd",
                 name="preprocess_oa_candidates",
             ),
             node(
