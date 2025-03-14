@@ -5,7 +5,7 @@ from kedro.pipeline import Pipeline, node, pipeline
 from .nodes import aggregate_person_information, preprocess_oa_candidates
 
 
-def create_pipeline(**kwargs) -> Pipeline:
+def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
     """Create the author disambiguation pipeline.
 
     Returns:

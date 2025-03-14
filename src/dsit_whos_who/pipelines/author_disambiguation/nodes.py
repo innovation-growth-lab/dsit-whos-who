@@ -228,7 +228,8 @@ def preprocess_oa_candidates(
 
         # drop the columns we used to create our features
         candidate_batch_df = candidate_batch_df.drop(
-            columns=["affiliations", "last_known_institutions"], errors="ignore"
+            columns=["affiliations", "last_known_institutions", "counts_by_year"],
+            errors="ignore",
         )
 
         processed_batches.append(candidate_batch_df)
