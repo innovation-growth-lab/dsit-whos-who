@@ -241,21 +241,36 @@ def preprocess_oa_candidates(
     return result
 
 
+def merge_and_filter_by_orcid(
+    gtr_persons: pd.DataFrame, oa_candidates: pd.DataFrame
+) -> pd.DataFrame:
+    """Merge and filter by ORCID."""
+    logger.info("Merging and filtering by ORCID")
+
+    # merge on orcid_gtr
+    merged = gtr_persons.merge(oa_candidates, on="orcid_gtr", how="inner")
+
+    # filter by orcid_gtr not null
+    merged = merged[merged["orcid_gtr"].notna()]
+
+    return merged
+
+
 def create_feature_matrix(
-    gtr_authors: pd.DataFrame, oa_candidates: pd.DataFrame
+    gtr_persons: pd.DataFrame, oa_candidates: pd.DataFrame
 ) -> pd.DataFrame:
     """Create feature matrix for author pairs.
 
     Args:
-        gtr_authors: DataFrame containing GtR author information
+        gtr_persons: DataFrame containing GtR author information
         oa_candidates: DataFrame containing OpenAlex author candidates
 
     Returns:
         DataFrame containing computed features for each author pair
     """
-    logger.info("Computing features for %d author pairs", len(gtr_authors))
+    logger.info("Computing features for %d persons", len(gtr_persons))
 
-    return gtr_authors
+    return gtr_persons
 
 
 def train_disambiguation_model(

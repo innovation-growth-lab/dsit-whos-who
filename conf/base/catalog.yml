@@ -69,6 +69,6 @@ projects.cwts.topics:
   filepath: s3://igl-public/02_whos_who/data/02_intermediate/oa/{filter}.parquet
 
 # -> 3. Labelled candidates:
-"author_disambiguation.{group}.intermediate":
+"ad.{group}.intermediate":
   <<: *_pq
   filepath: s3://igl-public/02_whos_who/data/02_intermediate/author_disambiguation/{group}.parquet

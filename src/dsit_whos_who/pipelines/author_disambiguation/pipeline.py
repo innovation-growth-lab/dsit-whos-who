@@ -2,7 +2,12 @@
 
 from kedro.pipeline import Pipeline, node, pipeline
 
-from .nodes import aggregate_person_information, preprocess_oa_candidates
+from .nodes import (
+    aggregate_person_information,
+    preprocess_oa_candidates,
+    merge_and_filter_by_orcid,
+    create_feature_matrix,
+)
 
 
 def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
@@ -24,7 +29,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                     "cwts_taxonomy": "cwts.taxonomy",
                     "oa_publications": "oa.data_collection.publications.intermediate",
                 },
-                outputs="author_disambiguation.aggregated_persons.intermediate",
+                outputs="ad.aggregated_persons.intermediate",
                 name="aggregate_person_information",
             ),
             node(
@@ -33,43 +38,52 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                     "oa_candidates": "oa.data_collection.author_search.raw",
                     "institutions": "oa.data_collection.institutions.intermediate",
                 },
-                outputs="author_disambiguation.preprocessed_oa_candidates.intermediate",
+                outputs="ad.preprocessed_oa_candidates.intermediate",
                 name="preprocess_oa_candidates",
             ),
-            # node(
-            #     func=create_feature_matrix,
-            #     inputs={
-            #         "gtr_authors": "gtr.data_collection.persons.intermediate",
-            #         "oa_candidates": "oa.data_collection.author_search.intermediate",
-            #     },
-            #     outputs="author_disambiguation.features",
-            #     name="create_feature_matrix",
-            # ),
+            node(
+                merge_and_filter_by_orcid,
+                inputs={
+                    "gtr_persons": "ad.aggregated_persons.intermediate",
+                    "oa_candidates": "ad.preprocessed_oa_candidates.intermediate",
+                },
+                outputs="ad.orcid_labelled_persons.intermediate",
+                name="merge_and_filter_by_orcid",
+            ),
+            node(
+                func=create_feature_matrix,
+                inputs={
+                    "gtr_persons": "ad.orcid_labelled_persons.intermediate",
+                    "oa_candidates": "ad.preprocessed_oa_candidates.intermediate",
+                },
+                outputs="ad.features",
+                name="create_feature_matrix",
+            ),
             # node(
             #     func=train_disambiguation_model,
             #     inputs={
-            #         "feature_matrix": "author_disambiguation.features",
-            #         "orcid_labels": "author_disambiguation.orcid_labels",
+            #         "feature_matrix": "ad.features",
+            #         "orcid_labels": "ad.orcid_labels",
             #     },
-            #     outputs="author_disambiguation.model",
+            #     outputs="ad.model",
             #     name="train_model",
             # ),
             # node(
             #     func=predict_author_matches,
             #     inputs={
-            #         "model": "author_disambiguation.model",
-            #         "feature_matrix": "author_disambiguation.features",
+            #         "model": "ad.model",
+            #         "feature_matrix": "ad.features",
             #     },
-            #     outputs="author_disambiguation.predictions",
+            #     outputs="ad.predictions",
             #     name="predict_matches",
             # ),
             # node(
             #     func=evaluate_model_performance,
             #     inputs={
-            #         "predictions": "author_disambiguation.predictions",
-            #         "ground_truth": "author_disambiguation.ground_truth",
+            #         "predictions": "ad.predictions",
+            #         "ground_truth": "ad.ground_truth",
             #     },
-            #     outputs="author_disambiguation.metrics",
+            #     outputs="ad.metrics",
             #     name="evaluate_performance",
             # ),
         ]
