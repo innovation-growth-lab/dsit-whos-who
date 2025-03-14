@@ -5,7 +5,7 @@ from kedro.pipeline import Pipeline, node, pipeline
 from .nodes import (
     aggregate_person_information,
     preprocess_oa_candidates,
-    merge_and_filter_by_orcid,
+    merge_candidates_with_gtr,
     create_feature_matrix,
 )
 
@@ -38,23 +38,23 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                     "oa_candidates": "oa.data_collection.author_search.raw",
                     "institutions": "oa.data_collection.institutions.intermediate",
                 },
-                outputs="ad.preprocessed_oa_candidates.intermediate.ptd",
+                outputs="ad.preprocessed_oa_candidates.raw.ptd",
                 name="preprocess_oa_candidates",
             ),
             node(
-                merge_and_filter_by_orcid,
+                merge_candidates_with_gtr,
                 inputs={
                     "gtr_persons": "ad.aggregated_persons.intermediate",
-                    "oa_candidates": "ad.preprocessed_oa_candidates.intermediate",
+                    "oa_candidates": "ad.preprocessed_oa_candidates.raw.ptd",
+                    "orcid_match": "params:global.true",
                 },
-                outputs="ad.orcid_labelled_persons.intermediate",
+                outputs="ad.orcid_labelled_persons.raw.ptd",
                 name="merge_and_filter_by_orcid",
             ),
             node(
                 func=create_feature_matrix,
                 inputs={
-                    "gtr_persons": "ad.orcid_labelled_persons.intermediate",
-                    "oa_candidates": "ad.preprocessed_oa_candidates.intermediate",
+                    "input_data": "ad.orcid_labelled_persons.intermediate"
                 },
                 outputs="ad.features",
                 name="create_feature_matrix",

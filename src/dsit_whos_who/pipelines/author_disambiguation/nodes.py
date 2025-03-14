@@ -3,6 +3,7 @@
 import logging
 from typing import Dict, Iterator
 import pandas as pd
+import numpy as np
 from kedro.io import AbstractDataset
 from .utils.preprocessing.gtr import (
     preprocess_gtr_persons,
@@ -180,7 +181,7 @@ def preprocess_oa_candidates(
     Returns:
         Iterator yielding DataFrames for each batch of OpenAlex author information plus:
         - List of institution names
-        - List of associated institution names 
+        - List of associated institution names
         - GB affiliation indicators and proportions
     """
     logger.info("Starting preprocessing of OpenAlex candidates")
@@ -234,24 +235,102 @@ def preprocess_oa_candidates(
         yield {key: candidate_batch_df}
 
 
-def merge_and_filter_by_orcid(
-    gtr_persons: pd.DataFrame, oa_candidates: pd.DataFrame
-) -> pd.DataFrame:
-    """Merge and filter by ORCID."""
-    logger.info("Merging and filtering by ORCID")
-
-    # merge on orcid_gtr
-    merged = gtr_persons.merge(oa_candidates, on="orcid_gtr", how="inner")
-
-    # filter by orcid_gtr not null
-    merged = merged[merged["orcid_gtr"].notna()]
-
-    return merged
+def clean_name(name: str) -> str:
+    """Clean name by removing special characters."""
+    return name.translate(str.maketrans("", "", ",.;:"))
 
 
-def create_feature_matrix(
-    gtr_persons: pd.DataFrame, oa_candidates: pd.DataFrame
-) -> pd.DataFrame:
+def merge_candidates_with_gtr(
+    gtr_persons: pd.DataFrame, oa_candidates: dict, orcid_match: bool = True
+) -> Iterator[pd.DataFrame]:
+    """Merge and filter by ORCID.
+
+    Args:
+        gtr_persons: DataFrame containing GtR person information
+        oa_candidates: Dictionary of loader functions for OpenAlex candidate data
+
+    Returns:
+        Iterator yielding DataFrames of merged and filtered results
+    """
+    if orcid_match:
+        logger.info("Merging and filtering by ORCID")
+        gtr_filtered = gtr_persons[gtr_persons["orcid_gtr"].notna()].copy()
+        gtr_filtered["full_name"] = (
+            gtr_filtered["first_name"] + " " + gtr_filtered["surname"]
+        ).apply(clean_name)
+
+    for key, batch_loader in oa_candidates.items():
+        logger.info("Processing batch %s", key)
+        candidates_batch = batch_loader()
+
+        # Clean candidate names
+        candidates_batch["gtr_author_name"] = candidates_batch["gtr_author_name"].apply(
+            clean_name
+        )
+
+        # sort by works_count, cited_by_count
+        candidates_batch = candidates_batch.sort_values(
+            by=["works_count", "cited_by_count"], ascending=False
+        )
+
+        # get first institution_name
+        candidates_batch["first_institution_name"] = candidates_batch[
+            "institution_names"
+        ].apply(lambda x: x[0] if isinstance(x, np.ndarray) and len(x) > 0 else None)
+
+        # drop duplicates
+        candidates_batch = candidates_batch.drop_duplicates(
+            subset=["display_name", "gtr_author_name", "orcid"]
+        )
+
+        # merge on full name
+        batch_merged = gtr_filtered.merge(
+            candidates_batch,
+            left_on="full_name",
+            right_on="gtr_author_name",
+            how="inner",
+        )
+
+        n_matched_authors = len(batch_merged["gtr_author_name"].unique())
+        logger.info(
+            "Found %d unique GTR authors with candidate matches in this batch",
+            n_matched_authors,
+        )
+
+        if orcid_match:
+            # create binary labels based on ORCID match
+            batch_merged["is_match"] = (
+                batch_merged["orcid_gtr"] == batch_merged["orcid"]
+            ).astype(int)
+
+            # drop duplicates prioritising is_match=1
+            batch_merged = batch_merged.sort_values(
+                "is_match", ascending=False
+            ).drop_duplicates(
+                subset=["display_name", "gtr_author_name", "first_institution_name"]
+            )
+
+            # print value counts of is_match grouped by author
+            logger.info("Value counts of matches by GTR author:")
+            match_counts = batch_merged.groupby("gtr_author_name")["is_match"].sum()
+            logger.info("\n%s", match_counts.value_counts())
+
+            # [NOTE] we did lose some 2k when search orcids. Now, roughly 1/5 researchers don't have
+            # ORCIDs that match (ie. the name matches multiple times, but not a single candidate
+            # has the same ORCID as the GTR author - one is outdated, or wrong)
+
+            # [NOTE]2: we also have authors who are of course duplicates on OA, with often
+            # a different name
+
+            # keep only authors with at least one match when grouped by gtr_author_name
+            batch_merged = batch_merged.groupby("gtr_author_name").filter(
+                lambda x: x["is_match"].sum() > 0
+            )
+
+        yield {key: batch_merged}
+
+
+def create_feature_matrix(input_data: pd.DataFrame) -> pd.DataFrame:
     """Create feature matrix for author pairs.
 
     Args:
@@ -261,9 +340,9 @@ def create_feature_matrix(
     Returns:
         DataFrame containing computed features for each author pair
     """
-    logger.info("Computing features for %d persons", len(gtr_persons))
+    logger.info("Computing features for %d persons", len(input_data))
 
-    return gtr_persons
+    return input_data
 
 
 def train_disambiguation_model(

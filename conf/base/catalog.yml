@@ -69,7 +69,7 @@ projects.cwts.topics:
   filepath: s3://igl-public/02_whos_who/data/02_intermediate/oa/{filter}.parquet
 
 # -> 3. Labelled candidates:
-"ad.{group}.intermediate.ptd":
+"ad.{group}.raw.ptd":
   <<: *_pq_ptd
   path: s3://igl-public/02_whos_who/data/01_raw/author_disambiguation/{group}_ptd/
 
