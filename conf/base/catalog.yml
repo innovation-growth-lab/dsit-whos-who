@@ -83,6 +83,10 @@ projects.cwts.topics:
   <<: *_pq
   filepath: s3://igl-public/02_whos_who/data/02_intermediate/author_disambiguation/{group}.parquet
 
+"ad.{group}.primary":
+  <<: *_pq
+  filepath: s3://igl-public/02_whos_who/data/03_primary/author_disambiguation/{group}.parquet
+
 ad.model.training:
   <<: *_p
   filepath: s3://igl-public/02_whos_who/data/03_primary/author_disambiguation/model.pkl
@@ -91,3 +95,7 @@ ad.model.training:
 ad.model_comparison.intermediate:
   <<: *_p
   filepath: s3://igl-public/02_whos_who/data/03_primary/author_disambiguation/model.pkl/2025-03-14T16.09.02.782Z/model.pkl
+
+ad.coverage_analysis.tmp:
+  <<: *_p
+  filepath: s3://igl-public/02_whos_who/data/01_raw/author_disambiguation/coverage_analysis.pkl

@@ -9,6 +9,9 @@ from .nodes import (
     create_feature_matrix,
     train_disambiguation_model,
     check_model_performance,
+    predict_author_matches,
+    get_matched_authors,
+    check_prediction_coverage,
 )
 
 
@@ -18,7 +21,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
     Returns:
         A Pipeline object containing all the author disambiguation nodes.
     """
-    return pipeline(
+    preprocess_pipeline = pipeline(
         [
             node(
                 aggregate_person_information,
@@ -43,6 +46,11 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                 outputs="ad.preprocessed_oa_candidates.raw.ptd",
                 name="preprocess_oa_candidates",
             ),
+        ]
+    )
+
+    model_training_pipeline = pipeline(
+        [
             node(
                 merge_candidates_with_gtr,
                 inputs={
@@ -55,16 +63,14 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
             ),
             node(
                 func=create_feature_matrix,
-                inputs={
-                    "input_data": "ad.orcid_labelled_persons.raw.ptd"
-                },
-                outputs="ad.feature_matrix.intermediate",
-                name="create_feature_matrix",
+                inputs={"input_data": "ad.orcid_labelled_persons.raw.ptd"},
+                outputs="ad.orcid_labelled_feature_matrix.intermediate",
+                name="create_orcid_labelled_feature_matrix",
             ),
             node(
                 func=train_disambiguation_model,
                 inputs={
-                    "feature_matrix": "ad.feature_matrix.intermediate",
+                    "feature_matrix": "ad.orcid_labelled_feature_matrix.intermediate",
                     "model_training": "params:model_training",
                 },
                 outputs="ad.model.training",
@@ -73,30 +79,65 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
             node(
                 func=check_model_performance,
                 inputs={
-                    "feature_matrix": "ad.feature_matrix.intermediate",
-                    "model_dict": "ad.model_comparison.intermediate",
+                    "feature_matrix": "ad.orcid_labelled_feature_matrix.intermediate",
+                    "model_dict": "ad.model.training",
                     "params": "params:model_training",
                 },
                 outputs=None,
                 name="check_model_performance",
             ),
-            # node(
-            #     func=predict_author_matches,
-            #     inputs={
-            #         "model": "ad.model",
-            #         "feature_matrix": "ad.features",
-            #     },
-            #     outputs="ad.predictions",
-            #     name="predict_matches",
-            # ),
-            # node(
-            #     func=evaluate_model_performance,
-            #     inputs={
-            #         "predictions": "ad.predictions",
-            #         "ground_truth": "ad.ground_truth",
-            #     },
-            #     outputs="ad.metrics",
-            #     name="evaluate_performance",
-            # ),
         ]
     )
+
+    prediction_pipeline = pipeline(
+        [
+            node(
+                merge_candidates_with_gtr,
+                inputs={
+                    "gtr_persons": "ad.aggregated_persons.intermediate",
+                    "oa_candidates": "ad.preprocessed_oa_candidates.raw.ptd",
+                    "orcid_match": "params:global.false",
+                },
+                outputs="ad.non_orcid_labelled_persons.raw.ptd",
+                name="merge_candidates_with_gtr",
+            ),
+            node(
+                func=create_feature_matrix,
+                inputs={"input_data": "ad.non_orcid_labelled_persons.raw.ptd"},
+                outputs="ad.non_orcid_labelled_feature_matrix.intermediate",
+                name="create_non_orcid_labelled_feature_matrix",
+            ),
+            node(
+                func=predict_author_matches,
+                inputs={
+                    "model_dict": "ad.model.training",
+                    "feature_matrix": "ad.non_orcid_labelled_feature_matrix.intermediate",
+                    "params": "params:model_prediction",
+                },
+                outputs="ad.predictions.intermediate",
+                name="predict_author_matches",
+            ),
+            node(
+                func=get_matched_authors,
+                inputs={
+                    "predictions": "ad.predictions.intermediate",
+                    "merged_candidates": "ad.preprocessed_oa_candidates.raw.ptd",
+                },
+                outputs="ad.matched_authors.primary",
+                name="get_matched_authors",
+            ),
+            node(
+                func=check_prediction_coverage,
+                inputs={
+                    "matched_authors": "ad.matched_authors.primary",
+                    "gtr_persons": "gtr.data_collection.persons.intermediate",
+                    "gtr_projects": "gtr.data_collection.projects.intermediate",
+                    "feature_matrix": "ad.non_orcid_labelled_feature_matrix.intermediate",
+                },
+                outputs="ad.coverage_analysis.tmp",
+                name="check_prediction_coverage",
+            ),
+        ]
+    )
+
+    return preprocess_pipeline + model_training_pipeline + prediction_pipeline

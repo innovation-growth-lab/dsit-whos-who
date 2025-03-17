@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 from kedro.io import AbstractDataset
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import confusion_matrix
 from .utils.preprocessing.gtr import (
     preprocess_gtr_persons,
     preprocess_gtr_projects,
@@ -20,7 +19,10 @@ from .utils.preprocessing.oa import process_affiliations, get_associated_institu
 from .utils.feature_engineering.compute_features import compute_all_features
 from .utils.model.training import prepare_training_data, train_model
 from .utils.model.prediction import predict_matches
-from .utils.model.evaluation import analyse_model_performance
+from .utils.model.evaluation import (
+    analyse_model_performance,
+    evaluate_model_performance_on_full_data,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -261,10 +263,11 @@ def merge_candidates_with_gtr(
     """
     if orcid_match:
         logger.info("Merging and filtering by ORCID")
-        gtr_filtered = gtr_persons[gtr_persons["orcid_gtr"].notna()].copy()
-        gtr_filtered["full_name"] = (
-            gtr_filtered["first_name"] + " " + gtr_filtered["surname"]
-        ).apply(clean_name)
+        gtr_persons = gtr_persons[gtr_persons["orcid_gtr"].notna()].copy()
+
+    gtr_persons["full_name"] = (
+        gtr_persons["first_name"] + " " + gtr_persons["surname"]
+    ).apply(clean_name)
 
     for key, batch_loader in oa_candidates.items():
         logger.info("Processing batch %s", key)
@@ -291,7 +294,7 @@ def merge_candidates_with_gtr(
         )
 
         # merge on full name
-        batch_merged = gtr_filtered.merge(
+        batch_merged = gtr_persons.merge(
             candidates_batch,
             left_on="full_name",
             right_on="gtr_author_name",
@@ -446,20 +449,6 @@ def train_disambiguation_model(
     return results
 
 
-def predict_author_matches(model: Dict, feature_matrix: pd.DataFrame) -> pd.DataFrame:
-    """Predict matches for all author pairs.
-
-    Args:
-        model: Trained model and metadata
-        feature_matrix: DataFrame containing features for prediction
-
-    Returns:
-        DataFrame containing predicted matches and confidence scores
-    """
-    logger.info("Predicting matches for %d pairs", len(feature_matrix))
-    return predict_matches(model, feature_matrix)
-
-
 def check_model_performance(
     feature_matrix: pd.DataFrame,
     model_dict: Dict,
@@ -503,3 +492,123 @@ def check_model_performance(
             model_type=model_type,
             params=params,
         )
+
+
+def predict_author_matches(
+    model_dict: Dict, feature_matrix: pd.DataFrame, params: Dict
+) -> pd.DataFrame:
+    """Predict matches for all author pairs.
+
+    Args:
+        model_dict: Dictionary containing trained models and metadata
+        feature_matrix: DataFrame containing features for prediction
+        params: Dictionary containing prediction parameters including model choice and threshold
+
+    Returns:
+        DataFrame containing predicted matches, with at most one match per GtR ID
+    """
+    logger.info("Predicting matches for %d pairs", len(feature_matrix))
+
+    selected_model = model_dict[params["model_choice"]]
+
+    predictions = predict_matches(
+        model_dict=selected_model,
+        feature_matrix=feature_matrix,
+        threshold=params["threshold"],
+    )
+
+    # keep highest prediuction per gtr_id
+    predictions = (
+        predictions.sort_values(by="match_probability", ascending=False)
+        .groupby("gtr_id")
+        .first()
+        .reset_index()
+    )
+
+    return predictions
+
+
+def get_matched_authors(
+    predictions: pd.DataFrame, merged_candidates: dict
+) -> pd.DataFrame:
+    """Get full author information for predicted matches from pre-merged candidates.
+
+    Args:
+        predictions: DataFrame containing gtr_id and oa_id pairs that were predicted as matches
+        merged_candidates: Dictionary of loader functions for pre-merged GtR and OpenAlex data
+
+    Returns:
+        DataFrame containing matched author information
+    """
+    logger.info(
+        "Getting full author information for %d predicted matches", len(predictions)
+    )
+
+    matched_authors = []
+
+    # Iterate through merged candidate batches
+    for key, batch_loader in merged_candidates.items():
+        logger.info("Processing batch %s for matched authors", key)
+        merged_batch = batch_loader()
+
+        # drop duplicate ids
+        merged_batch = merged_batch.drop_duplicates(subset=["id"])
+
+        # Get candidates that were predicted as matches
+        batch_matches = merged_batch[
+            merged_batch["id"].isin(predictions["oa_id"])
+        ].copy()
+
+        if not batch_matches.empty:
+            # Add match probability information
+            batch_matches = predictions.merge(
+                batch_matches,
+                left_on="oa_id",
+                right_on="id",
+                how="inner",
+            )
+
+            matched_authors.append(batch_matches)
+
+    if not matched_authors:
+        logger.warning("No matched authors found")
+        return pd.DataFrame()
+
+    # Combine all matches
+    final_matches = pd.concat(matched_authors, ignore_index=True)
+
+    final_matches = final_matches.drop_duplicates(subset=["gtr_id", "oa_id"])
+
+    logger.info(
+        "Found full information for %d GtR, and %d OA authors",
+        final_matches["gtr_id"].nunique(),
+        final_matches["oa_id"].nunique(),
+    )
+
+    return final_matches
+
+
+def check_prediction_coverage(
+    matched_authors: pd.DataFrame,
+    gtr_persons: pd.DataFrame,
+    gtr_projects: pd.DataFrame,
+    feature_matrix: pd.DataFrame,
+) -> Dict:
+    """Checks prediction coverage across different dimensions.
+
+    Args:
+        matched_authors: DataFrame containing matched author pairs and metadata
+        gtr_persons: DataFrame containing GtR person information
+        gtr_projects: DataFrame containing GtR project information
+        feature_matrix: DataFrame containing all potential matches
+
+    Returns:
+        Dictionary containing coverage statistics
+    """
+    logger.info("Checking prediction coverage")
+    return evaluate_model_performance_on_full_data(
+        gtr_persons=gtr_persons,
+        gtr_projects=gtr_projects,
+        matched_authors=matched_authors,
+        feature_matrix=feature_matrix,
+    )

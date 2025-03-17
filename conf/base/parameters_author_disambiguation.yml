@@ -32,3 +32,7 @@ model_training:
     scoring: "f1"  # Using F1 since we care about both precision and recall
     n_jobs: 8
     verbose: 2
+
+model_prediction:
+  model_choice: "class_weights_model"
+  threshold: 0.8
