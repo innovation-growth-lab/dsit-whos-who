@@ -94,8 +94,8 @@ def train_model(
                 "classifier",
                 XGBClassifier(
                     random_state=params["random_seed"],
-                    tree_method="hist",  # For faster training
-                    enable_categorical=False,  # All features are numeric
+                    tree_method="hist",  # for faster training
+                    enable_categorical=False,  # all features are numeric
                 ),
             ),
         ]
@@ -113,18 +113,18 @@ def train_model(
             random_state=params["random_seed"],
             tree_method="hist",
             enable_categorical=False,
-            scale_pos_weight=scale_pos_weight,  # Handle class imbalance
+            scale_pos_weight=scale_pos_weight,  # handle class imbalance
         )
         param_grid = base_params
 
-    # Set up cross-validation
+    # set up cross-validation
     cv = StratifiedKFold(
         n_splits=params["cv"]["n_splits"],
         shuffle=params["cv"]["shuffle"],
         random_state=params["random_seed"],
     )
 
-    # Initialize GridSearchCV
+    # instantiate GridSearchCV
     grid_search = GridSearchCV(
         estimator=base_model,
         param_grid=param_grid,
@@ -134,7 +134,7 @@ def train_model(
         verbose=params["grid_search"]["verbose"],
     )
 
-    # Collect model-specific parameters
+    # collect model-specific parameters
     model_params = {
         f"{metric_prefix}resampling_strategy": (
             "SMOTE" if use_smote else "scale_pos_weight"
@@ -143,7 +143,7 @@ def train_model(
         f"{metric_prefix}test_size": len(x_test),
     }
 
-    # Fit GridSearchCV
+    # fit GridSearchCV for either class
     logger.info(
         "Starting GridSearchCV with %s", "SMOTE" if use_smote else "scale_pos_weight"
     )
@@ -157,7 +157,7 @@ def train_model(
         f"{metric_prefix}{k}": v for k, v in grid_search.best_params_.items()
     }
 
-    # Feature importance (extract from pipeline if using SMOTE)
+    # feature importance (extract from pipeline if using SMOTE!)
     if use_smote:
         feature_importance = pd.DataFrame(
             {
@@ -171,9 +171,10 @@ def train_model(
                 "feature": feature_names,
                 "importance": best_model.feature_importances_,
             }
+            # https://xgboost.readthedocs.io/en/stable/python/python_api.html
         ).sort_values("importance", ascending=False)
 
-    # Evaluate on test set
+    # evaluate on test set
     test_pred = best_model.predict(x_test_scaled)
     test_pred_proba = best_model.predict_proba(x_test_scaled)[:, 1]
     test_metrics = log_performance_metrics(

@@ -6,6 +6,8 @@ import mlflow
 import numpy as np
 import pandas as pd
 from kedro.io import AbstractDataset
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix
 from .utils.preprocessing.gtr import (
     preprocess_gtr_persons,
     preprocess_gtr_projects,
@@ -18,6 +20,7 @@ from .utils.preprocessing.oa import process_affiliations, get_associated_institu
 from .utils.feature_engineering.compute_features import compute_all_features
 from .utils.model.training import prepare_training_data, train_model
 from .utils.model.prediction import predict_matches
+from .utils.model.evaluation import analyse_model_performance
 
 logger = logging.getLogger(__name__)
 
@@ -457,18 +460,46 @@ def predict_author_matches(model: Dict, feature_matrix: pd.DataFrame) -> pd.Data
     return predict_matches(model, feature_matrix)
 
 
-def evaluate_model_performance(
-    predictions: pd.DataFrame, ground_truth: pd.DataFrame
-) -> Dict:
-    """Evaluate model performance using held-out data.
+def check_model_performance(
+    feature_matrix: pd.DataFrame,
+    model_dict: Dict,
+    params: Dict,
+) -> None:
+    """analyse performance of both models on train and test splits"""
+    logger.info("starting model performance analysis")
 
-    Args:
-        predictions: DataFrame containing predicted matches
-        ground_truth: DataFrame containing known correct matches
+    # prepare data
+    x, y, feature_names = prepare_training_data(feature_matrix)
 
-    Returns:
-        Dictionary containing evaluation metrics
-    """
-    logger.info("Evaluating model performance")
+    # split with same seed as training
+    x_train, x_test, y_train, y_test = train_test_split(
+        x,
+        y,
+        test_size=params["test_size"],
+        random_state=params["random_seed"],
+        stratify=y,
+    )
 
-    return predictions
+    # analyse each model type
+    for model_type in ["smote_model", "class_weights_model"]:
+        if model_type not in model_dict:
+            continue
+
+        model = model_dict[model_type]["model"]
+        scaler = model_dict[model_type]["scaler"]
+
+        # scale data
+        x_train_scaled = scaler.transform(x_train)
+        x_test_scaled = scaler.transform(x_test)
+
+        # analyse model performance
+        analyse_model_performance(
+            model=model,
+            x_train=x_train_scaled,
+            x_test=x_test_scaled,
+            y_train=y_train,
+            y_test=y_test,
+            feature_names=feature_names,
+            model_type=model_type,
+            params=params,
+        )

@@ -11,6 +11,12 @@ _pq: &_pq
   load_args:
     engine: pyarrow
 
+_p: &_p
+  type: pickle.PickleDataset
+  credentials: s3_credentials
+  filepath: None
+  backend: pickle
+
 _xlsx: &_xlsx
   type: pandas.ExcelDataset
   credentials: s3_credentials
@@ -77,13 +83,11 @@ projects.cwts.topics:
   <<: *_pq
   filepath: s3://igl-public/02_whos_who/data/02_intermediate/author_disambiguation/{group}.parquet
 
-"ad.model.training":
-  type: pickle.PickleDataset
+ad.model.training:
+  <<: *_p
   filepath: s3://igl-public/02_whos_who/data/03_primary/author_disambiguation/model.pkl
-  backend: pickle
-  credentials: s3_credentials
   versioned: true
 
-"ad.model_comparison.intermediate":
-  <<: *_js
-  filepath: s3://igl-public/02_whos_who/data/03_primary/author_disambiguation/model_comparison.json
+ad.model_comparison.intermediate:
+  <<: *_p
+  filepath: s3://igl-public/02_whos_who/data/03_primary/author_disambiguation/model.pkl/2025-03-14T16.09.02.782Z/model.pkl

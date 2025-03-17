@@ -1,6 +1,9 @@
 """Model evaluation utilities."""
 
+import logging
+from typing import Dict
 import numpy as np
+import pandas as pd
 from sklearn.metrics import (
     accuracy_score,
     precision_score,
@@ -10,7 +13,8 @@ from sklearn.metrics import (
     average_precision_score,
     confusion_matrix,
 )
-from typing import Dict
+
+logger = logging.getLogger(__name__)
 
 
 def log_performance_metrics(
@@ -68,3 +72,128 @@ def log_performance_metrics(
     metrics[f"{metric_prefix}{stage}_actual_positive_rate"] = (tp + fn) / total
 
     return metrics
+
+
+def analyse_model_performance(
+    model,
+    x_train,
+    x_test,
+    y_train,
+    y_test,
+    feature_names,
+    model_type: str,
+    params: Dict,
+) -> None:
+    """analyse performance metrics for a single model
+
+    args:
+        model: trained model (pipeline or direct)
+        x_train: training features
+        x_test: test features
+        y_train: training labels
+        y_test: test labels
+        feature_names: list of feature names
+        model_type: name of model type for logging
+        params: model training parameters
+    """
+    # get feature importance
+    if hasattr(model, "named_steps"):
+        importance = model.named_steps["classifier"].feature_importances_
+    else:
+        importance = model.feature_importances_
+
+    # create feature importance dataframe
+    feature_imp = pd.DataFrame(
+        {"feature": feature_names, "importance": importance}
+    ).sort_values("importance", ascending=False)
+
+    logger.info("\nmodel type: %s", model_type)
+    logger.info("parameters:")
+    logger.info("\n- test size: %.2f", params["test_size"])
+    logger.info("- random seed: %d", params["random_seed"])
+    if model_type == "smote_model" and params["smote"]["enabled"]:
+        logger.info("- using SMOTE")
+
+    # log top and bottom features
+    logger.info("\ntop 10 most important features:")
+    logger.info("\n| feature | importance |" "\n|---------|------------|")
+    for _, row in feature_imp.head(10).iterrows():
+        logger.info("| %-40s | %10.4f |", row["feature"], row["importance"])
+
+    logger.info("\n5 least important features:")
+    logger.info("\n| feature | importance |" "\n|---------|------------|")
+    for _, row in feature_imp.tail().iterrows():
+        logger.info("| %-40s | %10.4f |", row["feature"], row["importance"])
+
+    # get predictions and probabilities
+    train_pred = model.predict(x_train)
+    test_pred = model.predict(x_test)
+
+    # analyse each split
+    for split_name, _, y_true, y_pred in [
+        ("training", x_train, y_train, train_pred),
+        ("test", x_test, y_test, test_pred),
+    ]:
+        # compute confusion matrix
+        cm = confusion_matrix(y_true, y_pred)
+
+        logger.info("\n%s results:", split_name)
+        logger.info("\nconfusion matrix:")
+        logger.info(
+            "\n| true\\pred | negative | positive |"
+            "\n|-----------|----------|----------|"
+            "\n| negative  | %8d | %8d |"
+            "\n| positive  | %8d | %8d |",
+            cm[0, 0],
+            cm[0, 1],
+            cm[1, 0],
+            cm[1, 1],
+        )
+
+        # compute raw metrics
+        accuracy = accuracy_score(y_true, y_pred)
+        precision = precision_score(y_true, y_pred)
+        recall = recall_score(y_true, y_pred)
+        f1 = f1_score(y_true, y_pred)
+
+        # compute balanced metrics
+        n_pos = np.sum(y_true == 1)
+        n_neg = np.sum(y_true == 0)
+        total = n_pos + n_neg
+        pos_weight = total / (2 * n_pos)
+        neg_weight = total / (2 * n_neg)
+        sample_weights = np.where(y_true == 1, pos_weight, neg_weight)
+
+        balanced_accuracy = accuracy_score(y_true, y_pred, sample_weight=sample_weights)
+        balanced_precision = precision_score(
+            y_true, y_pred, sample_weight=sample_weights
+        )
+        balanced_recall = recall_score(y_true, y_pred, sample_weight=sample_weights)
+        balanced_f1 = f1_score(y_true, y_pred, sample_weight=sample_weights)
+
+        logger.info(
+            "\nraw metrics:"
+            "\n- accuracy: %.3f"
+            "\n- precision: %.3f"
+            "\n- recall: %.3f"
+            "\n- f1: %.3f"
+            "\n\nbalanced metrics:"
+            "\n- accuracy: %.3f"
+            "\n- precision: %.3f"
+            "\n- recall: %.3f"
+            "\n- f1: %.3f"
+            "\n- positive examples: %d (%.1f%%)"
+            "\n- negative examples: %d (%.1f%%)",
+            accuracy,
+            precision,
+            recall,
+            f1,
+            balanced_accuracy,
+            balanced_precision,
+            balanced_recall,
+            balanced_f1,
+            n_pos,
+            100 * n_pos / total,
+            n_neg,
+            100 * n_neg / total,
+        )

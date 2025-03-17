@@ -8,6 +8,7 @@ from .nodes import (
     merge_candidates_with_gtr,
     create_feature_matrix,
     train_disambiguation_model,
+    check_model_performance,
 )
 
 
@@ -68,6 +69,16 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                 },
                 outputs="ad.model.training",
                 name="train_model",
+            ),
+            node(
+                func=check_model_performance,
+                inputs={
+                    "feature_matrix": "ad.feature_matrix.intermediate",
+                    "model_dict": "ad.model_comparison.intermediate",
+                    "params": "params:model_training",
+                },
+                outputs=None,
+                name="check_model_performance",
             ),
             # node(
             #     func=predict_author_matches,
