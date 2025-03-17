@@ -1,7 +1,7 @@
 """Nodes for author disambiguation pipeline."""
 
 import logging
-from typing import Dict, Iterator
+from typing import Dict, Iterator, List, Tuple
 import pandas as pd
 import numpy as np
 from kedro.io import AbstractDataset
@@ -15,6 +15,9 @@ from .utils.preprocessing.gtr import (
 )
 from .utils.preprocessing.oa import process_affiliations, get_associated_institutions
 from .utils.feature_engineering.compute_features import compute_all_features
+from .utils.model.training import prepare_training_data, train_model
+from .utils.model.prediction import predict_matches
+import mlflow
 
 logger = logging.getLogger(__name__)
 
@@ -353,24 +356,91 @@ def create_feature_matrix(
 
         aggregated_features.append(features)
 
-    return pd.concat(aggregated_features)
+    aggregated_features = pd.concat(aggregated_features)
+
+    # shuffle the feature matrix, fix random seed
+    aggregated_features = aggregated_features.sample(
+        frac=1, random_state=42
+    ).reset_index(drop=True)
+
+    return aggregated_features
 
 
 def train_disambiguation_model(
-    feature_matrix: pd.DataFrame, orcid_labels: pd.DataFrame
+    feature_matrix: pd.DataFrame,
+    model_training: Dict,
 ) -> Dict:
-    """Train the disambiguation model using ORCID matches as ground truth.
+    """Train both SMOTE and class weights models for comparison.
 
     Args:
-        feature_matrix: DataFrame containing computed features
-        orcid_labels: DataFrame containing known ORCID matches
+        feature_matrix: DataFrame containing computed features and is_match labels
+        model_training: Dictionary containing model training parameters
 
     Returns:
-        Trained model and associated metadata
+        Dictionary containing both models and their performance metrics
     """
-    logger.info("Training disambiguation model")
+    logger.info("Starting model training pipeline with both SMOTE and class weights")
 
-    return feature_matrix
+    # Prepare data
+    x, y, feature_names = prepare_training_data(feature_matrix)
+
+    # Log general dataset info
+    mlflow.log_params(
+        {
+            "dataset_size": len(feature_matrix),
+            "n_features": len(feature_names),
+            "class_balance": np.bincount(y).tolist(),
+            "test_size": model_training["test_size"],
+            "cv_splits": model_training["cv"]["n_splits"],
+        }
+    )
+
+    results = {}
+
+    # Train SMOTE model if enabled
+    if model_training["smote"]["enabled"]:
+        logger.info("Training model with SMOTE")
+        smote_results = train_model(
+            x,
+            y,
+            feature_names,
+            params=model_training,
+            use_smote=True,
+            metric_prefix="smote_",
+        )
+        results["smote_model"] = smote_results
+
+        # Log SMOTE results
+        mlflow.log_params(smote_results["parameters"])
+        mlflow.log_metrics(smote_results["metrics"])
+        mlflow.log_dict(
+            smote_results["feature_importance"], "smote_feature_importance.json"
+        )
+        mlflow.sklearn.log_model(smote_results["model"], "smote_model")
+
+    # Train class weights model
+    logger.info("Training model with class weights")
+    class_weights_results = train_model(
+        x,
+        y,
+        feature_names,
+        params=model_training,
+        use_smote=False,
+        metric_prefix="class_weights_",
+    )
+    results["class_weights_model"] = class_weights_results
+
+    # Log class weights results
+    mlflow.log_params(class_weights_results["parameters"])
+    mlflow.log_metrics(class_weights_results["metrics"])
+    mlflow.log_dict(
+        class_weights_results["feature_importance"],
+        "class_weights_feature_importance.json",
+    )
+    mlflow.sklearn.log_model(class_weights_results["model"], "class_weights_model")
+
+    results["feature_names"] = feature_names
+    return results
 
 
 def predict_author_matches(model: Dict, feature_matrix: pd.DataFrame) -> pd.DataFrame:
@@ -384,8 +454,7 @@ def predict_author_matches(model: Dict, feature_matrix: pd.DataFrame) -> pd.Data
         DataFrame containing predicted matches and confidence scores
     """
     logger.info("Predicting matches for %d pairs", len(feature_matrix))
-
-    return model
+    return predict_matches(model, feature_matrix)
 
 
 def evaluate_model_performance(

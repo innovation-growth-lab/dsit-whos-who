@@ -7,6 +7,7 @@ from .nodes import (
     preprocess_oa_candidates,
     merge_candidates_with_gtr,
     create_feature_matrix,
+    train_disambiguation_model,
 )
 
 
@@ -59,15 +60,15 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                 outputs="ad.feature_matrix.intermediate",
                 name="create_feature_matrix",
             ),
-            # node(
-            #     func=train_disambiguation_model,
-            #     inputs={
-            #         "feature_matrix": "ad.features",
-            #         "orcid_labels": "ad.orcid_labels",
-            #     },
-            #     outputs="ad.model",
-            #     name="train_model",
-            # ),
+            node(
+                func=train_disambiguation_model,
+                inputs={
+                    "feature_matrix": "ad.feature_matrix.intermediate",
+                    "model_training": "params:model_training",
+                },
+                outputs="ad.model.training",
+                name="train_model",
+            ),
             # node(
             #     func=predict_author_matches,
             #     inputs={

@@ -76,3 +76,14 @@ projects.cwts.topics:
 "ad.{group}.intermediate":
   <<: *_pq
   filepath: s3://igl-public/02_whos_who/data/02_intermediate/author_disambiguation/{group}.parquet
+
+"ad.model.training":
+  type: pickle.PickleDataset
+  filepath: s3://igl-public/02_whos_who/data/03_primary/author_disambiguation/model.pkl
+  backend: pickle
+  credentials: s3_credentials
+  versioned: true
+
+"ad.model_comparison.intermediate":
+  <<: *_js
+  filepath: s3://igl-public/02_whos_who/data/03_primary/author_disambiguation/model_comparison.json
