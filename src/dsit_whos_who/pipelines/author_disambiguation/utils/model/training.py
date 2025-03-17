@@ -6,7 +6,6 @@ import logging
 from typing import Dict, List, Tuple
 import numpy as np
 import pandas as pd
-import mlflow
 from sklearn.model_selection import train_test_split, GridSearchCV, StratifiedKFold
 from sklearn.preprocessing import StandardScaler
 from xgboost import XGBClassifier

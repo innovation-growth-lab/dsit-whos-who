@@ -1,9 +1,10 @@
 """Nodes for author disambiguation pipeline."""
 
 import logging
-from typing import Dict, Iterator, List, Tuple
-import pandas as pd
+from typing import Dict, Iterator
+import mlflow
 import numpy as np
+import pandas as pd
 from kedro.io import AbstractDataset
 from .utils.preprocessing.gtr import (
     preprocess_gtr_persons,
@@ -17,7 +18,6 @@ from .utils.preprocessing.oa import process_affiliations, get_associated_institu
 from .utils.feature_engineering.compute_features import compute_all_features
 from .utils.model.training import prepare_training_data, train_model
 from .utils.model.prediction import predict_matches
-import mlflow
 
 logger = logging.getLogger(__name__)
 

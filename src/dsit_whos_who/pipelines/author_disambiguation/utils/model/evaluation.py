@@ -1,7 +1,6 @@
 """Model evaluation utilities."""
 
 import numpy as np
-import mlflow
 from sklearn.metrics import (
     accuracy_score,
     precision_score,
