@@ -115,13 +115,19 @@ def analyse_model_performance(
         logger.info("- using SMOTE")
 
     # log top and bottom features
-    logger.info("\ntop 10 most important features:")
-    logger.info("\n| feature | importance |" "\n|---------|------------|")
+    logger.info(
+        "\ntop 10 most important features:"
+        "\n| feature | importance |"
+        "\n|---------|------------|"
+    )
     for _, row in feature_imp.head(10).iterrows():
         logger.info("| %-40s | %10.4f |", row["feature"], row["importance"])
 
-    logger.info("\n5 least important features:")
-    logger.info("\n| feature | importance |" "\n|---------|------------|")
+        logger.info(
+            "\n5 least important features:"
+            "\n| feature | importance |"
+            "\n|---------|------------|"
+        )
     for _, row in feature_imp.tail().iterrows():
         logger.info("| %-40s | %10.4f |", row["feature"], row["importance"])
     # get predictions and probabilities
