@@ -163,3 +163,6 @@ mlruns/*
 
 # ignore .vscode folder
 .vscode/
+
+# ignore mlflow logs
+mlflow_runs/
