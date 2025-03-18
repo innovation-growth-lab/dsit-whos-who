@@ -74,19 +74,10 @@ def parse_works_results(
             "doi": paper.get("doi", ""),
             "title": paper.get("title", ""),
             "publication_date": paper.get("publication_date", ""),
-            "abstract": _revert_abstract_index(
-                paper.get("abstract_inverted_index", {})
-            ),
             "fwci": paper.get("fwci", ""),
-            "citation_normalized_percentile": paper.get(
-                "citation_normalized_percentile", []
-            ),
             "authorships": paper.get("authorships", []),
             "cited_by_count": paper.get("cited_by_count", ""),
-            "concepts": paper.get("concepts", []),
-            "mesh_terms": paper.get("mesh", []),
             "topics": paper.get("topics", []),
-            "grants": paper.get("grants", []),
             "referenced_works": paper.get("referenced_works", []),
             "ids": paper.get("ids", []),
             "counts_by_year": paper.get("counts_by_year", []),
@@ -112,134 +103,101 @@ def json_loader_works(data: List[List[Dict]]) -> pd.DataFrame:
     """
     output = []
     for batch in data:
-        json_data = [
-            {
-                k: v
-                for k, v in item.items()
-                if k
-                in [
-                    "id",
-                    "ids",
-                    "doi",
-                    "title",
-                    "publication_date",
-                    "cited_by_count",
-                    "fwci",
-                    "citation_normalized_percentile",
-                    "counts_by_year",
-                    "authorships",
-                    "topics",
-                    "concepts",
-                    "grants",
-                ]
-            }
-            for item in batch
-        ]
-
-        df = pd.DataFrame(json_data)
+        # Create DataFrame with all available columns
+        df = pd.DataFrame(batch)
         if df.empty:
             continue
 
-        df["pmid"] = df["ids"].apply(
-            lambda x: (
-                x.get("pmid").replace("https://pubmed.ncbi.nlm.nih.gov/", "")
-                if x and x.get("pmid")
-                else None
+        # Only process columns that exist in the DataFrame
+        if "ids" in df.columns:
+            df["pmid"] = df["ids"].apply(
+                lambda x: (
+                    x.get("pmid").replace("https://pubmed.ncbi.nlm.nih.gov/", "")
+                    if x and x.get("pmid")
+                    else None
+                )
             )
-        )
 
-        df["mag_id"] = df["ids"].apply(
-            lambda x: (x.get("mag") if x and x.get("mag") else None)
-        )
+            df["mag_id"] = df["ids"].apply(
+                lambda x: (x.get("mag") if x and x.get("mag") else None)
+            )
 
-        # break atuhorship nested dictionary jsons, create triplets of authorship
-        df["authorships"] = df["authorships"].apply(
-            lambda x: (
-                [
-                    (
+        if "authorships" in df.columns:
+            df["authorships"] = df["authorships"].apply(
+                lambda x: (
+                    [
                         (
-                            author["author"]["id"].replace("https://openalex.org/", ""),
-                            inst["id"].replace("https://openalex.org/", ""),
-                            inst["country_code"],
-                            author["author_position"],
+                            (
+                                author["author"]["id"].replace(
+                                    "https://openalex.org/", ""
+                                ),
+                                inst["id"].replace("https://openalex.org/", ""),
+                                inst["country_code"],
+                                author["author_position"],
+                            )
+                            if author["institutions"]
+                            else [
+                                author["author"]["id"].replace(
+                                    "https://openalex.org/", ""
+                                ),
+                                "",
+                                "",
+                                author["author_position"],
+                            ]
                         )
-                        if author["institutions"]
-                        else [
-                            author["author"]["id"].replace("https://openalex.org/", ""),
-                            "",
-                            "",
-                            author["author_position"],
-                        ]
-                    )
-                    for author in x
-                    for inst in author["institutions"] or [{}]
-                ]
-                if x
-                else None
+                        for author in x
+                        for inst in author["institutions"] or [{}]
+                    ]
+                    if x
+                    else None
+                )
             )
-        )
 
-        # create tuples from counts by year, if available
-        df["counts_by_year"] = df["counts_by_year"].apply(
-            lambda x: (
-                [(year["year"], year["cited_by_count"]) for year in x] if x else None
+        if "counts_by_year" in df.columns:
+            df["counts_by_year"] = df["counts_by_year"].apply(
+                lambda x: (
+                    [(year["year"], year["cited_by_count"]) for year in x]
+                    if x
+                    else None
+                )
             )
-        )
 
-        # create a list of topics
-        df["topics"] = df["topics"].apply(
-            lambda x: (
-                [
-                    (
-                        topic["id"].replace("https://openalex.org/", ""),
-                        topic["display_name"],
-                        topic["subfield"]["id"].replace("https://openalex.org/", ""),
-                        topic["subfield"]["display_name"],
-                        topic["field"]["id"].replace("https://openalex.org/", ""),
-                        topic["field"]["display_name"],
-                        topic["domain"]["id"].replace("https://openalex.org/", ""),
-                        topic["domain"]["display_name"],
-                    )
-                    for topic in x
-                ]
-                if x
-                else None
+        if "topics" in df.columns:
+            df["topics"] = df["topics"].apply(
+                lambda x: (
+                    [
+                        (
+                            topic["id"].replace("https://openalex.org/", ""),
+                            topic["display_name"],
+                            topic["subfield"]["id"].replace(
+                                "https://openalex.org/", ""
+                            ),
+                            topic["subfield"]["display_name"],
+                            topic["field"]["id"].replace("https://openalex.org/", ""),
+                            topic["field"]["display_name"],
+                            topic["domain"]["id"].replace("https://openalex.org/", ""),
+                            topic["domain"]["display_name"],
+                        )
+                        for topic in x
+                    ]
+                    if x
+                    else None
+                )
             )
-        )
 
-        # extract concepts
-        df["concepts"] = df["concepts"].apply(
-            lambda x: (
-                [
-                    (
-                        concept["id"].replace("https://openalex.org/", ""),
-                        concept["display_name"],
-                    )
-                    for concept in x
-                ]
-                if x
-                else None
+        if "referenced_works" in df.columns:
+            df["referenced_works"] = df["referenced_works"].apply(
+                lambda x: (
+                    [work["id"].replace("https://openalex.org/", "") for work in x]
+                    if x
+                    else None
+                )
             )
-        )
 
-        # process grants, getting triplets out of "funder", "funder_display_name", and "award_id"
-        df["grants"] = df["grants"].apply(
-            lambda x: (
-                [
-                    (
-                        grant.get("funder", {}).replace("https://openalex.org/", ""),
-                        grant.get("funder_display_name"),
-                        grant.get("award_id"),
-                    )
-                    for grant in x
-                ]
-                if x
-                else None
-            )
-        )
-
-        df = df[
-            [
+        # Keep all columns that exist in the DataFrame
+        available_columns = [
+            col
+            for col in [
                 "id",
                 "doi",
                 "pmid",
@@ -247,13 +205,15 @@ def json_loader_works(data: List[List[Dict]]) -> pd.DataFrame:
                 "title",
                 "publication_date",
                 "cited_by_count",
+                "fwci",
                 "counts_by_year",
                 "authorships",
                 "topics",
-                "concepts",
-                "grants",
             ]
+            if col in df.columns
         ]
+
+        df = df[available_columns]
         output.append(df)
 
     return pd.concat(output) if output else pd.DataFrame()
