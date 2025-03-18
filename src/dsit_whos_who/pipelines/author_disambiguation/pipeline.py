@@ -76,6 +76,12 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                 outputs="ad.model.training",
                 name="train_model",
             ),
+        ],
+        tags="model_training",
+    )
+
+    model_checks_pipeline = pipeline(
+        [
             node(
                 func=check_model_performance,
                 inputs={
@@ -126,6 +132,12 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                 outputs="ad.matched_authors.primary",
                 name="get_matched_authors",
             ),
+        ],
+        tags="model_prediction",
+    )
+
+    prediction_checks_pipeline = pipeline(
+        [
             node(
                 func=check_prediction_coverage,
                 inputs={
@@ -140,4 +152,10 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
         ]
     )
 
-    return preprocess_pipeline + model_training_pipeline + prediction_pipeline
+    return (
+        preprocess_pipeline
+        + model_training_pipeline
+        + model_checks_pipeline
+        + prediction_pipeline
+        + prediction_checks_pipeline
+    )

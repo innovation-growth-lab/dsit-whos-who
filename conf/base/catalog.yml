@@ -99,3 +99,16 @@ ad.model_comparison.intermediate:
 ad.coverage_analysis.tmp:
   <<: *_p
   filepath: s3://igl-public/02_whos_who/data/01_raw/author_disambiguation/coverage_analysis.pkl
+
+# -> 4. Author analysis:
+"analysis.{metric}.{group}.raw":
+  <<: *_js_ptd
+  path: s3://igl-public/02_whos_who/data/01_raw/author_analysis/{metric}/{group}/
+
+"analysis.{metric}.{group}.intermediate":
+  <<: *_pq
+  filepath: s3://igl-public/02_whos_who/data/02_intermediate/author_analysis/{metric}/{group}.parquet
+
+"analysis.{metric}.{group}.primary":
+  <<: *_pq
+  filepath: s3://igl-public/02_whos_who/data/03_primary/author_analysis/{metric}/{group}.parquet
