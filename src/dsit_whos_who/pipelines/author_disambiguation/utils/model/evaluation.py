@@ -73,7 +73,6 @@ def log_performance_metrics(
 
     return metrics
 
-
 def analyse_model_performance(
     model,
     x_train,
@@ -82,7 +81,8 @@ def analyse_model_performance(
     y_test,
     feature_names,
     model_type: str,
-    params: Dict,
+    model_parameters: Dict,
+    lite: bool = False,
 ) -> None:
     """analyse performance metrics for a single model
 
@@ -109,36 +109,36 @@ def analyse_model_performance(
 
     logger.info("\nmodel type: %s", model_type)
     logger.info("parameters:")
-    logger.info("\n- test size: %.2f", params["test_size"])
-    logger.info("- random seed: %d", params["random_seed"])
-    if model_type == "smote_model" and params["smote"]["enabled"]:
-        logger.info("- using SMOTE")
+    for param, value in model_parameters.items():
+        logger.info("- %s: %s", param, value)
 
-    # log top and bottom features
-    logger.info(
-        "\ntop 10 most important features:"
-        "\n| feature | importance |"
-        "\n|---------|------------|"
-    )
-    for _, row in feature_imp.head(10).iterrows():
-        logger.info("| %-40s | %10.4f |", row["feature"], row["importance"])
+    if not lite:
+        # log top and bottom features
+        logger.info(
+            "\ntop 10 most important features:"
+            "\n| feature | importance |"
+            "\n|---------|------------|"
+        )
+        for _, row in feature_imp.head(10).iterrows():
+            logger.info("| %-40s | %10.4f |", row["feature"], row["importance"])
 
         logger.info(
             "\n5 least important features:"
             "\n| feature | importance |"
             "\n|---------|------------|"
         )
-    for _, row in feature_imp.tail().iterrows():
-        logger.info("| %-40s | %10.4f |", row["feature"], row["importance"])
+        for _, row in feature_imp.tail().iterrows():
+            logger.info("| %-40s | %10.4f |", row["feature"], row["importance"])
+
     # get predictions and probabilities
     train_pred_proba = model.predict_proba(x_train)[:, 1]
     test_pred_proba = model.predict_proba(x_test)[:, 1]
-
     # analyse each split
-    for split_name, _, y_true, y_pred_proba in [
-        ("training", x_train, y_train, train_pred_proba),
-        ("test", x_test, y_test, test_pred_proba),
-    ]:
+    splits = [("test", x_test, y_test, test_pred_proba)]
+    if not lite:
+        splits.insert(0, ("training", x_train, y_train, train_pred_proba))
+
+    for split_name, _, y_true, y_pred_proba in splits:
         logger.info("\n%s results:", split_name)
 
         # evaluate metrics at different thresholds

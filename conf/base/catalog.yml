@@ -92,7 +92,15 @@ ad.model.training:
   filepath: s3://igl-public/02_whos_who/data/03_primary/author_disambiguation/model.pkl
   versioned: true
 
-ad.model_comparison.intermediate:
+ad.model.training.ptd:
+  type: partitions.PartitionedDataset
+  path: s3://igl-public/02_whos_who/data/03_primary/author_disambiguation/model.pkl/
+  dataset:
+    type: pickle.PickleDataset
+    credentials: s3_credentials
+    backend: pickle
+
+ad.model.choice:
   <<: *_p
   filepath: s3://igl-public/02_whos_who/data/03_primary/author_disambiguation/model.pkl/2025-03-14T16.09.02.782Z/model.pkl
 

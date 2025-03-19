@@ -2,6 +2,7 @@
 
 import logging
 from typing import Dict, Iterator
+from datetime import datetime
 import mlflow
 import numpy as np
 import pandas as pd
@@ -451,8 +452,9 @@ def train_disambiguation_model(
 
 def check_model_performance(
     feature_matrix: pd.DataFrame,
-    model_dict: Dict,
+    model_versions: AbstractDataset,
     params: Dict,
+    lite: bool = False,
 ) -> None:
     """analyse performance of both models on train and test splits"""
     logger.info("starting model performance analysis")
@@ -469,29 +471,39 @@ def check_model_performance(
         stratify=y,
     )
 
-    # analyse each model type
-    for model_type in ["smote_model", "class_weights_model"]:
-        if model_type not in model_dict:
-            continue
+    for key, batch_loader in model_versions.items():
+        # Format timestamp as dd/mm HH:MM
+        model_date = key.split("/")[0]  # Get timestamp part
+        formatted_date = datetime.strptime(
+            model_date, "%Y-%m-%dT%H.%M.%S.%fZ"
+        ).strftime("%d/%m %H:%M")
 
-        model = model_dict[model_type]["model"]
-        scaler = model_dict[model_type]["scaler"]
+        logger.info("\n\n\nmodel: %s\n\n\n", formatted_date)
+        model_dict = batch_loader()
 
-        # scale data
-        x_train_scaled = scaler.transform(x_train)
-        x_test_scaled = scaler.transform(x_test)
+        for model_type in ["smote_model", "class_weights_model"]:
+            if model_type not in model_dict:
+                continue
 
-        # analyse model performance
-        analyse_model_performance(
-            model=model,
-            x_train=x_train_scaled,
-            x_test=x_test_scaled,
-            y_train=y_train,
-            y_test=y_test,
-            feature_names=feature_names,
-            model_type=model_type,
-            params=params,
-        )
+            model = model_dict[model_type]["model"]
+            scaler = model_dict[model_type]["scaler"]
+
+            # scale data
+            x_train_scaled = scaler.transform(x_train)
+            x_test_scaled = scaler.transform(x_test)
+
+            # analyse model performance
+            analyse_model_performance(
+                model=model,
+                model_parameters=model_dict[model_type]["parameters"],
+                x_train=x_train_scaled,
+                x_test=x_test_scaled,
+                y_train=y_train,
+                y_test=y_test,
+                feature_names=feature_names,
+                model_type=model_type,
+                lite=lite,
+            )
 
 
 def predict_author_matches(

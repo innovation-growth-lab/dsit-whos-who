@@ -86,8 +86,9 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                 func=check_model_performance,
                 inputs={
                     "feature_matrix": "ad.orcid_labelled_feature_matrix.intermediate",
-                    "model_dict": "ad.model.training",
+                    "model_versions": "ad.model.training.ptd",
                     "params": "params:model_training",
+                    "lite": "params:global.true",
                 },
                 outputs=None,
                 name="check_model_performance",
@@ -116,7 +117,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
             node(
                 func=predict_author_matches,
                 inputs={
-                    "model_dict": "ad.model.training",
+                    "model_dict": "ad.model.choice",
                     "feature_matrix": "ad.non_orcid_labelled_feature_matrix.intermediate",
                     "params": "params:model_prediction",
                 },

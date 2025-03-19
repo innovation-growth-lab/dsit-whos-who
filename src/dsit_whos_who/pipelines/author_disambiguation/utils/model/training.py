@@ -94,8 +94,8 @@ def train_model(
                 "classifier",
                 XGBClassifier(
                     random_state=params["random_seed"],
-                    tree_method="hist",  # for faster training
-                    enable_categorical=False,  # all features are numeric
+                    tree_method="hist",
+                    enable_categorical=False,
                 ),
             ),
         ]
@@ -109,6 +109,7 @@ def train_model(
         for key, value in base_params.items():
             param_grid[f"classifier__{key}"] = value
     else:
+        # Let XGBoost handle missing values natively
         base_model = XGBClassifier(
             random_state=params["random_seed"],
             tree_method="hist",
