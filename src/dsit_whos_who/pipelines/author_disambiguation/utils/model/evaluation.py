@@ -190,6 +190,8 @@ def analyse_model_performance(
 
             # Track best F1 score and corresponding metrics
             if f1 > best_f1:
+                if threshold > 0.8:
+                    continue
                 best_f1 = f1
                 best_threshold = threshold
                 best_cm = cm

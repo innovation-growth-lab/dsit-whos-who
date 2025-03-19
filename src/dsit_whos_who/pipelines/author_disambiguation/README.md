@@ -104,34 +104,35 @@ Computed at four taxonomic levels (domain, field, subfield, topic):
 - Test set: 59,784 pairs
   - Positive class (matches): 1,449 (2.4%)
   - Negative class (non-matches): 58,335 (97.6%)
+#### Model Performance at Optimal Thresholds
 
-#### Model Performance at Default Threshold (0.5)
-
-##### SMOTE Model
+##### SMOTE Model (Optimal threshold = 0.70)
 Test set confusion matrix:
 | true\pred | negative | positive |
 |-----------|----------|----------|
-| negative | 58,159 | 176 |
-| positive | 93 | 1,356 |
+| negative | 58,243 | 92 |
+| positive | 113 | 1,336 |
+
+Performance metrics:
+- Accuracy: 0.997
+- Precision: 0.936
+- Recall: 0.922
+- F1: 0.929
+- Balanced F1: 0.959
+
+##### Class Weights Model (Optimal threshold = 0.80) 
+Test set confusion matrix:
+| true\pred | negative | positive |
+|-----------|----------|----------|
+| negative | 58,217 | 118 |
+| positive | 92 | 1,357 |
 
 Performance metrics:
 - Accuracy: 0.996
-- Precision: 0.885
-- Recall: 0.936
-- F1: 0.910
-
-##### Class Weights Model
-Test set confusion matrix:
-| true\pred | negative | positive |
-|-----------|----------|----------|
-| negative | 58,070 | 265 |
-| positive | 65 | 1,384 |
-
-Performance metrics:
-- Accuracy: 0.994
-- Precision: 0.839
-- Recall: 0.955
-- F1: 0.893
+- Precision: 0.920
+- Recall: 0.937
+- F1: 0.928
+- Balanced F1: 0.966
 
 ### 5. Production Predictions
 
