@@ -1,9 +1,7 @@
 model_training:
-  # Data splitting
   test_size: 0.1
   random_seed: 42
 
-  # Base model parameters grid for XGBoost
   base_params:
     n_estimators: [1000, 1300]
     max_depth: [11, 15, 19]
@@ -20,14 +18,13 @@ model_training:
     enabled: true
     k_neighbors: [9, 13]
 
-  # Cross validation
   cv:
     n_splits: 5
     shuffle: true
 
   # Grid search
   grid_search:
-    scoring: "f1"  # Using F1 since we care about both precision and recall
+    scoring: "f1"
     n_jobs: 8
     verbose: 10
 
