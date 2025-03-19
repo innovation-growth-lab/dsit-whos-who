@@ -1,16 +1,20 @@
 """
-This module contains the nodes for the data analysis disciplinarity pipeline.
+This module contains the nodes for the data analysis basic metrics pipeline.
 """
 
 import logging
-from typing import Dict, List, Callable, Union
-import numpy as np
 import pandas as pd
-from joblib import Parallel, delayed
+from kedro.io import AbstractDataset
 
+from .utils.collecting import fetch_openalex_works
+from .utils.processing import (
+    process_author_metadata,
+    date_cleaner,
+    process_person_gtr_data,
+    prepare_final_person_data,
+)
 from ..data_collection_oa.utils import preprocess_ids
-from ..data_collection_oa.utils.publications import json_loader_works
-from ..data_collection_oa.nodes import fetch_openalex_objects
+from ..author_disambiguation.utils.preprocessing.gtr import preprocess_gtr_persons
 
 logger = logging.getLogger(__name__)
 
@@ -42,112 +46,94 @@ def create_list_oa_author_ids(authors: pd.DataFrame) -> list:
 
 
 def fetch_openalex_matched_author_works(
-    ids: Union[List[str], List[List[str]]],
-    mails: List[str],
+    ids: list,
+    mails: list,
     perpage: int,
-    filter_criteria: Union[str, List[str]],
-    parallel_jobs: int = 8,
-    endpoint: str = "works",
+    filter_criteria: str,
     **kwargs,
-) -> Dict[str, List[Callable]]:
-    """
-    Fetches objects from OpenAlex based on the provided processed_ids, mailto, perpage,
-    filter_criteria, and parallel_jobs.
+) -> pd.DataFrame:
+    """Node for fetching OpenAlex works."""
+    return fetch_openalex_works(ids, mails, perpage, filter_criteria, **kwargs)
+
+
+def process_matched_author_metadata(
+    author_loaders: AbstractDataset,
+    matched_authors: pd.DataFrame,
+) -> pd.DataFrame:
+    """Node for processing author metadata.
+
+    This function processes metadata for authors who have been matched between OpenAlex and 
+        GTR.
+    It performs the following steps:
+    1. Iterates through author data loaded from OpenAlex
+    2. For each batch, processes the metadata to extract key metrics like:
+        - First year of publication
+        - Citations per publication
+    3. Filters authors to only include those matched with GTR
+    4. Combines all processed batches into a single DataFrame
 
     Args:
-        ids (Union[List[str], List[List[str]]]): The processed IDs to fetch.
-        mails (List[str]): The email address to use for fetching.
-        perpage (int): The number of objects to fetch per page.
-        filter_criteria (Union[str, List[str]]): The filter criteria to apply.
-        parallel_jobs (int, optional): The number of parallel jobs to use. Defaults to 8.
-        endpoint (str, optional): The OpenAlex endpoint to query. Defaults to "works".
+        author_loaders (AbstractDataset): Dataset containing OpenAlex author metadata
+        matched_authors (pd.DataFrame): DataFrame containing matched author IDs between GTR 
+            and OpenAlex
 
     Returns:
-        Dict[str, List[Callable]]: A dictionary containing the fetched objects, grouped by chunks.
+        pd.DataFrame: Processed author metadata containing publication metrics and citation 
+            information
     """
-    logger.info(
-        "Beginning to fetch %s OpenAlex records from %s endpoint", len(ids), endpoint
+    author_data = []
+    for key, author_loader in author_loaders.items():
+        logger.info("Processing author metadata for %s", key)
+        author_df = process_author_metadata(author_loader(), matched_authors)
+        author_data.append(author_df)
+
+    author_df = pd.concat(author_data)
+    logger.info("Completed processing author metadata for %s authors", len(author_df))
+    return author_df
+
+
+def process_matched_person_gtr_data(
+    persons: pd.DataFrame,
+    projects: pd.DataFrame,
+    matched_authors: pd.DataFrame,
+) -> pd.DataFrame:
+    """Node for processing GTR data for matched persons.
+
+    This function processes Gateway to Research (GTR) data for persons who have been matched
+    to OpenAlex authors. It performs the following steps:
+    1. Preprocesses and filters persons data to only include matched authors
+    2. Merges person-project relationships with project metadata
+    3. Cleans project dates and processes timeline information
+    4. Creates aggregated summaries of project data per person
+
+    Args:
+        persons (pd.DataFrame): DataFrame containing person data from GTR
+        projects (pd.DataFrame): DataFrame containing project data from GTR
+        matched_authors (pd.DataFrame): DataFrame containing matched author IDs between GTR and OpenAlex
+
+    Returns:
+        pd.DataFrame: Processed person data containing project timelines, grant categories,
+            and funding information aggregated by person
+    """
+    # filter persons
+    persons = persons[persons["person_id"].isin(matched_authors["gtr_id"])].reset_index(
+        drop=True
     )
 
-    # slice oa_ids
-    oa_id_chunks = [ids[i : i + 40] for i in range(0, len(ids), 40)]
-    logger.info("Created %s chunks of up to 40 IDs each", len(oa_id_chunks))
+    # Process projects data
+    persons_projects = persons.explode("project_id")
+    persons_projects = persons_projects.merge(
+        projects.drop_duplicates(subset=["project_id"]),
+        on="project_id",
+        how="left",
+    )
+    persons_projects = date_cleaner(persons_projects)
 
-    final_data = []
-    seen_ids = set()
+    # Get person summaries
+    person_summaries = process_person_gtr_data(persons_projects)
+    logger.info(
+        "Completed processing GTR data for %s persons with project information",
+        len(person_summaries),
+    )
 
-    for i, chunk in enumerate(oa_id_chunks, 1):
-        logger.info(
-            "Processing chunk %s of %s (%s%% complete)",
-            i,
-            len(oa_id_chunks),
-            f"{(i/len(oa_id_chunks)*100):.1f}",
-        )
-
-        data = Parallel(n_jobs=parallel_jobs, verbose=10)(
-            delayed(fetch_openalex_objects)(
-                oa_id, mails, perpage, filter_criteria, endpoint, **kwargs
-            )
-            for oa_id in chunk
-        )
-
-        # Process each batch of data
-        logger.debug("Converting fetched data to DataFrame")
-        df_batch = json_loader_works(data)
-
-        # create list of authorships
-        logger.debug("Processing authorships")
-        df_batch["authorships"] = df_batch["authorships"].apply(
-            lambda x: [[author[0], author[2]] for author in x]
-        )
-
-        # create list of topics
-        logger.debug("Processing topics")
-        df_batch["topics"] = df_batch["topics"].apply(
-            lambda x: (
-                [
-                    [
-                        topic[0].replace("T", ""),
-                        topic[2].replace("subfields/", ""),
-                        topic[4].replace("fields/", ""),
-                        topic[6].replace("domains/", ""),
-                    ]
-                    for topic in x
-                    if topic is not None
-                ]
-                if x
-                else []
-            )
-        )
-
-        # clean and filter the dataframe
-        logger.debug("Cleaning and filtering data")
-        df_batch = (
-            df_batch.drop_duplicates(subset=["id"])
-            .loc[lambda x: x["publication_date"] >= "2002-01-01"]
-            .assign(
-                fwci=lambda x: pd.to_numeric(
-                    x["fwci"].replace("", np.nan).infer_objects(copy=False)
-                )
-            )
-            .reset_index(drop=True)
-        )
-
-        # filter out papers we've already seen
-        if not df_batch.empty:
-            original_count = len(df_batch)
-            df_batch = df_batch[~df_batch["id"].isin(seen_ids)]
-            seen_ids.update(df_batch["id"].tolist())
-            logger.info(
-                "Found %s new unique papers (filtered %s duplicates)",
-                len(df_batch),
-                original_count - len(df_batch),
-            )
-
-        if not df_batch.empty:
-            final_data.append(df_batch)
-
-    # Concatenate all processed dataframes
-    final_df = pd.concat(final_data) if final_data else pd.DataFrame()
-    logger.info("Completed processing with %s total unique papers", len(final_df))
-    return final_df
+    return prepare_final_person_data(persons, person_summaries)
