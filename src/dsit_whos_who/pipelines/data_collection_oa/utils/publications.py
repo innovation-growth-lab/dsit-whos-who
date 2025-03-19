@@ -188,7 +188,7 @@ def json_loader_works(data: List[List[Dict]]) -> pd.DataFrame:
         if "referenced_works" in df.columns:
             df["referenced_works"] = df["referenced_works"].apply(
                 lambda x: (
-                    [work["id"].replace("https://openalex.org/", "") for work in x]
+                    [work.replace("https://openalex.org/", "") for work in x]
                     if x
                     else None
                 )
@@ -209,6 +209,7 @@ def json_loader_works(data: List[List[Dict]]) -> pd.DataFrame:
                 "counts_by_year",
                 "authorships",
                 "topics",
+                "referenced_works",
             ]
             if col in df.columns
         ]

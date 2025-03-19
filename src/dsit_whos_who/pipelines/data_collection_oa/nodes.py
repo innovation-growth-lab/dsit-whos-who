@@ -77,6 +77,7 @@ def fetch_openalex(
     filter_criteria: Union[str, List[str]],
     parallel_jobs: int = 8,
     endpoint: str = "works",
+    **kwargs,
 ) -> Dict[str, List[Callable]]:
     """
     Fetches objects from OpenAlex based on the provided processed_ids, mailto, perpage,
@@ -94,12 +95,12 @@ def fetch_openalex(
         Dict[str, List[Callable]]: A dictionary containing the fetched objects, grouped by chunks.
     """
     # slice oa_ids
-    oa_id_chunks = [ids[i : i + 80] for i in range(0, len(ids), 80)]
+    oa_id_chunks = [ids[i : i + 40] for i in range(0, len(ids), 40)]
     logger.info("Slicing data. Number of oa_id_chunks: %s", len(oa_id_chunks))
     return {
         f"s{str(i)}": lambda chunk=chunk: Parallel(n_jobs=parallel_jobs, verbose=10)(
             delayed(fetch_openalex_objects)(
-                oa_id, mails, perpage, filter_criteria, endpoint
+                oa_id, mails, perpage, filter_criteria, endpoint, **kwargs
             )
             for oa_id in chunk
         )
