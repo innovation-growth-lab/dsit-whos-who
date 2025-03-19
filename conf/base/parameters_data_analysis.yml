@@ -1,4 +1,4 @@
-disciplinarity:
+basic_metrics:
   oa:
     api: &api
       # API configuration
