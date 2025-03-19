@@ -73,6 +73,7 @@ def log_performance_metrics(
 
     return metrics
 
+
 def analyse_model_performance(
     model,
     x_train,
@@ -146,12 +147,15 @@ def analyse_model_performance(
 
         logger.info("\nMetrics at different thresholds:")
         logger.info(
-            "\n| threshold | accuracy | precision | recall | f1 | balanced_f1 |"
+            "\n| thre | accur | preci | recal |  f1   | ba_f1 |"
         )
         logger.info(
-            "|-----------|----------|-----------|--------|-------|-------------|"
+            "|------|-------|-------|-------|-------|-------|"
         )
 
+        best_f1 = 0
+        best_threshold = None
+        best_cm = None
         for threshold in thresholds:
             y_pred = (y_pred_proba >= threshold).astype(int)
 
@@ -184,20 +188,32 @@ def analyse_model_performance(
                 balanced_f1,
             )
 
-        # Show confusion matrix at 0.5 threshold for reference
-        y_pred = (y_pred_proba >= 0.5).astype(int)
-        cm = confusion_matrix(y_true, y_pred)
+            # Track best F1 score and corresponding metrics
+            if f1 > best_f1:
+                best_f1 = f1
+                best_threshold = threshold
+                best_metrics = {
+                    "accuracy": accuracy,
+                    "precision": precision,
+                    "recall": recall,
+                    "f1": f1,
+                    "balanced_f1": balanced_f1,
+                }
+                best_cm = cm
 
-        logger.info("\nConfusion matrix at threshold=0.5:")
+        # Show confusion matrix at best F1 threshold
+        logger.info(
+            "\nConfusion matrix at threshold=%.2f (best F1 score):", best_threshold
+        )
         logger.info(
             "\n| true\\pred | negative | positive |"
             "\n|-----------|----------|----------|"
             "\n| negative  | %8d | %8d |"
             "\n| positive  | %8d | %8d |",
-            cm[0, 0],
-            cm[0, 1],
-            cm[1, 0],
-            cm[1, 1],
+            best_cm[0, 0],
+            best_cm[0, 1],
+            best_cm[1, 0],
+            best_cm[1, 1],
         )
 
         # Show class distribution
