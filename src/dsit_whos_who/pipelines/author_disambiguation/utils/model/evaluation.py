@@ -192,13 +192,6 @@ def analyse_model_performance(
             if f1 > best_f1:
                 best_f1 = f1
                 best_threshold = threshold
-                best_metrics = {
-                    "accuracy": accuracy,
-                    "precision": precision,
-                    "recall": recall,
-                    "f1": f1,
-                    "balanced_f1": balanced_f1,
-                }
                 best_cm = cm
 
         # Show confusion matrix at best F1 threshold
