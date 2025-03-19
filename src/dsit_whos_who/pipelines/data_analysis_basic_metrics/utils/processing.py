@@ -21,7 +21,11 @@ def process_author_metadata(
     author_df = json_loader_authors(author_dict)
 
     # filter by matched authors
-    author_df = author_df[author_df["id"].isin(matched_authors["oa_id"])]
+    author_df = author_df.merge(
+        matched_authors[["gtr_id", "id", "match_probability"]],
+        on="id",
+        how="inner",
+    )
 
     # get the first year of publication
     author_df["first_work_year"] = pd.to_numeric(
