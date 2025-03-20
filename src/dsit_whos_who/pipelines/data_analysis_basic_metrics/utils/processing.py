@@ -75,6 +75,7 @@ def process_person_gtr_data(
                         (
                             [
                                 str(pid),
+                                str(grant),
                                 (
                                     start.strftime("%Y-%m-%d")
                                     if pd.notnull(start)
@@ -85,8 +86,9 @@ def process_person_gtr_data(
                             if pd.notnull(start) and pd.notnull(end)
                             else []
                         )
-                        for pid, start, end in zip(
+                        for pid, grant, start, end in zip(
                             x,
+                            persons_projects.loc[x.index, "grant_category"],
                             persons_projects.loc[x.index, "start_date"],
                             persons_projects.loc[x.index, "end_date"],
                         )
