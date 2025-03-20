@@ -7,7 +7,7 @@ Utility functions for processing collected data.
 import logging
 from typing import Dict
 import pandas as pd
-
+import numpy as np
 from ...data_collection_oa.utils.authors import json_loader_authors
 
 logger = logging.getLogger(__name__)
@@ -131,7 +131,7 @@ def prepare_final_person_data(
                 lambda y: "True" if len(y) > 1 else "False"
             ),
             number_grants=lambda x: x["project_id"].apply(
-                lambda y: len(y) if isinstance(y, list) and y else 0
+                lambda y: len(y) if isinstance(y, np.ndarray) and y.any() else 0
             ),
         )
         .reindex(

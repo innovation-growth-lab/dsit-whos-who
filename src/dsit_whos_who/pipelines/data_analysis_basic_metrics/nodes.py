@@ -13,8 +13,11 @@ from .utils.processing import (
     process_person_gtr_data,
     prepare_final_person_data,
 )
+from .utils.basic_metrics import (
+    compute_academic_age,
+    add_international_metrics,
+)
 from ..data_collection_oa.utils import preprocess_ids
-from ..author_disambiguation.utils.preprocessing.gtr import preprocess_gtr_persons
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +65,7 @@ def process_matched_author_metadata(
 ) -> pd.DataFrame:
     """Node for processing author metadata.
 
-    This function processes metadata for authors who have been matched between OpenAlex and 
+    This function processes metadata for authors who have been matched between OpenAlex and
         GTR.
     It performs the following steps:
     1. Iterates through author data loaded from OpenAlex
@@ -74,11 +77,11 @@ def process_matched_author_metadata(
 
     Args:
         author_loaders (AbstractDataset): Dataset containing OpenAlex author metadata
-        matched_authors (pd.DataFrame): DataFrame containing matched author IDs between GTR 
+        matched_authors (pd.DataFrame): DataFrame containing matched author IDs between GTR
             and OpenAlex
 
     Returns:
-        pd.DataFrame: Processed author metadata containing publication metrics and citation 
+        pd.DataFrame: Processed author metadata containing publication metrics and citation
             information
     """
     author_data = []
@@ -137,3 +140,44 @@ def process_matched_person_gtr_data(
     )
 
     return prepare_final_person_data(persons, person_summaries)
+
+
+def process_matched_author_works(
+    publications: pd.DataFrame,
+) -> pd.DataFrame:
+    return publications
+
+
+def compute_basic_metrics(
+    author_data: pd.DataFrame,
+    person_data: pd.DataFrame,
+) -> pd.DataFrame:
+    """
+    Compute basic metrics from author and person data.
+
+    Args:
+        author_data (pd.DataFrame): OpenAlex author data with affiliations and publication history
+        person_data (pd.DataFrame): GTR person data with project information
+
+    Returns:
+        pd.DataFrame: Combined data with computed metrics
+    """
+    author_data = author_data.drop_duplicates(subset=["id", "gtr_id"])
+
+    logger.info("Computing basic metrics for %s authors", len(author_data))
+
+    merged_data = author_data.merge(
+        person_data, left_on="gtr_id", right_on="person_id", how="inner", validate="1:1"
+    )
+    logger.info("Merged data contains %s records", len(merged_data))
+
+    # Compute academic age
+    merged_data["academic_age_at_first_grant"] = merged_data.apply(
+        compute_academic_age, axis=1
+    ).astype("Int64")
+
+    # Add international experience metrics
+    merged_data = add_international_metrics(merged_data)
+
+    logger.info("Completed computing basic metrics")
+    return merged_data

@@ -120,3 +120,8 @@ ad.coverage_analysis.tmp:
 "analysis.{metric}.{group}.primary":
   <<: *_pq
   filepath: s3://igl-public/02_whos_who/data/03_primary/author_analysis/{metric}/{group}.parquet
+
+"analysis.{metric}.primary":
+  <<: *_pq
+  filepath: s3://igl-public/02_whos_who/data/03_primary/author_analysis/{metric}.parquet
+
