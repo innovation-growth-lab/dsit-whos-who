@@ -151,6 +151,7 @@ def process_matched_author_works(
 def compute_basic_metrics(
     author_data: pd.DataFrame,
     person_data: pd.DataFrame,
+    publications: pd.DataFrame,
 ) -> pd.DataFrame:
     """
     Compute basic metrics from author and person data.

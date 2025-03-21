@@ -15,6 +15,8 @@ from .nodes import (
     fetch_openalex_matched_author_works,
     process_matched_author_metadata,
     process_matched_person_gtr_data,
+    process_matched_author_works,
+    compute_basic_metrics,
 )
 
 
@@ -43,13 +45,13 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                     "endpoint": "params:basic_metrics.oa.publications_endpoint",
                     "keys_to_include": "params:basic_metrics.oa.keys_to_include",
                 },
-                outputs="analysis.basic_metrics.oa.raw",
+                outputs="analysis.basic_metrics.publications.intermediate",
                 name="fetch_openalex_matched_author_works",
             ),
-        ]
+        ],
+        tags="collection_pipeline",
     )
-
-    author_processing_pipeline = pipeline(
+    processing_pipeline = pipeline(
         [
             node(
                 func=process_matched_author_metadata,
@@ -70,6 +72,29 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                 outputs="analysis.basic_metrics.gtr_data.intermediate",
                 name="process_matched_person_gtr_data",
             ),
+            node(
+                func=process_matched_author_works,
+                inputs={
+                    "publications": "analysis.basic_metrics.publications.intermediate",
+                },
+                outputs="analysis.basic_metrics.oa_works.intermediate",
+                name="process_matched_author_works",
+            ),
         ]
     )
-    return collection_pipeline + author_processing_pipeline
+
+    compute_metrics_pipeline = pipeline(
+        [
+            node(
+                func=compute_basic_metrics,
+                inputs={
+                    "author_data": "analysis.basic_metrics.author_metadata.intermediate",
+                    "person_data": "analysis.basic_metrics.gtr_data.intermediate",
+                    "publications": "analysis.basic_metrics.oa_works.intermediate",
+                },
+                outputs="analysis.basic_metrics.primary",
+                name="compute_basic_metrics",
+            ),
+        ]
+    )
+    return collection_pipeline + processing_pipeline + compute_metrics_pipeline
