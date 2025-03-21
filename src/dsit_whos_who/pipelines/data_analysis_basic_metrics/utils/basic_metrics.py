@@ -3,7 +3,7 @@ Utility functions for computing basic metrics.
 """
 
 import logging
-from collections import defaultdict
+from collections import defaultdict, Counter
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -61,12 +61,105 @@ def _process_last_institution(row: pd.Series) -> bool:
     return country == "GB"
 
 
-def add_international_metrics(df: pd.DataFrame) -> pd.DataFrame:
+def _process_collaborations(row: pd.Series, publications: pd.DataFrame) -> dict:
+    """
+    Process publication collaborations for an author.
+
+    Args:
+        row (pd.Series): Row containing author ID and earliest_start_date
+        publications (pd.DataFrame): DataFrame with publication data
+
+    Returns:
+        dict: Dictionary containing collaboration metrics
+    """
+    if pd.isnull(row["earliest_start_date"]):
+        return {
+            "collab_countries_before": [],
+            "collab_countries_after": [],
+            "unique_collabs_before": np.nan,
+            "unique_collabs_after": np.nan,
+            "total_collabs_before": np.nan,
+            "total_collabs_after": np.nan,
+            "foreign_collab_fraction_before": np.nan,
+            "foreign_collab_fraction_after": np.nan,
+            "collab_countries_list_before": [],
+            "collab_countries_list_after": [],
+        }
+
+    # Get reference date
+    ref_year = pd.to_datetime(row["earliest_start_date"]).year
+    author_id = row["id"]
+
+    # Get author's publications
+    author_pubs = publications[publications["author_id"] == author_id]
+
+    # Split into before and after
+    pubs_before = author_pubs[author_pubs["year"] < ref_year]
+    pubs_after = author_pubs[author_pubs["year"] >= ref_year]
+
+    # Process before period
+    collabs_before = set()
+    countries_before = Counter()
+    total_collabs_before = 0
+    foreign_collabs_before = 0
+
+    for _, pub in pubs_before.iterrows():
+        collabs_before.update(pub["collab_ids"])
+        countries_before.update(pub["countries_abroad"])
+        total_collabs_before += pub["n_collab_uk"] + pub["n_collab_abroad"]
+        foreign_collabs_before += pub["n_collab_abroad"]
+
+    # Process after period
+    collabs_after = set()
+    countries_after = Counter()
+    total_collabs_after = 0
+    foreign_collabs_after = 0
+
+    for _, pub in pubs_after.iterrows():
+        collabs_after.update(pub["collab_ids"])
+        countries_after.update(pub["countries_abroad"])
+        total_collabs_after += pub["n_collab_uk"] + pub["n_collab_abroad"]
+        foreign_collabs_after += pub["n_collab_abroad"]
+
+    # Calculate fractions
+    foreign_fraction_before = (
+        round(foreign_collabs_before / total_collabs_before, 3)
+        if total_collabs_before > 0
+        else np.nan
+    )
+    foreign_fraction_after = (
+        round(foreign_collabs_after / total_collabs_after, 3)
+        if total_collabs_after > 0
+        else np.nan
+    )
+
+    # Convert sets to lists for JSON serialization
+    countries_before_list = [[k, str(v)] for k, v in countries_before.items()]
+    countries_after_list = [[k, str(v)] for k, v in countries_after.items()]
+
+    return {
+        "collab_countries_before": countries_before_list,
+        "collab_countries_after": countries_after_list,
+        "unique_collabs_before": len(collabs_before),
+        "unique_collabs_after": len(collabs_after),
+        "total_collabs_before": total_collabs_before,
+        "total_collabs_after": total_collabs_after,
+        "foreign_collab_fraction_before": foreign_fraction_before,
+        "foreign_collab_fraction_after": foreign_fraction_after,
+        "collab_countries_list_before": sorted(countries_before.keys()),
+        "collab_countries_list_after": sorted(countries_after.keys()),
+    }
+
+
+def add_international_metrics(
+    df: pd.DataFrame, publications: pd.DataFrame = None
+) -> pd.DataFrame:
     """
     Add international experience metrics to the dataframe.
 
     Args:
         df (pd.DataFrame): DataFrame with affiliations information
+        publications (pd.DataFrame, optional): DataFrame with publication data
 
     Returns:
         pd.DataFrame: DataFrame with added international metrics
@@ -94,6 +187,33 @@ def add_international_metrics(df: pd.DataFrame) -> pd.DataFrame:
     df["last_known_institution_uk"] = df.progress_apply(
         _process_last_institution, axis=1
     )
+
+    logger.info("Processing publication collaborations...")
+    collab_metrics = df[:100].progress_apply(
+        lambda x: _process_collaborations(x, publications), axis=1
+    )
+
+    collab_fields = [
+        "collab_countries_before",
+        "collab_countries_after",
+        "unique_collabs_before",
+        "unique_collabs_after",
+        "total_collabs_before",
+        "total_collabs_after",
+        "foreign_collab_fraction_before",
+        "foreign_collab_fraction_after",
+        "collab_countries_list_before",
+        "collab_countries_list_after",
+    ]
+
+    for field in collab_fields:
+        df[field] = collab_metrics.apply(lambda x: x[field])  # pylint: disable=W0640
+
+    # make int vars be Int64 to accomodate missing
+    df["total_collabs_before"] = df["total_collabs_before"].astype("Int64")
+    df["total_collabs_after"] = df["total_collabs_after"].astype("Int64")
+    df["unique_collabs_before"] = df["unique_collabs_before"].astype("Int64")
+    df["unique_collabs_after"] = df["unique_collabs_after"].astype("Int64")
 
     return df
 

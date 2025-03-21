@@ -75,9 +75,12 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
             node(
                 func=process_matched_author_works,
                 inputs={
-                    "publications": "analysis.basic_metrics.publications.intermediate",
+                    "publications": "analysis.basic_metrics.publications.filtered",
+                    "matched_authors": "ad.matched_authors.primary",
+                    "n_jobs": "params:basic_metrics.oa.n_jobs",
+                    "batch_size": "params:basic_metrics.oa.batch_size",
                 },
-                outputs="analysis.basic_metrics.oa_works.intermediate",
+                outputs="analysis.basic_metrics.processed_publications.intermediate",
                 name="process_matched_author_works",
             ),
         ]
@@ -90,7 +93,8 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                 inputs={
                     "author_data": "analysis.basic_metrics.author_metadata.intermediate",
                     "person_data": "analysis.basic_metrics.gtr_data.intermediate",
-                    "publications": "analysis.basic_metrics.oa_works.intermediate",
+                    "publications": "analysis.basic_metrics.processed_publications.intermediate",
+                    "n_jobs": "params:basic_metrics.oa.n_jobs",
                 },
                 outputs="analysis.basic_metrics.primary",
                 name="compute_basic_metrics",

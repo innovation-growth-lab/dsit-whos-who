@@ -14,6 +14,7 @@ basic_metrics:
       perpage: "200"
     filter: author.id
     n_jobs: 8
+    batch_size: 1000
     publications_endpoint: works
     keys_to_include:
       - "id"

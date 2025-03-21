@@ -5,9 +5,10 @@ Utility functions for processing collected data.
 # pylint: disable=E0402
 
 import logging
-from typing import Dict
+from typing import Dict, List
 import pandas as pd
 import numpy as np
+from joblib import Parallel, delayed
 from ...data_collection_oa.utils.authors import json_loader_authors
 
 logger = logging.getLogger(__name__)
@@ -163,3 +164,83 @@ def prepare_final_person_data(
             ]
         )
     )
+
+
+def process_publication_batch(
+    publications_batch: pd.DataFrame, matched_ids: set
+) -> List[Dict]:
+    """Process a batch of publications for collaboration metrics.
+
+    Args:
+        publications_batch (pd.DataFrame): Batch of publications to process
+        matched_ids (set): Set of matched author IDs to process
+
+    Returns:
+        List[Dict]: List of processed collaboration data dictionaries
+    """
+    processed_data = []
+    for _, pub in publications_batch.iterrows():
+        year = pub["year"]
+
+        if not isinstance(pub["authorships"], np.ndarray):
+            continue
+
+        relevant_authors = set()
+        author_countries = {}
+
+        # First pass: collect all authors and their countries
+        for author_data in pub["authorships"]:
+            if not isinstance(author_data, np.ndarray) or len(author_data) < 2:
+                continue
+
+            author_id, country = author_data
+
+            # skip if author is already in the list (ie. stick to first country)
+            if author_id in author_countries:
+                continue
+
+            author_countries[author_id] = country
+
+            # add to relevant authors if they are in the matched list
+            if author_id in matched_ids:
+                relevant_authors.add(author_id)
+
+        if not relevant_authors:
+            continue
+
+        # Second pass: process collaborations for each matched author
+        for main_author_id in relevant_authors:
+            uk_collabs = 0
+            abroad_collabs = 0
+            unknown_collabs = 0
+            collab_ids = set()
+            countries = set()
+
+            for collab_id, country in author_countries.items():
+                if collab_id == main_author_id:
+                    continue
+
+                if pd.isna(country):
+                    continue
+                elif country == "":
+                    unknown_collabs += 1
+                elif country == "GB":
+                    uk_collabs += 1
+                else:
+                    abroad_collabs += 1
+                    countries.add(country)
+                collab_ids.add(collab_id)
+
+            processed_data.append(
+                {
+                    "author_id": main_author_id,
+                    "year": year,
+                    "n_collab_uk": uk_collabs,
+                    "n_collab_abroad": abroad_collabs,
+                    "n_collab_unknown": unknown_collabs,
+                    "countries_abroad": sorted(list(countries)),
+                    "collab_ids": sorted(list(collab_ids)),
+                }
+            )
+
+    return processed_data

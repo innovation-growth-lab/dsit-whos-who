@@ -117,9 +117,15 @@ ad.coverage_analysis.tmp:
   <<: *_pq
   filepath: s3://igl-public/02_whos_who/data/02_intermediate/author_analysis/{metric}/{group}.parquet
 
-"analysis.{metric}.{group}.primary":
+"analysis.basic_metrics.publications.filtered":
   <<: *_pq
-  filepath: s3://igl-public/02_whos_who/data/03_primary/author_analysis/{metric}/{group}.parquet
+  filepath: s3://igl-public/02_whos_who/data/02_intermediate/author_analysis/basic_metrics/publications.parquet
+  load_args:
+    columns:
+      - id
+      - authorships
+      - fwci
+      - publication_date
 
 "analysis.{metric}.primary":
   <<: *_pq
