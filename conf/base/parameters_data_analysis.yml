@@ -23,3 +23,14 @@ basic_metrics:
       - "authorships"
       - "topics"
       - "referenced_works"
+
+complex_metrics:
+  oa:
+    api: *api
+    filter: cites
+    n_jobs: 8
+    batch_size: 1000
+    publications_endpoint: works
+    keys_to_include:
+      - "id"
+      - "referenced_works"

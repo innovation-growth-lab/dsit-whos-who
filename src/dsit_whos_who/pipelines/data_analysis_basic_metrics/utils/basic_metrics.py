@@ -84,12 +84,6 @@ def _process_collaborations(row: pd.Series, publications: pd.DataFrame) -> dict:
             "foreign_collab_fraction_after": np.nan,
             "collab_countries_list_before": [],
             "collab_countries_list_after": [],
-            "mean_fwci_before": np.nan,
-            "mean_fwci_after": np.nan,
-            "total_citations_before": np.nan,
-            "total_citations_after": np.nan,
-            "n_pubs_before": np.nan,
-            "n_pubs_after": np.nan,
         }
 
     # Get reference date
@@ -108,36 +102,24 @@ def _process_collaborations(row: pd.Series, publications: pd.DataFrame) -> dict:
     countries_before = Counter()
     total_collabs_before = 0
     foreign_collabs_before = 0
-    fwci_before = []
-    citations_before = 0
-    n_pubs_before = len(pubs_before)
 
     for _, pub in pubs_before.iterrows():
         collabs_before.update(pub["collab_ids"])
         countries_before.update(pub["countries_abroad"])
         total_collabs_before += pub["n_collab_uk"] + pub["n_collab_abroad"]
         foreign_collabs_before += pub["n_collab_abroad"]
-        if not pd.isna(pub["fwci"]):
-            fwci_before.append(pub["fwci"])
-        citations_before += pub["citations"]
 
     # Process after period
     collabs_after = set()
     countries_after = Counter()
     total_collabs_after = 0
     foreign_collabs_after = 0
-    fwci_after = []
-    citations_after = 0
-    n_pubs_after = len(pubs_after)
 
     for _, pub in pubs_after.iterrows():
         collabs_after.update(pub["collab_ids"])
         countries_after.update(pub["countries_abroad"])
         total_collabs_after += pub["n_collab_uk"] + pub["n_collab_abroad"]
         foreign_collabs_after += pub["n_collab_abroad"]
-        if not pd.isna(pub["fwci"]):
-            fwci_after.append(pub["fwci"])
-        citations_after += pub["citations"]
 
     # Calculate fractions and means
     foreign_fraction_before = (
@@ -150,9 +132,6 @@ def _process_collaborations(row: pd.Series, publications: pd.DataFrame) -> dict:
         if total_collabs_after > 0
         else np.nan
     )
-
-    mean_fwci_before = round(np.mean(fwci_before), 3) if fwci_before else np.nan
-    mean_fwci_after = round(np.mean(fwci_after), 3) if fwci_after else np.nan
 
     # Convert sets to lists for JSON serialization
     countries_before_list = [[k, str(v)] for k, v in countries_before.items()]
@@ -169,12 +148,6 @@ def _process_collaborations(row: pd.Series, publications: pd.DataFrame) -> dict:
         "foreign_collab_fraction_after": foreign_fraction_after,
         "collab_countries_list_before": sorted(countries_before.keys()),
         "collab_countries_list_after": sorted(countries_after.keys()),
-        "mean_fwci_before": mean_fwci_before,
-        "mean_fwci_after": mean_fwci_after,
-        "total_citations_before": citations_before,
-        "total_citations_after": citations_after,
-        "n_pubs_before": n_pubs_before,
-        "n_pubs_after": n_pubs_after,
     }
 
 
@@ -216,7 +189,7 @@ def add_international_metrics(
     )
 
     logger.info("Processing publication collaborations...")
-    collab_metrics = df[:100].progress_apply(
+    collab_metrics = df.progress_apply(
         lambda x: _process_collaborations(x, publications), axis=1
     )
 
@@ -231,10 +204,6 @@ def add_international_metrics(
         "foreign_collab_fraction_after",
         "collab_countries_list_before",
         "collab_countries_list_after",
-        "mean_fwci_before",
-        "mean_fwci_after",
-        "total_citations_before",
-        "total_citations_after",
     ]
 
     for field in collab_fields:
@@ -365,3 +334,161 @@ def _process_affiliations(row: pd.Series) -> dict:
         "abroad_fraction_before": abroad_fraction_before,
         "abroad_fraction_after": abroad_fraction_after,
     }
+
+
+def _process_counts_by_year(row: pd.Series) -> dict:
+    """
+    Process publication and citation counts from counts_by_year data.
+
+    Args:
+        row (pd.Series): Row containing counts_by_year and earliest_start_date
+
+    Returns:
+        dict: Dictionary containing publication and citation metrics
+    """
+    if pd.isnull(row["earliest_start_date"]) or not isinstance(
+        row["counts_by_year"], np.ndarray
+    ):
+        return {
+            "n_pubs_before": np.nan,
+            "n_pubs_after": np.nan,
+            "total_citations_before": np.nan,
+            "total_citations_after": np.nan,
+            "mean_citations_before": np.nan,
+            "mean_citations_after": np.nan,
+            "citations_per_pub_before": np.nan,
+            "citations_per_pub_after": np.nan,
+        }
+
+    ref_year = pd.to_datetime(row["earliest_start_date"]).year
+    pubs_before = []
+    pubs_after = []
+    citations_before = []
+    citations_after = []
+
+    for year_data in row["counts_by_year"]:
+        if not isinstance(year_data, np.ndarray) or len(year_data) < 3:
+            continue
+
+        try:
+            year = int(year_data[0])
+            works = int(year_data[1])
+            citations = int(year_data[2])
+        except (ValueError, TypeError):
+            continue
+
+        if year < ref_year:
+            pubs_before.append(works)
+            citations_before.append(citations)
+        else:
+            pubs_after.append(works)
+            citations_after.append(citations)
+
+    total_pubs_before = sum(pubs_before) if pubs_before else 0
+    total_pubs_after = sum(pubs_after) if pubs_after else 0
+    total_citations_before = sum(citations_before) if citations_before else 0
+    total_citations_after = sum(citations_after) if citations_after else 0
+
+    return {
+        "n_pubs_before": total_pubs_before if total_pubs_before > 0 else np.nan,
+        "n_pubs_after": total_pubs_after if total_pubs_after > 0 else np.nan,
+        "total_citations_before": (
+            total_citations_before if total_citations_before > 0 else np.nan
+        ),
+        "total_citations_after": (
+            total_citations_after if total_citations_after > 0 else np.nan
+        ),
+        "mean_citations_before": (
+            round(np.mean(citations_before), 3) if citations_before else np.nan
+        ),
+        "mean_citations_after": (
+            round(np.mean(citations_after), 3) if citations_after else np.nan
+        ),
+        "citations_per_pub_before": (
+            round(total_citations_before / total_pubs_before, 3)
+            if total_pubs_before > 0
+            else np.nan
+        ),
+        "citations_per_pub_after": (
+            round(total_citations_after / total_pubs_after, 3)
+            if total_pubs_after > 0
+            else np.nan
+        ),
+    }
+
+
+def _process_fwci(row: pd.Series, pubs_df: pd.DataFrame) -> tuple:
+    """
+    Process FWCI metrics from publication data.
+
+    Args:
+        row (pd.Series): Row containing author ID and earliest_start_date
+        pubs_df (pd.DataFrame): DataFrame with publication FWCI data
+
+    Returns:
+        tuple: (mean_fwci_before, mean_fwci_after)
+    """
+    if pd.isnull(row["earliest_start_date"]):
+        return np.nan, np.nan
+
+    ref_year = pd.to_datetime(row["earliest_start_date"]).year
+    author_pubs = pubs_df[pubs_df["author_id"] == row["id"]]
+
+    fwci_before = author_pubs[author_pubs["year"] < ref_year]["fwci"]
+    fwci_after = author_pubs[author_pubs["year"] >= ref_year]["fwci"]
+
+    mean_fwci_before = round(fwci_before.mean(), 3) if not fwci_before.empty else np.nan
+    mean_fwci_after = round(fwci_after.mean(), 3) if not fwci_after.empty else np.nan
+
+    return mean_fwci_before, mean_fwci_after
+
+
+def add_publication_metrics(
+    df: pd.DataFrame,
+    publications: pd.DataFrame,
+) -> pd.DataFrame:
+    """
+    Add publication metrics including FWCI, citations, and publication counts before and after first grant.
+
+    Args:
+        df (pd.DataFrame): DataFrame with counts_by_year and earliest_start_date
+        publications (pd.DataFrame): DataFrame with yearly FWCI data
+
+    Returns:
+        pd.DataFrame: DataFrame with added publication metrics
+    """
+    logger.info("Processing publication metrics...")
+
+    # Process counts_by_year data
+    logger.info("Processing citation and publication counts...")
+    metrics = df.progress_apply(_process_counts_by_year, axis=1)
+
+    for field in [
+        "n_pubs_before",
+        "n_pubs_after",
+        "total_citations_before",
+        "total_citations_after",
+        "mean_citations_before",
+        "mean_citations_after",
+        "citations_per_pub_before",
+        "citations_per_pub_after",
+    ]:
+        df[field] = metrics.apply(lambda x: x[field])
+
+    # Process FWCI data
+    logger.info("Processing FWCI metrics...")
+    fwci_metrics = df.progress_apply(lambda x: _process_fwci(x, publications), axis=1)
+    df["mean_fwci_before"] = fwci_metrics.apply(lambda x: x[0])
+    df["mean_fwci_after"] = fwci_metrics.apply(lambda x: x[1])
+
+    # Convert integer fields to Int64 to handle missing values
+    int_fields = [
+        "n_pubs_before",
+        "n_pubs_after",
+        "total_citations_before",
+        "total_citations_after",
+    ]
+    for field in int_fields:
+        df[field] = df[field].astype("Int64")
+
+    return df

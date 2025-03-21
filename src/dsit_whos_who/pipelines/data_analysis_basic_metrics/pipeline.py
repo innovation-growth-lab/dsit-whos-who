@@ -94,7 +94,6 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                     "author_data": "analysis.basic_metrics.author_metadata.intermediate",
                     "person_data": "analysis.basic_metrics.gtr_data.intermediate",
                     "publications": "analysis.basic_metrics.processed_publications.intermediate",
-                    "n_jobs": "params:basic_metrics.oa.n_jobs",
                 },
                 outputs="analysis.basic_metrics.primary",
                 name="compute_basic_metrics",

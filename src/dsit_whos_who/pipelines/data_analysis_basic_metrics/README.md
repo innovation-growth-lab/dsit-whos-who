@@ -61,12 +61,16 @@ The `compute_basic_metrics` function orchestrates the computation of all metrics
 | i10_index | Number of publications with at least 10 citations | integer |
 | first_work_year | Year of first publication | integer |
 | academic_age_at_first_grant | Years between first publication and first grant | integer |
-| total_citations_before | Total citations received before first grant | integer |
-| total_citations_after | Total citations received after first grant | integer |
-| mean_fwci_before | Mean field-weighted citation impact before first grant | float |
-| mean_fwci_after | Mean field-weighted citation impact after first grant | float |
 | n_pubs_before | Number of publications before first grant | integer |
 | n_pubs_after | Number of publications after first grant | integer |
+| total_citations_before | Total citations received before first grant | integer |
+| total_citations_after | Total citations received after first grant | integer |
+| mean_citations_before | Mean citations per year before first grant | float |
+| mean_citations_after | Mean citations per year after first grant | float |
+| citations_per_pub_before | Citations per publication before first grant | float |
+| citations_per_pub_after | Citations per publication after first grant | float |
+| mean_fwci_before | Mean field-weighted citation impact before first grant | float |
+| mean_fwci_after | Mean field-weighted citation impact after first grant | float |
 
 ### Grant information
 | Variable | Description | Type |

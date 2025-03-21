@@ -19,6 +19,7 @@ from .utils.processing import (
 from .utils.basic_metrics import (
     compute_academic_age,
     add_international_metrics,
+    add_publication_metrics,
 )
 from ..data_collection_oa.utils import preprocess_ids
 
@@ -59,7 +60,7 @@ def fetch_openalex_matched_author_works(
     **kwargs,
 ) -> pd.DataFrame:
     """Node for fetching OpenAlex works."""
-    return fetch_openalex_works(ids, mails, perpage, filter_criteria, **kwargs)
+    return fetch_openalex_matched_author_works(ids, mails, perpage, filter_criteria, **kwargs)
 
 
 def process_matched_author_metadata(
@@ -206,6 +207,7 @@ def process_matched_author_works(
             columns=[
                 "author_id",
                 "year",
+                "fwci",
                 "n_collab_uk",
                 "n_collab_abroad",
                 "n_collab_unknown",
@@ -218,6 +220,7 @@ def process_matched_author_works(
         result_df.groupby(["author_id", "year"])
         .agg(
             {
+                "fwci": "mean",
                 "n_collab_uk": "sum",
                 "n_collab_abroad": "sum",
                 "n_collab_unknown": "sum",
@@ -244,7 +247,6 @@ def compute_basic_metrics(
     author_data: pd.DataFrame,
     person_data: pd.DataFrame,
     publications: pd.DataFrame,
-    n_jobs: int = 8,
 ) -> pd.DataFrame:
     """
     Compute basic metrics from author and person data.
@@ -253,7 +255,6 @@ def compute_basic_metrics(
         author_data (pd.DataFrame): OpenAlex author data with affiliations and publication history
         person_data (pd.DataFrame): GTR person data with project information
         publications (pd.DataFrame): Publication data with collaboration information
-        n_jobs (int, optional): Number of parallel jobs to run. Defaults to 8.
 
     Returns:
         pd.DataFrame: Combined data with computed metrics
@@ -271,6 +272,9 @@ def compute_basic_metrics(
     merged_data["academic_age_at_first_grant"] = merged_data.apply(
         compute_academic_age, axis=1
     ).astype("Int64")
+
+    # Add publication metrics
+    merged_data = add_publication_metrics(merged_data, publications)
 
     # Add international experience metrics
     merged_data = add_international_metrics(merged_data, publications)
@@ -300,6 +304,17 @@ def compute_basic_metrics(
         "i10_index",  # i10-index
         "first_work_year",  # First publication year
         "academic_age_at_first_grant",  # Academic age when receiving first grant
+        # Publication metrics before/after
+        "n_pubs_before",  # Number of publications before first grant
+        "n_pubs_after",  # Number of publications after first grant
+        "total_citations_before",  # Total citations before first grant
+        "total_citations_after",  # Total citations after first grant
+        "mean_citations_before",  # Mean citations per year before first grant
+        "mean_citations_after",  # Mean citations per year after first grant
+        "citations_per_pub_before",  # Citations per publication before first grant
+        "citations_per_pub_after",  # Citations per publication after first grant
+        "mean_fwci_before",  # Mean FWCI before first grant
+        "mean_fwci_after",  # Mean FWCI after first grant
         # Grant information
         "earliest_start_date",  # First grant start date
         "latest_end_date",  # Last grant end date

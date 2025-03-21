@@ -8,7 +8,6 @@ import logging
 from typing import Dict, List
 import pandas as pd
 import numpy as np
-from joblib import Parallel, delayed
 from ...data_collection_oa.utils.authors import json_loader_authors
 
 logger = logging.getLogger(__name__)
@@ -182,7 +181,6 @@ def process_publication_batch(
     for _, pub in publications_batch.iterrows():
         year = pub["year"]
         fwci = pub.get("fwci", np.nan)
-        citations = pub.get("cited_by_count", 0)
 
         if not isinstance(pub["authorships"], np.ndarray):
             continue
@@ -243,7 +241,6 @@ def process_publication_batch(
                     "countries_abroad": sorted(list(countries)),
                     "collab_ids": sorted(list(collab_ids)),
                     "fwci": fwci,
-                    "citations": citations
                 }
             )
 
