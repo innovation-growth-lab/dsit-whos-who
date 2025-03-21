@@ -181,6 +181,8 @@ def process_publication_batch(
     processed_data = []
     for _, pub in publications_batch.iterrows():
         year = pub["year"]
+        fwci = pub.get("fwci", np.nan)
+        citations = pub.get("cited_by_count", 0)
 
         if not isinstance(pub["authorships"], np.ndarray):
             continue
@@ -240,6 +242,8 @@ def process_publication_batch(
                     "n_collab_unknown": unknown_collabs,
                     "countries_abroad": sorted(list(countries)),
                     "collab_ids": sorted(list(collab_ids)),
+                    "fwci": fwci,
+                    "citations": citations
                 }
             )
 
