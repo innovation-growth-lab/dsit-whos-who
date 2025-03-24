@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 def process_author_sampling(
-    author_id: str, author_papers: pd.DataFrame
+    author_papers: pd.DataFrame
 ) -> pd.DataFrame:
     """
     Process sampling for a single author.

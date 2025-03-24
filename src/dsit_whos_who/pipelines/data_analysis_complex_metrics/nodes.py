@@ -1,7 +1,6 @@
 import logging
-from typing import List, Union
+from typing import Dict, List, Union, Generator
 import pandas as pd
-from tqdm import tqdm
 from joblib import Parallel, delayed
 
 from ..data_collection_oa.utils import preprocess_ids
@@ -63,8 +62,8 @@ def create_cited_work_ids(
     # Process authors in parallel
     logger.info("Starting parallel processing of authors...")
     sampled_papers = Parallel(n_jobs=n_jobs, verbose=10)(
-        delayed(process_author_sampling)(author_id, papers)
-        for author_id, papers in tqdm(author_data.items())
+        delayed(process_author_sampling)(papers)
+        for _, papers in author_data.items()
     )
 
     # Combine results
@@ -73,6 +72,24 @@ def create_cited_work_ids(
     logger.info("Sampled %d papers across all authors", len(papers_df))
     return papers_df
 
+def create_list_ids(works: pd.DataFrame) -> List[str]:
+    """
+    Create a list of OpenAlex IDs from a DataFrame of works.
+    """
+    logger.info("Starting to create list of OpenAlex author IDs...")
+
+    # create unique list
+    oa_ids = list(
+        set(works[works["id"].notnull()]["id"].drop_duplicates().tolist())
+    )
+
+    logger.info("Found %s unique OpenAlex IDs", len(oa_ids))
+
+    # concatenate doi values to create group queries
+    oa_list = preprocess_ids(oa_ids, True)
+
+    logger.info("Finished preprocessing OpenAlex IDs")
+    return oa_list
 
 def fetch_openalex_work_citations(
     ids: Union[List[str], List[List[str]]],
@@ -82,7 +99,7 @@ def fetch_openalex_work_citations(
     parallel_jobs: int = 8,
     endpoint: str = "works",
     **kwargs,
-) -> pd.DataFrame:
+) -> Generator[Dict[str, pd.DataFrame], None, None]:
     """
     Fetches and processes works from OpenAlex.
     """
@@ -94,9 +111,7 @@ def fetch_openalex_work_citations(
     oa_id_chunks = [ids[i : i + 500] for i in range(0, len(ids), 500)]
     logger.info("Created %s chunks of up to 40 IDs each", len(oa_id_chunks))
 
-    final_data = []
     seen_ids = set()
-
     for i, chunk in enumerate(oa_id_chunks, 1):
         logger.info(
             "Processing chunk %s of %s (%s%% complete)",
