@@ -14,7 +14,8 @@ from .nodes import (
     sample_cited_work_ids,
     create_list_ids,
     fetch_author_work_citations,
-    fetch_reference_works,
+    refactor_reference_works,
+    fetch_author_work_references,
 )
 
 
@@ -57,7 +58,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                     "filter_criteria": "params:complex_metrics.oa.filter",
                     "parallel_jobs": "params:complex_metrics.oa.n_jobs",
                     "endpoint": "params:complex_metrics.oa.publications_endpoint",
-                    "select_variables": "params:complex_metrics.oa.select_variables.focal",
+                    "select_variables": "params:complex_metrics.oa.select_variables",
                 },
                 outputs="analysis.complex_metrics.focal_publications.raw",
                 name="fetch_openalex_focal_work_citations",
@@ -70,7 +71,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
     reference_collection_pipeline = pipeline(
         [
             node(
-                func=fetch_reference_works,
+                func=refactor_reference_works,
                 inputs="analysis.complex_metrics.publications.sampled",
                 outputs="analysis.complex_metrics.reference_works",
                 name="fetch_reference_works",
@@ -83,7 +84,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                 name="create_oa_reference_list",
             ),
             node(
-                func=fetch_author_work_citations,
+                func=fetch_author_work_references,
                 inputs={
                     "perpage": "params:complex_metrics.oa.api.perpage",
                     "mails": "params:complex_metrics.oa.api.mails",
@@ -91,7 +92,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                     "filter_criteria": "params:complex_metrics.oa.filter",
                     "parallel_jobs": "params:complex_metrics.oa.n_jobs",
                     "endpoint": "params:complex_metrics.oa.publications_endpoint",
-                    "select_variables": "params:complex_metrics.oa.select_variables.reference",
+                    "select_variables": "params:complex_metrics.oa.select_variables",
                 },
                 outputs="analysis.complex_metrics.reference_publications.raw",
                 name="fetch_openalex_reference_work_citations",

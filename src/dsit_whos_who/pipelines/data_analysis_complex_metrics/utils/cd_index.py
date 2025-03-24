@@ -86,10 +86,6 @@ def process_works_batch(data: List[Dict], seen_ids: set) -> pd.DataFrame:
     if df_batch.empty:
         return df_batch
 
-    # if citation_percentile in columns, remove if above 0.97 (Deng & Zeng, 2023)
-    if "citation_percentile" in df_batch.columns:
-        df_batch = df_batch[df_batch["citation_percentile"] <= 0.97]
-
     # clean and filter the dataframe
     logger.debug("Cleaning and filtering data")
     df_batch = df_batch.drop_duplicates(subset=["id"]).reset_index(drop=True)

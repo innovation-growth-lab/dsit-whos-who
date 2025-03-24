@@ -102,14 +102,6 @@ def create_list_ids(works: pd.DataFrame) -> List[str]:
     return oa_list
 
 
-def fetch_reference_works(works: pd.DataFrame) -> List[str]:
-    """
-    Fetch reference works from OpenAlex.
-    """
-    logger.info("Starting to fetch reference works from OpenAlex...")
-    return works
-
-
 def fetch_author_work_citations(
     ids: Union[List[str], List[List[str]]],
     mails: List[str],
@@ -146,17 +138,112 @@ def fetch_author_work_citations(
             for oa_id in chunk
         )
 
-        # same process steps as basic metrics
         df_batch = process_works_batch(data, seen_ids)
 
         # convert ID column - remove 'W' prefix and convert to int (efficiency)
         df_batch["id"] = df_batch["id"].str.replace("W", "").astype(int)
 
-        # process referenced_works column - remove 'W' prefix and convert to int for each list
-        df_batch["referenced_works"] = df_batch["referenced_works"].apply(
-            lambda x: (
-                [int(ref.replace("W", "")) for ref in x] if isinstance(x, list) else x
+        if "referenced_works" in df_batch.columns:
+            # process referenced_works column - remove 'W' prefix and convert to int for each list
+            df_batch["referenced_works"] = df_batch["referenced_works"].apply(
+                lambda x: (
+                    [int(ref.replace("W", "")) for ref in x]
+                    if isinstance(x, list)
+                    else x
+                )
             )
-        )
+
+        seen_ids.update(df_batch["id"].tolist())
 
         yield {f"works_{i}": df_batch}
+
+
+def refactor_reference_works(works: pd.DataFrame) -> List[str]:
+    """
+    Fetch reference works from OpenAlex.
+    """
+    logger.info("Starting to fetch reference works from OpenAlex...")
+
+    # keep only the referenced_works column
+    works = works[["referenced_works"]]
+
+    # explode the referenced_works column
+    works = works.explode("referenced_works")
+
+    # count these, remove top 3% frequency (~ Deng & Zeng, 2023)
+    works["count"] = works["referenced_works"].value_counts()
+    works = works[works["count"] <= works["count"].quantile(0.97)]
+    works = works.drop(columns=["count"])
+
+    # rename column to id
+    works = works.rename(columns={"referenced_works": "id"})
+
+    return works
+
+
+def fetch_author_work_references(
+    ids: Union[List[str], List[List[str]]],
+    mails: List[str],
+    perpage: int,
+    filter_criteria: Union[str, List[str]],
+    parallel_jobs: int = 8,
+    endpoint: str = "works",
+    **kwargs,
+) -> Generator[Dict[str, pd.DataFrame], None, None]:
+    """
+    Fetches and processes works from OpenAlex who cite focal works.
+    """
+    logger.info(
+        "Beginning to fetch %s OpenAlex records from %s endpoint", len(ids), endpoint
+    )
+
+    # slice oa_ids
+    oa_id_chunks = [ids[i : i + 200] for i in range(0, len(ids), 200)]
+    logger.info("Created %s chunks of up to 50 IDs each", len(oa_id_chunks))
+
+    for i, chunk in enumerate(oa_id_chunks, 1):
+        logger.info(
+            "Processing chunk %s of %s (%s%% complete)",
+            i,
+            len(oa_id_chunks),
+            f"{(i/len(oa_id_chunks)*100):.1f}",
+        )
+
+        data = Parallel(n_jobs=parallel_jobs, verbose=10)(
+            delayed(fetch_openalex_objects)(
+                oa_id, mails, perpage, filter_criteria, endpoint, **kwargs
+            )
+            for oa_id in chunk
+        )
+
+        # clean the referenced works,
+        cleaned_works = []
+        for batch_return in data:
+            df = pd.DataFrame(batch_return)
+            df["referenced_works"] = df["referenced_works"].apply(
+                lambda x: (
+                    [int(ref.replace("W", "")) for ref in x]
+                    if isinstance(x, list)
+                    else x
+                )
+            )
+            cleaned_works.append(df)
+        cleaned_works = pd.concat(cleaned_works)
+
+        # find the corresponding id in the chunk, after "|" splitting the ids, remove W
+        chunk_ids = [int(id.replace("W", "")) for id in [id.split("|") for id in chunk]]
+
+        # find the corresponding chunk_id in the cleaned_works' referenced_works column
+        cleaned_works["reference_id"] = cleaned_works["referenced_works"].apply(
+            lambda x: [id for id in chunk_ids if id in x]  # pylint: disable=W0640
+        )
+
+        # convert ID column - remove 'W' prefix and convert to int (efficiency)
+        cleaned_works["id"] = cleaned_works["id"].str.replace("W", "").astype(int)
+
+        # groupby reference_id, create list of ids
+        cleaned_works = (
+            cleaned_works.groupby("reference_id").agg(ids=("id", list)).reset_index()
+        )
+
+        yield {f"works_{i}": cleaned_works}
