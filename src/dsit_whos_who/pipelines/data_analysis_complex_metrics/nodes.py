@@ -10,7 +10,31 @@ from .utils.cd_index import process_works_batch, process_author_sampling
 logger = logging.getLogger(__name__)
 
 
-def create_cited_work_ids(
+def _process_chunk(
+    chunk_authors: List[str], works_exploded: pd.DataFrame
+) -> pd.DataFrame:
+    """
+    Process a chunk of authors.
+
+    Args:
+        chunk_authors (List[str]): List of author IDs to process
+        works_exploded (pd.DataFrame): DataFrame containing all works with exploded authorships
+
+    Returns:
+        pd.DataFrame: Combined sampled papers for all authors in the chunk
+    """
+    chunk_results = []
+    for author_id in chunk_authors:
+        # Get papers for this author
+        author_papers = works_exploded[works_exploded["author_id"] == author_id].copy()
+        if not author_papers.empty:
+            result = process_author_sampling(author_papers)
+            if not result.empty:
+                chunk_results.append(result)
+    return pd.concat(chunk_results) if chunk_results else pd.DataFrame()
+
+
+def sample_cited_work_ids(
     works: pd.DataFrame, authors: pd.DataFrame, n_jobs: int = 8
 ) -> pd.DataFrame:
     """
@@ -50,26 +74,29 @@ def create_cited_work_ids(
     # filter to only include authors we care about
     author_ids = set(authors["oa_id"].dropna())
     works_exploded = works_exploded[works_exploded["author_id"].isin(author_ids)]
+    author_ids = list(works_exploded["author_id"].unique())
 
     logger.info("Processing %d unique authors", len(author_ids))
 
-    # Pre-split data for each author
-    logger.info("Preparing data for parallel processing...")
-    author_data = {
-        author_id: works_exploded[works_exploded["author_id"] == author_id].copy()
-        for author_id in works_exploded["author_id"].unique()
-    }
+    # Create chunks of author IDs for parallel processing
+    author_chunks = [author_ids[i : i + 500] for i in range(0, len(author_ids), 500)]
 
-    # Process authors in parallel
-    logger.info("Starting parallel processing of authors...")
-    sampled_papers = Parallel(n_jobs=n_jobs, verbose=10)(
-        delayed(process_author_sampling)(papers) for papers in author_data.values()
+    logger.info(
+        "Created %d chunks of approximately %d authors each",
+        len(author_chunks),
+        500,
     )
 
-    # Combine results
-    papers_df = pd.concat([df for df in sampled_papers if not df.empty])
+    # Process chunks in parallel
+    logger.info("Starting parallel processing of chunks...")
+    chunk_results = Parallel(n_jobs=n_jobs, verbose=10)(
+        delayed(_process_chunk)(chunk, works_exploded) for chunk in author_chunks
+    )
 
+    # Combine results from all chunks
+    papers_df = pd.concat([df for df in chunk_results if not df.empty])
     logger.info("Sampled %d papers across all authors", len(papers_df))
+
     return papers_df
 
 
