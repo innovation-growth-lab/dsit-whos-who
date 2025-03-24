@@ -27,15 +27,15 @@ basic_metrics:
 complex_metrics:
   oa:
     api: *api
+    select_variables:
+      - focal:
+          - "id"
+          - "referenced_works"
+      - reference:
+          - "id"
+          - "citation_percentile"
+          - "referenced_works"
     filter: cites
     n_jobs: 8
     batch_size: 1000
     publications_endpoint: works
-    keys_to_include:
-      focal:
-        - "id"
-        - "referenced_works"
-      context:
-        - "id"
-        - "citation_percentile"
-        - "referenced_works"

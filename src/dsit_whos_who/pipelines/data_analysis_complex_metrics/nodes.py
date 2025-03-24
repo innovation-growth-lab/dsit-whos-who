@@ -5,33 +5,9 @@ from joblib import Parallel, delayed
 
 from ..data_collection_oa.utils import preprocess_ids
 from ..data_collection_oa.nodes import fetch_openalex_objects
-from .utils.cd_index import process_works_batch, process_author_sampling
+from .utils.cd_index import process_works_batch, process_chunk
 
 logger = logging.getLogger(__name__)
-
-
-def _process_chunk(
-    chunk_authors: List[str], works_exploded: pd.DataFrame
-) -> pd.DataFrame:
-    """
-    Process a chunk of authors.
-
-    Args:
-        chunk_authors (List[str]): List of author IDs to process
-        works_exploded (pd.DataFrame): DataFrame containing all works with exploded authorships
-
-    Returns:
-        pd.DataFrame: Combined sampled papers for all authors in the chunk
-    """
-    chunk_results = []
-    for author_id in chunk_authors:
-        # Get papers for this author
-        author_papers = works_exploded[works_exploded["author_id"] == author_id].copy()
-        if not author_papers.empty:
-            result = process_author_sampling(author_papers)
-            if not result.empty:
-                chunk_results.append(result)
-    return pd.concat(chunk_results) if chunk_results else pd.DataFrame()
 
 
 def sample_cited_work_ids(
@@ -60,13 +36,16 @@ def sample_cited_work_ids(
         lambda x: [auth_id for auth_id, _ in x]
     )
 
-    # create quantile column, with highest FWCI getting highest value (5)
+    # drop if referenced_works is None (can't compute DI)
+    works = works[works["referenced_works"].notna()]
+
+    # create quantile column, with highest fwci getting highest value (4)
     works["fwci_quantile"] = (
         pd.qcut(works["fwci"], q=5, labels=False, duplicates="drop") + 1
     )
 
     # select only relevant columns
-    works = works[["id", "year", "author_id", "fwci_quantile"]]
+    works = works[["id", "year", "author_id", "fwci_quantile", "referenced_works"]]
 
     # explode the author_id column
     works_exploded = works.explode("author_id")
@@ -89,7 +68,7 @@ def sample_cited_work_ids(
 
     logger.info("Starting parallel processing of chunks...")
     chunk_results = Parallel(n_jobs=n_jobs, verbose=10)(
-        delayed(_process_chunk)(chunk, works_exploded) for chunk in author_chunks
+        delayed(process_chunk)(chunk, works_exploded) for chunk in author_chunks
     )
 
     concat_papers = pd.concat([df for df in chunk_results]).reset_index(drop=True)
@@ -113,6 +92,14 @@ def create_list_ids(works: pd.DataFrame) -> List[str]:
 
     logger.info("Finished preprocessing OpenAlex IDs")
     return oa_list
+
+
+def fetch_reference_works(works: pd.DataFrame) -> List[str]:
+    """
+    Fetch reference works from OpenAlex.
+    """
+    logger.info("Starting to fetch reference works from OpenAlex...")
+    return works
 
 
 def fetch_author_work_citations(

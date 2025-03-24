@@ -16,6 +16,30 @@ from ...data_collection_oa.utils.publications import json_loader_works
 logger = logging.getLogger(__name__)
 
 
+def process_chunk(
+    chunk_authors: List[str], works_exploded: pd.DataFrame
+) -> pd.DataFrame:
+    """
+    Process a chunk of authors.
+
+    Args:
+        chunk_authors (List[str]): List of author IDs to process
+        works_exploded (pd.DataFrame): DataFrame containing all works with exploded authorships
+
+    Returns:
+        pd.DataFrame: Combined sampled papers for all authors in the chunk
+    """
+    chunk_results = []
+    for author_id in chunk_authors:
+        # Get papers for this author
+        author_papers = works_exploded[works_exploded["author_id"] == author_id].copy()
+        if not author_papers.empty:
+            result = process_author_sampling(author_papers)
+            if not result.empty:
+                chunk_results.append(result)
+    return pd.concat(chunk_results) if chunk_results else pd.DataFrame()
+
+
 def process_author_sampling(author_papers: pd.DataFrame) -> pd.DataFrame:
     """
     Process sampling for a single author.
@@ -55,11 +79,16 @@ def process_author_sampling(author_papers: pd.DataFrame) -> pd.DataFrame:
 
 def process_works_batch(data: List[Dict], seen_ids: set) -> pd.DataFrame:
     """Process a batch of works data."""
+
     logger.debug("Converting fetched data to DataFrame")
     df_batch = json_loader_works(data)
 
     if df_batch.empty:
         return df_batch
+
+    # if citation_percentile in columns, remove if above 0.97 (Deng & Zeng, 2023)
+    if "citation_percentile" in df_batch.columns:
+        df_batch = df_batch[df_batch["citation_percentile"] <= 0.97]
 
     # clean and filter the dataframe
     logger.debug("Cleaning and filtering data")

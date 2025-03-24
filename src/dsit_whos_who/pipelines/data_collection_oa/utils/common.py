@@ -183,6 +183,7 @@ def fetch_openalex_objects(
             session,
             endpoint=endpoint,
             sample_size=kwargs.get("sample_size", -1),
+            select_variables=kwargs.get("select_variables", None),
         )
     ):
         if endpoint == "authors" and filter_criteria == "orcid":

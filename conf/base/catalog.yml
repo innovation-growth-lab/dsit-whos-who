@@ -131,6 +131,7 @@ ad.coverage_analysis.tmp:
       - authorships
       - fwci
       - publication_date
+      - referenced_works
 
 # 4b. Complex metrics:
 analysis.complex_metrics.publications.sampled:
