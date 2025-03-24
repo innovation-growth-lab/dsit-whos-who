@@ -72,8 +72,11 @@ def sample_cited_work_ids(
         delayed(process_chunk)(chunk, works_exploded) for chunk in author_chunks
     )
 
-    concat_papers = pd.concat([df for df in chunk_results]).reset_index(drop=True)
+    concat_papers = pd.concat(chunk_results).reset_index(drop=True)
     logger.info("Sampled %d papers across all authors", len(concat_papers))
+
+    # drop fwci_quantile and year
+    concat_papers = concat_papers.drop(columns=["fwci_quantile", "year"])
 
     # merge back the referenced_works
     concat_papers = concat_papers.merge(works, on="id", how="left")
