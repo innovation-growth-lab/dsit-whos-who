@@ -53,17 +53,13 @@ def create_cited_work_ids(
 
     logger.info("Processing %d unique authors", len(author_ids))
 
-    # Prepare data for parallel processing
-    author_data = {
-        author_id: works_exploded[works_exploded["author_id"] == author_id]
-        for author_id in works_exploded["author_id"].unique()
-    }
-
     # Process authors in parallel
     logger.info("Starting parallel processing of authors...")
     sampled_papers = Parallel(n_jobs=n_jobs, verbose=10)(
-        delayed(process_author_sampling)(papers)
-        for _, papers in author_data.items()
+        delayed(process_author_sampling)(
+            works_exploded[works_exploded["author_id"] == author_id]
+        )
+        for author_id in works_exploded["author_id"].unique()
     )
 
     # Combine results
@@ -72,6 +68,7 @@ def create_cited_work_ids(
     logger.info("Sampled %d papers across all authors", len(papers_df))
     return papers_df
 
+
 def create_list_ids(works: pd.DataFrame) -> List[str]:
     """
     Create a list of OpenAlex IDs from a DataFrame of works.
@@ -79,9 +76,7 @@ def create_list_ids(works: pd.DataFrame) -> List[str]:
     logger.info("Starting to create list of OpenAlex author IDs...")
 
     # create unique list
-    oa_ids = list(
-        set(works[works["id"].notnull()]["id"].drop_duplicates().tolist())
-    )
+    oa_ids = list(set(works[works["id"].notnull()]["id"].drop_duplicates().tolist()))
 
     logger.info("Found %s unique OpenAlex IDs", len(oa_ids))
 
@@ -90,6 +85,7 @@ def create_list_ids(works: pd.DataFrame) -> List[str]:
 
     logger.info("Finished preprocessing OpenAlex IDs")
     return oa_list
+
 
 def fetch_openalex_work_citations(
     ids: Union[List[str], List[List[str]]],
