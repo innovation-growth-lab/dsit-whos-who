@@ -39,16 +39,17 @@ def sample_cited_work_ids(
     # drop if referenced_works is None (can't compute DI)
     works = works[works["referenced_works"].notna()]
 
+    works = works.copy()
     # create quantile column, with highest fwci getting highest value (4)
     works["fwci_quantile"] = (
         pd.qcut(works["fwci"], q=5, labels=False, duplicates="drop") + 1
     )
 
     # select only relevant columns
-    works = works[["id", "year", "author_id", "fwci_quantile", "referenced_works"]]
-
+    works_filt = works[["id", "year", "author_id", "fwci_quantile"]]
+    works = works[["id", "referenced_works"]]
     # explode the author_id column
-    works_exploded = works.explode("author_id")
+    works_exploded = works_filt.explode("author_id")
 
     # filter to only include authors we care about
     author_ids = set(authors["oa_id"].dropna())
@@ -73,6 +74,10 @@ def sample_cited_work_ids(
 
     concat_papers = pd.concat([df for df in chunk_results]).reset_index(drop=True)
     logger.info("Sampled %d papers across all authors", len(concat_papers))
+
+    # merge back the referenced_works
+    concat_papers = concat_papers.merge(works, on="id", how="left")
+
     return concat_papers
 
 
