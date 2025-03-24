@@ -42,7 +42,7 @@ def sample_cited_work_ids(
     The sampling is done per author, considering publication year and citation impact.
 
     Args:
-        works (pd.DataFrame): DataFrame containing work information including authorships
+        works (pd.DataFrame): DataFrame containing work information including authorships and FWCI
         authors (pd.DataFrame): DataFrame containing author information with oa_id
         n_jobs (int): Number of jobs for parallel processing. Default is 8.
 
@@ -52,6 +52,7 @@ def sample_cited_work_ids(
     logger.info("Starting stratified sampling of papers per author...")
 
     works["year"] = pd.to_datetime(works["publication_date"]).dt.year
+    works["fwci"] = works["fwci"].fillna(-1)
 
     # extract author ids from authorships and explode
     logger.info("Exploding authorships to create author-paper pairs...")
@@ -59,8 +60,13 @@ def sample_cited_work_ids(
         lambda x: [auth_id for auth_id, _ in x]
     )
 
+    # create quantile column, with highest FWCI getting highest value (5)
+    works["fwci_quantile"] = pd.qcut(
+        works["fwci"], q=5, labels=[5, 4, 3, 2, 1], duplicates="drop"
+    )
+
     # select only relevant columns
-    works = works[["id", "year", "author_id"]]
+    works = works[["id", "year", "author_id", "fwci", "fwci_quantile"]]
 
     works_exploded = works.explode("author_id")
 
@@ -87,12 +93,10 @@ def sample_cited_work_ids(
     )
 
     # Combine results from all chunks
-    papers_df = pd.concat([df for df in chunk_results if not df.empty]).reset_index(
-        drop=True
-    )
-    logger.info("Sampled %d papers across all authors", len(papers_df))
+    concat_papers = pd.concat([df for df in chunk_results]).reset_index(drop=True)
 
-    return papers_df
+    logger.info("Sampled %d papers across all authors", len(concat_papers))
+    return concat_papers
 
 
 def create_list_ids(works: pd.DataFrame) -> List[str]:

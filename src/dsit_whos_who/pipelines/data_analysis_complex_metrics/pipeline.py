@@ -39,6 +39,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                 inputs="analysis.complex_metrics.publications.sampled",
                 outputs="analysis.complex_metrics.oa.list",
                 name="create_oa_cited_list",
+                tags="collect_focal"
             ),
             node(
                 func=fetch_author_work_citations,
@@ -49,10 +50,11 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                     "filter_criteria": "params:complex_metrics.oa.filter",
                     "parallel_jobs": "params:complex_metrics.oa.n_jobs",
                     "endpoint": "params:complex_metrics.oa.publications_endpoint",
-                    "keys_to_include": "params:complex_metrics.oa.keys_to_include",
+                    "keys_to_include": "params:complex_metrics.oa.keys_to_include.focal",
                 },
-                outputs="analysis.complex_metrics.publications.raw",
-                name="fetch_openalex_work_citations",
+                outputs="analysis.complex_metrics.focal_publications.raw",
+                name="fetch_openalex_focal_work_citations",
+                tags="collect_focal"
             ),
         ],
         tags="cites_collection_pipeline",
