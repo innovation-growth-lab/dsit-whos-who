@@ -35,7 +35,7 @@ def _process_chunk(
 
 
 def sample_cited_work_ids(
-    works: pd.DataFrame, authors: pd.DataFrame, n_jobs: int = 8
+    works: pd.DataFrame, authors: pd.DataFrame, n_jobs: int = -1
 ) -> pd.DataFrame:
     """
     Create a stratified sample of OpenAlex work IDs from a DataFrame of works.
