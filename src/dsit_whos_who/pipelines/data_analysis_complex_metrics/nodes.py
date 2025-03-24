@@ -1,39 +1,77 @@
 import logging
-from typing import Dict, List, Union
+from typing import List, Union
 import pandas as pd
-import numpy as np
+from tqdm import tqdm
 from joblib import Parallel, delayed
-from kedro.io import AbstractDataset
 
 from ..data_collection_oa.utils import preprocess_ids
 from ..data_collection_oa.nodes import fetch_openalex_objects
-from .utils.cd_index import process_works_batch
+from .utils.cd_index import process_works_batch, process_author_sampling
 
 logger = logging.getLogger(__name__)
 
 
-def create_list_cited_ids(works: pd.DataFrame) -> list:
+def create_cited_work_ids(
+    works: pd.DataFrame, authors: pd.DataFrame, n_jobs: int = -1
+) -> pd.DataFrame:
     """
-    Create a list of OpenAlex work IDs from a DataFrame of works.
+    Create a stratified sample of OpenAlex work IDs from a DataFrame of works.
+    The sampling is done per author, considering publication year and citation impact.
 
     Args:
-        authors (pd.DataFrame): A DataFrame containing authors information.
+        works (pd.DataFrame): DataFrame containing work information including authorships and FWCI
+        authors (pd.DataFrame): DataFrame containing author information with oa_id
+        n_jobs (int): Number of jobs for parallel processing. Default is -1 (all cores).
 
     Returns:
-        list: A list of OpenAlex author IDs.
+        pd.DataFrame: A DataFrame with the sampled papers
     """
-    logger.info("Starting to create list of OpenAlex author IDs...")
+    logger.info("Starting stratified sampling of papers per author...")
 
-    # create unique list
-    oa_ids = list(set(works[works["id"].notnull()]["id"].drop_duplicates().tolist()))
+    # year and non-null fwci
+    works["year"] = pd.to_datetime(works["publication_date"]).dt.year
+    works["fwci"] = works["fwci"].fillna(-1)
 
-    logger.info("Found %s unique OpenAlex IDs", len(oa_ids))
+    # create bins for strat. on fwci
+    works["fwci_bin"] = pd.qcut(
+        works["fwci"], q=4, labels=["low", "medium-low", "medium-high", "high"]
+    )
 
-    # concatenate doi values to create group queries
-    oa_list = preprocess_ids(oa_ids, True)
+    # extract author ids from authorships and explode
+    logger.info("Exploding authorships to create author-paper pairs...")
+    works["author_id"] = works["authorships"].apply(
+        lambda x: [auth_id for auth_id, _ in x]
+    )
 
-    logger.info("Finished preprocessing OpenAlex IDs")
-    return oa_list
+    # select only relevant columns
+    works = works[["id", "year", "fwci_bin", "author_id"]]
+
+    works_exploded = works.explode("author_id")
+
+    # filter to only include authors we care about
+    author_ids = set(authors["oa_id"].dropna())
+    works_exploded = works_exploded[works_exploded["author_id"].isin(author_ids)]
+
+    logger.info("Processing %d unique authors", len(author_ids))
+
+    # Prepare data for parallel processing
+    author_data = {
+        author_id: works_exploded[works_exploded["author_id"] == author_id]
+        for author_id in works_exploded["author_id"].unique()
+    }
+
+    # Process authors in parallel
+    logger.info("Starting parallel processing of authors...")
+    sampled_papers = Parallel(n_jobs=n_jobs, verbose=10)(
+        delayed(process_author_sampling)(author_id, papers)
+        for author_id, papers in tqdm(author_data.items())
+    )
+
+    # Combine results
+    papers_df = pd.concat([df for df in sampled_papers if not df.empty])
+
+    logger.info("Sampled %d papers across all authors", len(papers_df))
+    return papers_df
 
 
 def fetch_openalex_work_citations(

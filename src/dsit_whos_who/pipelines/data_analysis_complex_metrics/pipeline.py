@@ -10,7 +10,7 @@ Command Line Example:
 """
 
 from kedro.pipeline import Pipeline, node, pipeline
-from .nodes import create_list_cited_ids, fetch_openalex_work_citations
+from .nodes import create_cited_work_ids, fetch_openalex_work_citations
 
 
 def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
@@ -22,9 +22,12 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
     collection_pipeline = pipeline(
         [
             node(
-                func=create_list_cited_ids,
-                inputs="analysis.basic_metrics.publications.filtered",
-                outputs="analysis.complex_metrics.oa.list",
+                func=create_cited_work_ids,
+                inputs={
+                    "works": "analysis.basic_metrics.publications.filtered",
+                    "authors": "ad.matched_authors.primary",
+                },
+                outputs="analysis.complex_metrics.selected_author_papers.raw",
                 name="create_oa_author_work_ids",
             ),
             node(
