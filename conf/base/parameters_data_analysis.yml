@@ -30,6 +30,9 @@ complex_metrics:
     select_variables:
       - "id"
       - "referenced_works"
+    keys_to_include:
+      - "id"
+      - "referenced_works"
     filter: cites
     n_jobs: 8
     batch_size: 1000
