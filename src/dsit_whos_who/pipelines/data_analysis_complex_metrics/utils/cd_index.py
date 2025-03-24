@@ -16,9 +16,7 @@ from ...data_collection_oa.utils.publications import json_loader_works
 logger = logging.getLogger(__name__)
 
 
-def process_author_sampling(
-    author_papers: pd.DataFrame
-) -> pd.DataFrame:
+def process_author_sampling(author_papers: pd.DataFrame) -> pd.DataFrame:
     """
     Process sampling for a single author.
 
@@ -29,26 +27,27 @@ def process_author_sampling(
     Returns:
         pd.DataFrame: Sampled papers for this author
     """
-    # stratify by year and fwci bin
+    # stratify by year
     samples_per_stratum = max(
-        1, int(100 / (len(author_papers["year"].unique()) * 4))
-    )  # distributes 100 samples evenly across all year and fwci stratas
+        1, int(100 / (len(author_papers["year"].unique())))
+    )  # distributes 100 samples evenly across all year stratas
 
     author_samples = []
     for year in author_papers["year"].unique():
         year_papers = author_papers[author_papers["year"] == year]
-        for fwci_bin in ["low", "medium-low", "medium-high", "high"]:
-            stratum = year_papers[year_papers["fwci_bin"] == fwci_bin]
-            if not stratum.empty:
-                # sample papers from this stratum
-                sampled = stratum.sample(n=min(samples_per_stratum, len(stratum)))
-                author_samples.append(sampled)
+        if not year_papers.empty:
+            # sample papers from this year stratum
+            sampled = year_papers.sample(
+                n=min(samples_per_stratum, len(year_papers)),
+                weights="fwci",
+            )
+            author_samples.append(sampled)
 
     if author_samples:
         author_sampled_papers = pd.concat(author_samples)
         # Cap at 100 papers per author if we got more
         if len(author_sampled_papers) > 100:
-            author_sampled_papers = author_sampled_papers.sample(n=100)
+            author_sampled_papers = author_sampled_papers.sample(n=100, weights="fwci")
         return author_sampled_papers
     return pd.DataFrame()
 

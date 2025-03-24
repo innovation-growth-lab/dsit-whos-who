@@ -117,6 +117,11 @@ ad.coverage_analysis.tmp:
   <<: *_pq
   filepath: s3://igl-public/02_whos_who/data/02_intermediate/author_analysis/{metric}/{group}.parquet
 
+"analysis.{metric}.primary":
+  <<: *_pq
+  filepath: s3://igl-public/02_whos_who/data/03_primary/author_analysis/{metric}.parquet
+
+# 4a. Basic metrics:
 "analysis.basic_metrics.publications.filtered":
   <<: *_pq
   filepath: s3://igl-public/02_whos_who/data/02_intermediate/author_analysis/basic_metrics/publications.parquet
@@ -127,7 +132,7 @@ ad.coverage_analysis.tmp:
       - fwci
       - publication_date
 
-"analysis.{metric}.primary":
+# 4b. Complex metrics:
+analysis.complex_metrics.publications.sampled:
   <<: *_pq
-  filepath: s3://igl-public/02_whos_who/data/03_primary/author_analysis/{metric}.parquet
-
+  filepath: s3://igl-public/02_whos_who/data/01_raw/author_analysis/complex_metrics/publications.parquet

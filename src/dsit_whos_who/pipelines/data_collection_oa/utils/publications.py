@@ -81,6 +81,9 @@ def parse_works_results(
             "referenced_works": paper.get("referenced_works", []),
             "ids": paper.get("ids", []),
             "counts_by_year": paper.get("counts_by_year", []),
+            "citation_normalized_percentile": paper.get(
+                "citation_normalized_percentile", {}
+            ),
         }
         if keys_to_include is not None:
             # Filter the dictionary to only include specified keys
@@ -194,6 +197,12 @@ def json_loader_works(data: List[List[Dict]]) -> pd.DataFrame:
                 )
             )
 
+        if "citation_normalized_percentile" in df.columns:
+            # keep value key
+            df["citation_percentile"] = df[
+                "citation_normalized_percentile"
+            ].apply(lambda x: (x.get("value", 0) if x else None))
+
         # Keep all columns that exist in the DataFrame
         available_columns = [
             col
@@ -210,6 +219,7 @@ def json_loader_works(data: List[List[Dict]]) -> pd.DataFrame:
                 "authorships",
                 "topics",
                 "referenced_works",
+                "citation_percentile"
             ]
             if col in df.columns
         ]

@@ -10,7 +10,11 @@ Command Line Example:
 """
 
 from kedro.pipeline import Pipeline, node, pipeline
-from .nodes import sample_cited_work_ids, create_list_ids, fetch_openalex_work_citations
+from .nodes import (
+    sample_cited_work_ids,
+    create_list_ids,
+    fetch_author_work_citations,
+)
 
 
 def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
@@ -27,17 +31,17 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                     "works": "analysis.basic_metrics.publications.filtered",
                     "authors": "ad.matched_authors.primary",
                 },
-                outputs="analysis.complex_metrics.selected_author_papers.raw",
+                outputs="analysis.complex_metrics.publications.sampled",
                 name="sample_cited_work_ids",
             ),
             node(
                 func=create_list_ids,
-                inputs="analysis.complex_metrics.selected_author_papers.raw",
+                inputs="analysis.complex_metrics.publications.sampled",
                 outputs="analysis.complex_metrics.oa.list",
                 name="create_oa_cited_list",
             ),
             node(
-                func=fetch_openalex_work_citations,
+                func=fetch_author_work_citations,
                 inputs={
                     "perpage": "params:complex_metrics.oa.api.perpage",
                     "mails": "params:complex_metrics.oa.api.mails",

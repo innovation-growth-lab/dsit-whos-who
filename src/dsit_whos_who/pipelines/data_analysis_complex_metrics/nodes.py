@@ -53,12 +53,7 @@ def sample_cited_work_ids(
 
     # year and non-null fwci
     works["year"] = pd.to_datetime(works["publication_date"]).dt.year
-    works["fwci"] = works["fwci"].fillna(-1)
-
-    # create bins for strat. on fwci
-    works["fwci_bin"] = pd.qcut(
-        works["fwci"], q=4, labels=["low", "medium-low", "medium-high", "high"]
-    )
+    works["fwci"] = works["fwci"].fillna(0)
 
     # extract author ids from authorships and explode
     logger.info("Exploding authorships to create author-paper pairs...")
@@ -67,7 +62,7 @@ def sample_cited_work_ids(
     )
 
     # select only relevant columns
-    works = works[["id", "year", "fwci_bin", "author_id"]]
+    works = works[["id", "year", "fwci", "author_id"]]
 
     works_exploded = works.explode("author_id")
 
@@ -94,7 +89,9 @@ def sample_cited_work_ids(
     )
 
     # Combine results from all chunks
-    papers_df = pd.concat([df for df in chunk_results if not df.empty])
+    papers_df = pd.concat([df for df in chunk_results if not df.empty]).reset_index(
+        drop=True
+    )
     logger.info("Sampled %d papers across all authors", len(papers_df))
 
     return papers_df
@@ -118,7 +115,7 @@ def create_list_ids(works: pd.DataFrame) -> List[str]:
     return oa_list
 
 
-def fetch_openalex_work_citations(
+def fetch_author_work_citations(
     ids: Union[List[str], List[List[str]]],
     mails: List[str],
     perpage: int,
@@ -135,7 +132,7 @@ def fetch_openalex_work_citations(
     )
 
     # slice oa_ids
-    oa_id_chunks = [ids[i : i + 500] for i in range(0, len(ids), 500)]
+    oa_id_chunks = [ids[i : i + 200] for i in range(0, len(ids), 200)]
     logger.info("Created %s chunks of up to 40 IDs each", len(oa_id_chunks))
 
     seen_ids = set()
