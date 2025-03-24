@@ -62,7 +62,7 @@ def sample_cited_work_ids(
 
     # create quantile column, with highest FWCI getting highest value (5)
     works["fwci_quantile"] = pd.qcut(
-        works["fwci"], q=5, labels=[5, 4, 3, 2, 1], duplicates="drop"
+        works["fwci"], q=5, labels=False, duplicates="drop"
     )
 
     # select only relevant columns
