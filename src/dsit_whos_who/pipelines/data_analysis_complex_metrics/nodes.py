@@ -87,15 +87,12 @@ def sample_cited_work_ids(
         500,
     )
 
-    # Process chunks in parallel
     logger.info("Starting parallel processing of chunks...")
     chunk_results = Parallel(n_jobs=n_jobs, verbose=10)(
         delayed(_process_chunk)(chunk, works_exploded) for chunk in author_chunks
     )
 
-    # Combine results from all chunks
     concat_papers = pd.concat([df for df in chunk_results]).reset_index(drop=True)
-
     logger.info("Sampled %d papers across all authors", len(concat_papers))
     return concat_papers
 
@@ -128,7 +125,7 @@ def fetch_author_work_citations(
     **kwargs,
 ) -> Generator[Dict[str, pd.DataFrame], None, None]:
     """
-    Fetches and processes works from OpenAlex.
+    Fetches and processes works from OpenAlex who cite focal works.
     """
     logger.info(
         "Beginning to fetch %s OpenAlex records from %s endpoint", len(ids), endpoint
@@ -136,7 +133,7 @@ def fetch_author_work_citations(
 
     # slice oa_ids
     oa_id_chunks = [ids[i : i + 200] for i in range(0, len(ids), 200)]
-    logger.info("Created %s chunks of up to 40 IDs each", len(oa_id_chunks))
+    logger.info("Created %s chunks of up to 50 IDs each", len(oa_id_chunks))
 
     seen_ids = set()
     for i, chunk in enumerate(oa_id_chunks, 1):
@@ -154,6 +151,17 @@ def fetch_author_work_citations(
             for oa_id in chunk
         )
 
+        # same process steps as basic metrics
         df_batch = process_works_batch(data, seen_ids)
+
+        # convert ID column - remove 'W' prefix and convert to int (efficiency)
+        df_batch["id"] = df_batch["id"].str.replace("W", "").astype(int)
+
+        # process referenced_works column - remove 'W' prefix and convert to int for each list
+        df_batch["referenced_works"] = df_batch["referenced_works"].apply(
+            lambda x: (
+                [int(ref.replace("W", "")) for ref in x] if isinstance(x, list) else x
+            )
+        )
 
         yield {f"works_{i}": df_batch}

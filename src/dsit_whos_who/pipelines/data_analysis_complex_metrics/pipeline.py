@@ -33,6 +33,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                 },
                 outputs="analysis.complex_metrics.publications.sampled",
                 name="sample_cited_work_ids",
+                tags="collect_sample"
             ),
             node(
                 func=create_list_ids,

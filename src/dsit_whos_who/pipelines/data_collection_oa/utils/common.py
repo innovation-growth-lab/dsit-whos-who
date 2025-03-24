@@ -41,6 +41,7 @@ def openalex_generator(
     session: requests.Session,
     endpoint: str = "works",
     sample_size: int = -1,
+    select_variables: Optional[List[str]] = None,
 ) -> Iterator[list]:
     """Creates a generator that yields a list of objects from the OpenAlex API based on a
     given ID.
@@ -53,6 +54,7 @@ def openalex_generator(
         session (requests.Session): The requests session to use.
         endpoint (str): The OpenAlex endpoint to query (works, authors, institutions, etc).
         sample_size (int): Number of random samples to return. -1 means no sampling.
+        select_variables (Optional[List[str]]): List of variables to select in the API response.
 
     Yields:
         Iterator[list]: A generator that yields a list of objects from the OpenAlex API.
@@ -75,8 +77,11 @@ def openalex_generator(
     if sample_size == -1:
         cursor_url = (
             f"https://api.openalex.org/{endpoint}?filter={filter_string}"
-            f"&mailto={mailto}&per-page={perpage}&cursor={{}}"
+            f"&mailto={mailto}&per-page={perpage}"
         )
+        if select_variables is not None:
+            cursor_url += f"&select={','.join(select_variables)}"
+        cursor_url += "&cursor={}"
 
         try:
             # make a call to estimate total number of results
@@ -84,7 +89,7 @@ def openalex_generator(
             data = response.json()
 
             while response.status_code == 429:  # needs testing (try with 200)
-                logger.info("Waiting for 1 hour...")
+                logger.info("Waiting for 30 seconds...")
                 time.sleep(30)
                 response = session.get(cursor_url.format(cursor), timeout=20)
                 data = response.json()
@@ -106,8 +111,11 @@ def openalex_generator(
     else:  # OA does not accept cursor pagination with samples.
         cursor_url = (
             f"https://api.openalex.org/{endpoint}?filter={filter_string}&seed=123"
-            f"&mailto={mailto}&per-page={perpage}&sample={sample_size}&page={{}}"
+            f"&mailto={mailto}&per-page={perpage}&sample={sample_size}"
         )
+        if select_variables is not None:
+            cursor_url += f"&select={','.join(select_variables)}"
+        cursor_url += "&page={}"
 
         try:
             # make a call to estimate total number of results
