@@ -39,6 +39,9 @@ CONFIG_LOADER_ARGS = {
 
 GTR_ENDPOINTS = ["projects", "persons", "publications", "organisations"]
 
+# disable mlflow
+DISABLE_HOOKS_FOR_PLUGINS = ("kedro-mlflow", "kedro_mlflow")
+
 # Class that manages Kedro's library components.
 # from kedro.framework.context import KedroContext
 # CONTEXT_CLASS = KedroContext
