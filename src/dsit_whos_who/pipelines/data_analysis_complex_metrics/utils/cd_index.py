@@ -38,7 +38,7 @@ def process_author_sampling(author_papers: pd.DataFrame) -> pd.DataFrame:
         if not year_papers.empty:
             # sample papers from this year stratum
             sampled = year_papers.sample(
-                n=min(samples_per_stratum, len(year_papers), weights="fwci_quantile")
+                n=min(samples_per_stratum, len(year_papers)), weights="fwci_quantile"
             )
             author_samples.append(sampled)
 
@@ -46,7 +46,9 @@ def process_author_sampling(author_papers: pd.DataFrame) -> pd.DataFrame:
         author_sampled_papers = pd.concat(author_samples)
         # Cap at 100 papers per author if we got more
         if len(author_sampled_papers) > 50:
-            author_sampled_papers = author_sampled_papers.sample(n=50, weights="fwci_quantile")
+            author_sampled_papers = author_sampled_papers.sample(
+                n=50, weights="fwci_quantile"
+            )
         return author_sampled_papers
     return pd.DataFrame()
 
