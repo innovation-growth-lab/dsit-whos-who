@@ -42,7 +42,7 @@ def sample_cited_work_ids(
     The sampling is done per author, considering publication year and citation impact.
 
     Args:
-        works (pd.DataFrame): DataFrame containing work information including authorships and FWCI
+        works (pd.DataFrame): DataFrame containing work information including authorships
         authors (pd.DataFrame): DataFrame containing author information with oa_id
         n_jobs (int): Number of jobs for parallel processing. Default is 8.
 
@@ -51,9 +51,7 @@ def sample_cited_work_ids(
     """
     logger.info("Starting stratified sampling of papers per author...")
 
-    # year and non-null fwci
     works["year"] = pd.to_datetime(works["publication_date"]).dt.year
-    works["fwci"] = works["fwci"].fillna(0)
 
     # extract author ids from authorships and explode
     logger.info("Exploding authorships to create author-paper pairs...")
@@ -62,7 +60,7 @@ def sample_cited_work_ids(
     )
 
     # select only relevant columns
-    works = works[["id", "year", "fwci", "author_id"]]
+    works = works[["id", "year", "author_id"]]
 
     works_exploded = works.explode("author_id")
 
