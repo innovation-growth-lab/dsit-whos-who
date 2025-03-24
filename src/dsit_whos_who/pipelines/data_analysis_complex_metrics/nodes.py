@@ -61,13 +61,14 @@ def sample_cited_work_ids(
     )
 
     # create quantile column, with highest FWCI getting highest value (5)
-    works["fwci_quantile"] = pd.qcut(
-        works["fwci"], q=5, labels=False, duplicates="drop"
+    works["fwci_quantile"] = (
+        pd.qcut(works["fwci"], q=5, labels=False, duplicates="drop") + 1
     )
 
     # select only relevant columns
-    works = works[["id", "year", "author_id", "fwci", "fwci_quantile"]]
+    works = works[["id", "year", "author_id", "fwci_quantile"]]
 
+    # explode the author_id column
     works_exploded = works.explode("author_id")
 
     # filter to only include authors we care about
