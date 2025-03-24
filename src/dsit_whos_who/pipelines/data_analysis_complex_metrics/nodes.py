@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def create_cited_work_ids(
-    works: pd.DataFrame, authors: pd.DataFrame, n_jobs: int = -1
+    works: pd.DataFrame, authors: pd.DataFrame, n_jobs: int = 8
 ) -> pd.DataFrame:
     """
     Create a stratified sample of OpenAlex work IDs from a DataFrame of works.
@@ -20,7 +20,7 @@ def create_cited_work_ids(
     Args:
         works (pd.DataFrame): DataFrame containing work information including authorships and FWCI
         authors (pd.DataFrame): DataFrame containing author information with oa_id
-        n_jobs (int): Number of jobs for parallel processing. Default is -1 (all cores).
+        n_jobs (int): Number of jobs for parallel processing. Default is 8.
 
     Returns:
         pd.DataFrame: A DataFrame with the sampled papers
@@ -53,13 +53,17 @@ def create_cited_work_ids(
 
     logger.info("Processing %d unique authors", len(author_ids))
 
+    # Pre-split data for each author
+    logger.info("Preparing data for parallel processing...")
+    author_data = {
+        author_id: works_exploded[works_exploded["author_id"] == author_id].copy()
+        for author_id in works_exploded["author_id"].unique()
+    }
+
     # Process authors in parallel
     logger.info("Starting parallel processing of authors...")
     sampled_papers = Parallel(n_jobs=n_jobs, verbose=10)(
-        delayed(process_author_sampling)(
-            works_exploded[works_exploded["author_id"] == author_id]
-        )
-        for author_id in works_exploded["author_id"].unique()
+        delayed(process_author_sampling)(papers) for papers in author_data.values()
     )
 
     # Combine results
