@@ -122,16 +122,16 @@ def calculate_disparity(x_row: np.array, d: np.array) -> float:
         float: The calculated disparity.
 
     """
-    non_zero_indices = np.nonzero(x_row)[0]
-    num_non_zero = len(non_zero_indices)
-    if num_non_zero <= 1:
+    non_unit_indices = np.where(x_row >= 1)[0]
+    num_non_unit = len(non_unit_indices)
+    if num_non_unit <= 1:
         return 0.0
 
     disparity_sum = 0.0
-    for i in range(num_non_zero):
-        for j in range(i + 1, num_non_zero):
-            disparity_sum += d[non_zero_indices[i], non_zero_indices[j]]
-    return disparity_sum / ((num_non_zero * (num_non_zero - 1)) / 2)
+    for i in range(num_non_unit):
+        for j in range(i + 1, num_non_unit):
+            disparity_sum += d[non_unit_indices[i], non_unit_indices[j]]
+    return disparity_sum / ((num_non_unit * (num_non_unit - 1)) / 2)
 
 
 def weight_function(delta_year, alpha=1):
@@ -174,8 +174,11 @@ def calculate_diversity_components(
     # compute variety
     logger.info("Calculating variety")
     n = x_matrix.shape[1]
-    nx = np.count_nonzero(x_matrix, axis=1)
+    nx = np.sum(x_matrix >= 1, axis=1)
     variety = nx / n
+
+    # can we mask < 1 values to be 0?
+    x_matrix = np.where(x_matrix < 1, 0, x_matrix)
 
     # compute eveness using the Kvålseth-Jost measure for each row
     logger.info("Calculating evenness")

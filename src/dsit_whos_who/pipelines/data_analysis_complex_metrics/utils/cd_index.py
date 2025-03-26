@@ -133,77 +133,73 @@ def process_disruption_indices(
     citing_papers_dataset: Dict[str, callable],
 ) -> pd.DataFrame:
     """
-    Process disruption indices for all focal papers using parallel processing.
+    Process disruption indices for all focal papers using efficient set operations.
+    Uses batch-level set operations to minimize iterations and maximize efficiency.
 
     Args:
         focal_papers (pd.DataFrame): DataFrame containing focal papers with 'id' and
             'referenced_works' columns
         citing_papers_dataset (Dict[str, callable]): Dictionary of partition loaders
             for citing papers
-        n_jobs (int): Number of parallel jobs
 
     Returns:
         pd.DataFrame: DataFrame with focal paper IDs and their disruption indices
     """
     logger.info("Processing disruption indices for %d focal papers", len(focal_papers))
-    focal_paper_ids = set(focal_papers["id"].unique())
 
-    focal_papers_dict = {focal_id: {"n_f": 0, "n_b": 0} for focal_id in focal_paper_ids}
-    seen_citing_papers = set()
+    # Convert focal papers and their references to sets once
+    focal_ids = focal_papers["id"].values
+    focal_id_to_idx = {id_: idx for idx, id_ in enumerate(focal_ids)}
+    focal_ids_set = set(focal_ids)
+    focal_refs_sets = [set(refs) for refs in focal_papers["referenced_works"].values]
+
+    # Initialize count arrays
+    n_f = np.zeros(len(focal_ids), dtype=np.int32)
+    n_b = np.zeros(len(focal_ids), dtype=np.int32)
+
+    seen_citing_ids = set()
     for key, loader in tqdm(
         citing_papers_dataset.items(), total=len(citing_papers_dataset)
     ):
         batch = loader()
-        if batch.empty:
-            logger.debug("Empty batch: %s", key)
-            continue
 
-        # process each paper, which cites at least one focal paper
-        for _, row in batch.iterrows():
+        unseen_batch = batch[~batch["id"].isin(seen_citing_ids)]
 
-            citing_paper_id = row["id"]
-            referenced_works = row["referenced_works"]
-            # skip if this paper has no references or has already been seen
-            if (
-                not isinstance(referenced_works, np.ndarray)
-                or citing_paper_id in seen_citing_papers
-            ):
-                continue
+        tqdm.write(
+            f"Batch {key}: Processing {len(unseen_batch)} papers, "
+            f"filtered {len(batch) - len(unseen_batch)} duplicates"
+        )
 
-            # find which focal papers this paper cites
-            cited_focal_papers = set(referenced_works).intersection(focal_paper_ids)
+        for refs in unseen_batch["referenced_works"].values:
+            refs_set = set(refs)
 
-            # skip if this paper doesn't cite any of our focal papers
+            # Find which focal papers this citing paper references
+            cited_focal_papers = refs_set & focal_ids_set
             if not cited_focal_papers:
-                logger.warning("Paper %d cites no focal papers", citing_paper_id)
                 continue
 
-            # fetch the rows of matching focal papers,
-            # compute the intersection of the sets of referenced_works:
-            # if at least one is present, increment n_b, otherwise n_f
-            focal_papers_subset = focal_papers[
-                focal_papers["id"].isin(cited_focal_papers)
-            ]
-
-            for _, focal_row in focal_papers_subset.iterrows():
-                focal_id = focal_row["id"]
-                focal_refs = focal_row["referenced_works"]
-                if set(focal_refs).intersection(referenced_works):
-                    focal_papers_dict[focal_id]["n_b"] += 1
+            # For each cited focal paper, check if any of its references are cited
+            for focal_id in cited_focal_papers:
+                focal_idx = focal_id_to_idx[focal_id]
+                if focal_refs_sets[focal_idx] & refs_set:
+                    n_b[focal_idx] += 1
                 else:
-                    focal_papers_dict[focal_id]["n_f"] += 1
+                    n_f[focal_idx] += 1
 
-            # add this citing paper to the set of seen citing papers
-            seen_citing_papers.add(citing_paper_id)
+        seen_citing_ids.update(unseen_batch["id"].values)
 
-    # make a dataframe from the focal_papers_dict
-    combined_results = pd.DataFrame.from_dict(focal_papers_dict, orient="index")
-    combined_results["total"] = combined_results["n_b"] + combined_results["n_f"]
-    combined_results["disruption_index"] = np.where(
-        combined_results["total"] > 0,
-        (combined_results["n_b"] - combined_results["n_f"]) / combined_results["total"],
-        np.nan,
-    )
+    # Create results DataFrame
+    result_data = {"id": focal_ids, "n_f": n_f, "n_b": n_b, "total": n_f + n_b}
+
+    combined_results = pd.DataFrame(result_data)
+
+    # Calculate disruption index using vectorized operations
+    mask = combined_results["total"] > 0
+    combined_results["disruption_index"] = np.nan
+    combined_results.loc[mask, "disruption_index"] = (
+        combined_results.loc[mask, "n_f"] - combined_results.loc[mask, "n_b"]
+    ) / combined_results.loc[mask, "total"]
+
     combined_results["di_status"] = np.where(
         combined_results["total"] > 0, "valid", "calculation_failed"
     )
@@ -243,9 +239,6 @@ def process_disruption_indices(
         (valid_dis == 0).sum() / len(valid_dis) * 100,
     )
 
-    # Clean up the output by removing the status column
-    result_df = combined_results[
-        ["di_status", "disruption_index", "n_f", "n_b", "total"]
-    ].copy().reset_index(drop=False)
-    result_df.rename(columns={"index": "id"}, inplace=True)
-    return result_df
+    return combined_results[
+        ["id", "di_status", "disruption_index", "n_f", "n_b", "total"]
+    ]

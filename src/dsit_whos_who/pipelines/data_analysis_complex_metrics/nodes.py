@@ -344,7 +344,9 @@ def calculate_disruption_indices(
     )
 
     # Process the disruption indices
-    return process_disruption_indices(focal_papers, citing_papers_dataset)
+    disruption_data = process_disruption_indices(focal_papers, citing_papers_dataset)
+
+    return disruption_data
 
 
 def compute_subfield_embeddings(
@@ -511,5 +513,3 @@ def calculate_author_diversity(
     )
 
     return diversity_components[["author", "year", "variety", "evenness", "disparity"]]
-
-
