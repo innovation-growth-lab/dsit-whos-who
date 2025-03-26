@@ -13,8 +13,8 @@ by checking whether papers that cite it also cite its references or not.
 import logging
 from typing import Dict, List, Union, Generator
 import pandas as pd
-import numpy as np
 from joblib import Parallel, delayed
+from sentence_transformers import SentenceTransformer
 
 from ..data_collection_oa.utils import preprocess_ids
 from ..data_collection_oa.nodes import fetch_openalex_objects
@@ -23,6 +23,7 @@ from .utils.cd_index import (
     process_chunk,
     process_disruption_indices,
 )
+from .utils.embeddings import compute_distance_matrix
 
 logger = logging.getLogger(__name__)
 
@@ -319,7 +320,7 @@ def calculate_disruption_indices(
     focal_papers = focal_papers[["id", "referenced_works"]]
     # Copy the dataframe to avoid modifying the original
     focal_papers = focal_papers.copy()
-    
+
     # drop referenced_works = None
     focal_papers = focal_papers[focal_papers["referenced_works"].notna()]
 
@@ -338,3 +339,34 @@ def calculate_disruption_indices(
 
     # Process the disruption indices
     return process_disruption_indices(focal_papers, citing_papers_dataset)
+
+
+def compute_subfield_embeddings(
+    cwts_data: pd.DataFrame,
+) -> pd.DataFrame:
+    """
+    Compute topic embeddings and distance matrices for topics, subfields, fields, and domains.
+
+    Args:
+        cwts_data (pd.DataFrame): The input dataframe containing the CWTS data.
+
+    Returns:
+        Tuple: A tuple containing the topic distance matrix, subfield distance matrix,
+        field distance matrix, and domain distance matrix.
+    """
+    encoder = SentenceTransformer("sentence-transformers/allenai-specter")
+
+    cwts_data = cwts_data.copy()[cwts_data["level"] == 2]
+
+    # retrieve id (last item after splitting on ">" id_path)
+    cwts_data["subfield_id"] = cwts_data["id_path"].apply(lambda x: x.split(">")[-1])
+
+    logger.info("Computing embeddings for topics")
+    cwts_data["subfield_embeddings"] = cwts_data["label"].apply(encoder.encode)
+
+    logger.info("Computing distance matrix for subfields")
+    subfield_distance_matrix = compute_distance_matrix(
+        cwts_data["subfield_embeddings"].tolist(), cwts_data["subfield_id"].tolist()
+    )
+
+    return subfield_distance_matrix
