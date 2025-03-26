@@ -122,7 +122,7 @@ ad.coverage_analysis.tmp:
   filepath: s3://igl-public/02_whos_who/data/03_primary/author_analysis/{metric}.parquet
 
 # 4a. Basic metrics:
-"analysis.basic_metrics.publications.filtered":
+analysis.basic_metrics.publications.filtered:
   <<: *_pq
   filepath: s3://igl-public/02_whos_who/data/02_intermediate/author_analysis/basic_metrics/publications.parquet
   load_args:

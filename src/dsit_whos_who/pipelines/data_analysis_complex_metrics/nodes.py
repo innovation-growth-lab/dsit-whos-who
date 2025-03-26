@@ -1,11 +1,28 @@
+"""
+This module contains nodes for calculating complex metrics for author analysis.
+
+The module implements functions to:
+1. Sample papers from authors' publication records using stratified sampling
+2. Fetch citation data from OpenAlex for sampled papers and their references
+3. Calculate disruption indices based on Wu and Yan (2019) methodology
+
+The disruption index measures how much a paper disrupts vs. consolidates its research field
+by checking whether papers that cite it also cite its references or not.
+"""
+
 import logging
 from typing import Dict, List, Union, Generator
 import pandas as pd
+import numpy as np
 from joblib import Parallel, delayed
 
 from ..data_collection_oa.utils import preprocess_ids
 from ..data_collection_oa.nodes import fetch_openalex_objects
-from .utils.cd_index import process_works_batch, process_chunk
+from .utils.cd_index import (
+    process_works_batch,
+    process_chunk,
+    process_disruption_indices,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -245,7 +262,7 @@ def fetch_author_work_references(
 
         # Use set intersection instead of list comprehension
         cleaned_works["reference_id"] = cleaned_works["referenced_works"].apply(
-            lambda x: list(chunk_ids.intersection(x))
+            lambda x: list(chunk_ids.intersection(x))  # pylint: disable=W0640
         )
 
         # Filter out empty lists before exploding to reduce size
@@ -263,3 +280,61 @@ def fetch_author_work_references(
         )
 
         yield {f"works_{i}": cleaned_works_agg}
+
+
+def calculate_disruption_indices(
+    focal_papers: pd.DataFrame,
+    citing_papers_dataset: Dict[str, callable],
+) -> pd.DataFrame:
+    """
+    Calculate disruption indices for a set of focal papers.
+
+    This function implements the Wu and Yan (2019) disruption index, which ignores papers
+    bypassing the focal paper. The formula is:
+
+    DI = (n_f - n_b) / (n_f + n_b)
+
+    Where:
+    - n_f is the number of papers citing the focal but not its references
+    - n_b is the number of papers citing both the focal and its references
+
+    Args:
+        focal_papers (pd.DataFrame): DataFrame containing focal papers with 'id' and
+            'referenced_works' columns
+        citing_papers_dataset (Dict[str, callable]): Dictionary of partition loaders
+            for citing papers
+        n_jobs (int, optional): Number of parallel jobs. Defaults to 8.
+
+    Returns:
+        pd.DataFrame: DataFrame with focal paper IDs and their disruption indices
+    """
+    logger.info(
+        "Starting disruption index calculation for %d papers", len(focal_papers)
+    )
+
+    if "referenced_works" not in focal_papers.columns:
+        logger.error("Referenced works column not found in focal papers dataset")
+        return pd.DataFrame(columns=["id", "disruption_index"])
+
+    focal_papers = focal_papers[["id", "referenced_works"]]
+    # Copy the dataframe to avoid modifying the original
+    focal_papers = focal_papers.copy()
+    
+    # drop referenced_works = None
+    focal_papers = focal_papers[focal_papers["referenced_works"].notna()]
+
+    # harmonise the ids and referenced_works
+    focal_papers["id"] = focal_papers["id"].str.replace("W", "").astype(int)
+    focal_papers["referenced_works"] = focal_papers["referenced_works"].apply(
+        lambda x: [int(ref.replace("W", "")) for ref in x]
+    )
+
+    # Log statistics about focal papers
+    ref_counts = focal_papers["referenced_works"].apply(len)
+    logger.info("Focal papers statistics:")
+    logger.info(" - Total papers: %d", len(focal_papers))
+    logger.info(" - Mean references per paper: %.1f", ref_counts.mean())
+    logger.info(" - Max references: %d", ref_counts.max())
+
+    # Process the disruption indices
+    return process_disruption_indices(focal_papers, citing_papers_dataset)
