@@ -13,6 +13,7 @@ by checking whether papers that cite it also cite its references or not.
 import logging
 from typing import Dict, List, Union, Generator
 import pandas as pd
+import numpy as np
 from joblib import Parallel, delayed
 from sentence_transformers import SentenceTransformer
 
@@ -27,6 +28,8 @@ from .utils.embeddings import compute_distance_matrix
 from .utils.discipline_diversity import (
     create_author_and_year_subfield_frequency,
     filter_single_list,
+    weight_function,
+    calculate_diversity_components,
 )
 
 logger = logging.getLogger(__name__)
@@ -290,6 +293,7 @@ def fetch_author_work_references(
 
 
 def calculate_disruption_indices(
+    sample_ids: List[str],
     focal_papers: pd.DataFrame,
     citing_papers_dataset: Dict[str, callable],
 ) -> pd.DataFrame:
@@ -315,6 +319,8 @@ def calculate_disruption_indices(
     Returns:
         pd.DataFrame: DataFrame with focal paper IDs and their disruption indices
     """
+    focal_papers = focal_papers[focal_papers["id"].isin(sample_ids)]
+
     logger.info(
         "Starting disruption index calculation for %d papers", len(focal_papers)
     )
@@ -335,13 +341,6 @@ def calculate_disruption_indices(
     focal_papers["referenced_works"] = focal_papers["referenced_works"].apply(
         lambda x: [int(ref.replace("W", "")) for ref in x]
     )
-
-    # Log statistics about focal papers
-    ref_counts = focal_papers["referenced_works"].apply(len)
-    logger.info("Focal papers statistics:")
-    logger.info(" - Total papers: %d", len(focal_papers))
-    logger.info(" - Mean references per paper: %.1f", ref_counts.mean())
-    logger.info(" - Max references: %d", ref_counts.max())
 
     # Process the disruption indices
     return process_disruption_indices(focal_papers, citing_papers_dataset)
@@ -431,3 +430,87 @@ def create_author_aggregates(
     ].transform("sum")
 
     return author_frequencies
+
+
+def cumulative_author_aggregates(author_topics: pd.DataFrame) -> pd.DataFrame:
+    """
+    Calculate the weighted cumulative sum of topic frequencies for each author
+    over the years. This function processes a DataFrame containing author topics
+    and their frequencies by year. It computes a weighted cumulative sum of
+    frequencies for each author, where the weights are determined by the difference
+    in years.
+
+    Args:
+        author_topics (pd.DataFrame): DataFrame containing author data, including columns
+            'author', 'year', and additional topic columns.
+
+    Returns:
+        pd.DataFrame: DataFrame containing the author topics with an additional column
+            'weighted_cumsum' containing the weighted cumulative sum of frequencies.
+    """
+
+    results = []
+    len_authors = len(author_topics["author"].unique())
+
+    for i, (_, group) in enumerate(author_topics.groupby("author")):
+        if i % 10_000 == 0:
+            logger.info("Processing author %d / %d", i + 1, len_authors)
+        group = group.sort_values("year")  # Sort by year
+        weighted_cumsum_list = []
+
+        # compute weighted cumulative sum for each year
+        for _, target_row in group.iterrows():
+            target_year = target_row["year"]
+            frequencies = np.array(group["frequency"].tolist())
+            years = group["year"].to_numpy()
+
+            # compute weights based on year differences
+            weights = weight_function(years - target_year)
+            weights = weights[:, np.newaxis]
+
+            # compute weighted cumulative sum for the current year
+            weighted_cumsum = np.sum(
+                frequencies.astype(np.float16) * weights.astype(np.float16), axis=0
+            )
+            weighted_cumsum_list.append(weighted_cumsum)
+
+        # Add results back to the DataFrame
+        group["frequency"] = weighted_cumsum_list
+        results.append(group[["author", "year", "frequency"]])
+
+    results = pd.concat(results, ignore_index=True)
+
+    author_topics = author_topics[
+        ["author", "year", "publications", "total_publications"]
+    ].merge(results, on=["author", "year"], how="left")
+
+    return author_topics
+
+
+def calculate_author_diversity(
+    author_frequencies: pd.DataFrame,
+    disparity_matrix: pd.DataFrame,
+):
+    """
+    Calculate the author diversity metrics for a given set of publications and authors.
+    It combines the weighted cumulative sums of topic frequencies for each author
+    with the disparity matrix to calculate the diversity components.
+
+    Args:
+        author_topics (pd.DataFrame): DataFrame containing author data, including columns
+            'author', 'year', and additional topic columns.
+        disparity_matrix (pd.DataFrame): DataFrame containing the disparity matrix
+            used for diversity calculation.
+
+    Returns:
+        pd.DataFrame: DataFrame containing the coauthor diversity metrics, including
+            columns 'id', 'variety', 'evenness', and 'disparity'.
+    """
+    # Calculate diversity components
+    diversity_components = calculate_diversity_components(
+        author_frequencies, disparity_matrix
+    )
+
+    return diversity_components[["author", "year", "variety", "evenness", "disparity"]]
+
+

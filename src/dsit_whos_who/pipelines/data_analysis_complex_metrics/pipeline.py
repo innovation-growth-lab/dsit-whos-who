@@ -110,14 +110,20 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
     disruption_index_pipeline = pipeline(
         [
             node(
+                func=create_list_ids,
+                inputs="analysis.complex_metrics.publications.sampled",
+                outputs="analysis.complex_metrics.oa.list_for_filtering",
+                name="create_oa_cited_list_for_filtering",
+            ),
+            node(
                 func=calculate_disruption_indices,
                 inputs={
+                    "sample_ids": "analysis.complex_metrics.oa.list_for_filtering",
                     "focal_papers": "analysis.basic_metrics.publications.filtered",
                     "citing_papers_dataset": "analysis.complex_metrics.focal_publications.raw",
                 },
                 outputs="analysis.complex_metrics.disruption_indices.intermediate",
                 name="calculate_disruption_indices",
-                tags=["disruption_index"],
             ),
         ],
         tags="disruption_index_pipeline",
@@ -140,6 +146,23 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                 },
                 outputs="analysis.complex_metrics.author_topic_aggregates.intermediate",
                 name="create_author_topic_aggregates",
+            ),
+            node(
+                func=cumulative_author_aggregates,
+                inputs={
+                    "author_topics": "analysis.complex_metrics.author_topic_aggregates.intermediate"
+                },
+                outputs="analysis.complex_metrics.cumul_topic_aggs.intermediate",
+                name="create_cumulative_author_aggregates",
+            ),
+            node(
+                func=calculate_author_diversity,
+                inputs={
+                    "author_frequencies": "analysis.complex_metrics.cumul_topic_aggs.intermediate",
+                    "disparity_matrix": "analysis.complex_metrics.cwts.subfield.distance_matrix",
+                },
+                outputs="analysis.complex_metrics.author_diversity",
+                name="calculate_author_diversity",
             ),
         ],
     )

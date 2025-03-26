@@ -21,9 +21,12 @@ Functions:
 
 """
 
+import logging
 import re
 import pandas as pd
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 def filter_single_list(topic, level):
@@ -129,3 +132,69 @@ def calculate_disparity(x_row: np.array, d: np.array) -> float:
         for j in range(i + 1, num_non_zero):
             disparity_sum += d[non_zero_indices[i], non_zero_indices[j]]
     return disparity_sum / ((num_non_zero * (num_non_zero - 1)) / 2)
+
+
+def weight_function(delta_year, alpha=1):
+    """
+    Compute weight based on the time difference.
+    - delta_year: The difference between years.
+    - alpha: Smoothing factor (higher = steeper weight dropoff).
+    """
+    return 1 / (1 + alpha * abs(delta_year))
+
+
+def calculate_diversity_components(
+    data: pd.DataFrame, disparity_matrix: pd.DataFrame
+) -> pd.DataFrame:
+    """
+    Calculate diversity components based on the given data and disparity matrix. The diversity
+    measure builds from Leydesdorff, Wagner, and Bornmann (2019) and consists of three components:
+
+    - Variety: The number of unique topics an author has published on.
+    - Evenness: The distribution of publications across topics.
+    - Disparity: The diversity of topics an author has published
+
+    The implementation follows Rousseau's (2023) suggestion to use the Kvålseth-Jost measure for
+    evenness, which is a generalisation of the Gini coefficient presented by Jost (2006) and
+    included in the meta discussion paper by Chao and Ricotta (2023).
+
+    Args:
+        data (pd.DataFrame): The input data containing the necessary columns.
+        disparity_matrix (pd.DataFrame): The disparity matrix used for calculating disparity.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing the diversity components.
+
+    """
+    x_matrix = data[["frequency"]].to_numpy()
+    x_matrix = np.vstack(x_matrix[:, 0])
+    disparity_matrix = disparity_matrix.to_numpy()
+    data.drop(columns=["frequency"], inplace=True)
+
+    # compute variety
+    logger.info("Calculating variety")
+    n = x_matrix.shape[1]
+    nx = np.count_nonzero(x_matrix, axis=1)
+    variety = nx / n
+
+    # compute eveness using the Kvålseth-Jost measure for each row
+    logger.info("Calculating evenness")
+    q = 2
+    with np.errstate(divide="ignore", invalid="ignore"):
+        p_matrix = x_matrix / np.sum(x_matrix, axis=1, keepdims=True)
+        evenness = np.sum(p_matrix**q, axis=1) ** (1 / (1 - q)) - 1
+        evenness = np.nan_to_num(evenness / (nx - 1), nan=0.0)
+
+    # compute disparity
+    logger.info("Calculating disparity")
+    disparity = np.array(
+        [calculate_disparity(row, disparity_matrix) for row in x_matrix]
+    )
+
+    logger.info("Diversity components calculated")
+    diversity_components = data.copy()
+    diversity_components["variety"] = variety
+    diversity_components["evenness"] = evenness
+    diversity_components["disparity"] = disparity
+
+    return diversity_components
