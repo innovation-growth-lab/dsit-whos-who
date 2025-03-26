@@ -13,7 +13,7 @@ Where:
 - n_b is the number of papers citing both the focal paper and its references
 
 A positive DI (closer to 1) indicates a disruptive paper that changes the direction of research,
-while a negative DI (closer to -1) indicates a consolidating paper that reinforces existing 
+while a negative DI (closer to -1) indicates a consolidating paper that reinforces existing
 research.
 
 References:
@@ -195,8 +195,6 @@ def process_disruption_indices(
 
             # add this citing paper to the set of seen citing papers
             seen_citing_papers.add(citing_paper_id)
-
-        break
 
     # make a dataframe from the focal_papers_dict
     combined_results = pd.DataFrame.from_dict(focal_papers_dict, orient="index")
