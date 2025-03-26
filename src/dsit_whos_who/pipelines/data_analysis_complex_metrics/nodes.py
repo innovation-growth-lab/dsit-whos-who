@@ -454,8 +454,6 @@ def cumulative_author_aggregates(author_topics: pd.DataFrame) -> pd.DataFrame:
     len_authors = len(author_topics["author"].unique())
 
     for _, group in tqdm(author_topics.groupby("author"), total=len_authors):
-        if i % 10_000 == 0:
-            logger.info("Processing author %d / %d", i + 1, len_authors)
         group = group.sort_values("year")  # Sort by year
         weighted_cumsum_list = []
 
