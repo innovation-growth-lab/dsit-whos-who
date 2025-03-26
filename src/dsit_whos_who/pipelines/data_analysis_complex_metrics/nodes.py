@@ -294,7 +294,7 @@ def fetch_author_work_references(
 
 
 def calculate_disruption_indices(
-    sample_ids: List[str],
+    sample_ids: pd.DataFrame,
     focal_papers: pd.DataFrame,
     citing_papers_dataset: Dict[str, callable],
 ) -> pd.DataFrame:
@@ -320,7 +320,7 @@ def calculate_disruption_indices(
     Returns:
         pd.DataFrame: DataFrame with focal paper IDs and their disruption indices
     """
-    focal_papers = focal_papers[focal_papers["id"].isin(sample_ids)]
+    focal_papers = focal_papers[focal_papers["id"].isin(sample_ids["id"])]
 
     logger.info(
         "Starting disruption index calculation for %d papers", len(focal_papers)

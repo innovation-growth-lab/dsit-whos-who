@@ -112,15 +112,9 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
     disruption_index_pipeline = pipeline(
         [
             node(
-                func=create_list_ids,
-                inputs="analysis.complex_metrics.publications.sampled",
-                outputs="analysis.complex_metrics.oa.list_for_filtering",
-                name="create_oa_cited_list_for_filtering",
-            ),
-            node(
                 func=calculate_disruption_indices,
                 inputs={
-                    "sample_ids": "analysis.complex_metrics.oa.list_for_filtering",
+                    "sample_ids": "analysis.complex_metrics.publications.sampled_ids",
                     "focal_papers": "analysis.basic_metrics.publications.filtered",
                     "citing_papers_dataset": "analysis.complex_metrics.focal_publications.raw",
                 },
@@ -128,7 +122,6 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                 name="calculate_disruption_indices",
             ),
         ],
-        tags="disruption_index_pipeline",
     )
 
     discipline_diversity_pipeline = pipeline(

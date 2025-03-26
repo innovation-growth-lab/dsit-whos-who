@@ -244,5 +244,8 @@ def process_disruption_indices(
     )
 
     # Clean up the output by removing the status column
-    result_df = combined_results[["id", "disruption_index"]].copy()
+    result_df = combined_results[
+        ["di_status", "disruption_index", "n_f", "n_b", "total"]
+    ].copy().reset_index(drop=False)
+    result_df.rename(columns={"index": "id"}, inplace=True)
     return result_df
