@@ -19,6 +19,8 @@ from .nodes import (
     calculate_disruption_indices,
     compute_subfield_embeddings,
     create_author_aggregates,
+    cumulative_author_aggregates,
+    calculate_author_diversity,
 )
 
 
