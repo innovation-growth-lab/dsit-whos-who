@@ -14,6 +14,7 @@ import logging
 from typing import Dict, List, Union, Generator
 import pandas as pd
 import numpy as np
+from tqdm import tqdm
 from joblib import Parallel, delayed
 from sentence_transformers import SentenceTransformer
 
@@ -452,7 +453,7 @@ def cumulative_author_aggregates(author_topics: pd.DataFrame) -> pd.DataFrame:
     results = []
     len_authors = len(author_topics["author"].unique())
 
-    for i, (_, group) in enumerate(author_topics.groupby("author")):
+    for _, group in tqdm(author_topics.groupby("author"), total=len_authors):
         if i % 10_000 == 0:
             logger.info("Processing author %d / %d", i + 1, len_authors)
         group = group.sort_values("year")  # Sort by year
