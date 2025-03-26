@@ -239,19 +239,20 @@ def fetch_author_work_references(
         cleaned_works = pd.concat(cleaned_works)
 
         # find the corresponding id in the chunk, after "|" splitting the ids, remove W
-        chunk_ids = [
-            int(id_part.replace("W", "")) for id in chunk for id_part in id.split("|")
-        ]
-
-        # find the corresponding chunk_id in the cleaned_works' referenced_works column
-        cleaned_works["reference_id"] = cleaned_works["referenced_works"].apply(
-            lambda x: [id for id in chunk_ids if id in x]  # pylint: disable=W0640
+        chunk_ids = set(
+            [int(id_part.replace("W", "")) for id in chunk for id_part in id.split("|")]
         )
 
-        # explode the reference_id column
-        cleaned_works_e = cleaned_works.explode("reference_id")
+        # Use set intersection instead of list comprehension
+        cleaned_works["reference_id"] = cleaned_works["referenced_works"].apply(
+            lambda x: list(chunk_ids.intersection(x))
+        )
 
-        # groupby reference_id, create list of ids
+        # Filter out empty lists before exploding to reduce size
+        cleaned_works = cleaned_works[cleaned_works["reference_id"].apply(len) > 0]
+
+        # Now explode and group on smaller dataset
+        cleaned_works_e = cleaned_works.explode("reference_id")
         cleaned_works_agg = (
             cleaned_works_e.groupby("reference_id").agg(ids=("id", list)).reset_index()
         )
