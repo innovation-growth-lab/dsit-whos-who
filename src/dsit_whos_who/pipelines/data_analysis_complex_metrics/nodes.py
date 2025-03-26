@@ -24,6 +24,10 @@ from .utils.cd_index import (
     process_disruption_indices,
 )
 from .utils.embeddings import compute_distance_matrix
+from .utils.discipline_diversity import (
+    create_author_and_year_subfield_frequency,
+    filter_single_list,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -370,3 +374,56 @@ def compute_subfield_embeddings(
     )
 
     return subfield_distance_matrix
+
+
+def create_author_aggregates(
+    authors_data: pd.DataFrame, authors: pd.DataFrame, cwts_data: pd.DataFrame
+) -> pd.DataFrame:
+    """
+    Create aggregates of author data based on a specified taxonomy level.
+
+    Args:
+        authors_data (AbstractDataset): A dataset containing author data.
+        level (int): The taxonomy level to aggregate the data on.
+        cwts_data (list): List of unique topic IDs.
+
+    Returns:
+        pd.DataFrame: DataFrame with columns: author, year, publications,
+            total_publications, frequency. The "frequency" column contains
+            (n_topics,) dimensional arrays of topic frequencies.
+    """
+    # split authors
+    authors_data["authorships"] = authors_data["authorships"].apply(
+        lambda x: [author[0] for author in x]
+    )
+
+    # get year from str "YYYY-MM-DD" changing to datetime
+    authors_data["year"] = pd.to_datetime(authors_data["publication_date"]).dt.year
+
+    # extract list of subfields
+    authors_data["subfield_ids"] = authors_data["topics"].apply(
+        lambda x: [filter_single_list(topic, 1) for topic in x]
+    )
+
+    # keep relevant cols: authorships, year, subfield_id
+    authors_data = authors_data[["authorships", "year", "subfield_ids"]]
+
+    # explode authorships
+    authors_data = authors_data.explode("authorships")
+
+    # rename authorships to author
+    authors_data.rename(columns={"authorships": "author"}, inplace=True)
+
+    # keep rows only if author in authors["oa_id"]
+    authors_data = authors_data[authors_data["author"].isin(authors["oa_id"])]
+
+    # create author and year frequency data
+    author_frequencies = create_author_and_year_subfield_frequency(
+        authors_data, cwts_data
+    )
+
+    author_frequencies["total_publications"] = author_frequencies.groupby("author")[
+        "publications"
+    ].transform("sum")
+
+    return author_frequencies

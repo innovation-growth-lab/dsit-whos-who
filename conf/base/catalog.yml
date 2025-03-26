@@ -134,6 +134,7 @@ analysis.basic_metrics.publications.filtered:
       - referenced_works
 
 # 4b. Complex metrics:
+# 4b1. Disruption indices:
 analysis.complex_metrics.publications.sampled:
   <<: *_pq
   filepath: s3://igl-public/02_whos_who/data/01_raw/author_analysis/complex_metrics/publications.parquet
@@ -141,3 +142,17 @@ analysis.complex_metrics.publications.sampled:
 analysis.complex_metrics.reference_works:
   <<: *_pq
   filepath: s3://igl-public/02_whos_who/data/02_intermediate/author_analysis/complex_metrics/reference_works.parquet
+
+# 4b2. Discipline diversity:
+analysis.complex_metrics.cwts.subfield.distance_matrix:
+  <<: *_pq
+  filepath: s3://igl-public/02_whos_who/data/02_intermediate/author_analysis/complex_metrics/discipline_diversity/cwts_subfield_distance_matrix.parquet
+
+analysis.complex_metrics.publications.topics:
+  <<: *_pq
+  filepath: s3://igl-public/02_whos_who/data/02_intermediate/author_analysis/basic_metrics/publications.parquet
+  load_args:
+    columns:
+      - authorships
+      - publication_date
+      - topics

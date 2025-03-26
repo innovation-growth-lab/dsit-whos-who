@@ -16,6 +16,9 @@ from .nodes import (
     fetch_author_work_citations,
     refactor_reference_works,
     fetch_author_work_references,
+    calculate_disruption_indices,
+    compute_subfield_embeddings,
+    create_author_aggregates,
 )
 
 
@@ -104,4 +107,106 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
         tags="reference_collection_pipeline",
     )
 
-    return sample_pipeline + focal_collection_pipeline + reference_collection_pipeline
+    disruption_index_pipeline = pipeline(
+        [
+            node(
+                func=calculate_disruption_indices,
+                inputs={
+                    "focal_papers": "analysis.basic_metrics.publications.filtered",
+                    "citing_papers_dataset": "analysis.complex_metrics.focal_publications.raw",
+                },
+                outputs="analysis.complex_metrics.disruption_indices.intermediate",
+                name="calculate_disruption_indices",
+                tags=["disruption_index"],
+            ),
+        ],
+        tags="disruption_index_pipeline",
+    )
+
+    discipline_diversity_pipeline = pipeline(
+        [
+            node(
+                func=compute_subfield_embeddings,
+                inputs={"cwts_data": "cwts.taxonomy"},
+                outputs="analysis.complex_metrics.cwts.subfield.distance_matrix",
+                name="compute_subfield_embeddings",
+            ),
+            node(
+                func=create_author_aggregates,
+                inputs={
+                    "authors_data": "analysis.complex_metrics.publications.topics",
+                    "authors": "ad.matched_authors.primary",
+                    "cwts_data": "analysis.complex_metrics.cwts.subfield.distance_matrix",
+                },
+                outputs="analysis.complex_metrics.author_topic_aggregates.intermediate",
+                name="create_author_topic_aggregates",
+            ),
+        ],
+    )
+
+    # author_aggregates_pipeline = pipeline(
+    #     [
+    #         node(
+    #             func=create_author_aggregates,
+    #             inputs={
+    #                 "authors_data": "authors.oa_dataset.raw",
+    #                 "level": f"params:tm.levels.{level}",
+    #                 "cwts_data": f"cwts.topics.{level}.distance_matrix",
+    #             },
+    #             outputs=f"authors.{level}.aggregates.intermediate",
+    #             name=f"create_author_aggregates_{level}",
+    #         )
+    #         for level in ["subfield", "field", "domain"]
+    #     ],
+    # )
+
+    # author_cumulative_aggregates_pipeline = pipeline(
+    #     [
+    #         node(
+    #             func=cumulative_author_aggregates,
+    #             inputs={"author_topics": f"authors.{level}.aggregates.intermediate"},
+    #             outputs=f"authors.{level}.cumulative_aggregates.intermediate",
+    #             name=f"create_cumulative_author_aggregates_{level}",
+    #         )
+    #         for level in ["subfield", "field", "domain"]
+    #     ],
+    # )
+
+    # calculate_diversity_scores_pipeline = pipeline(
+    #     [
+    #         node(
+    #             func=calculate_paper_diversity,
+    #             inputs={
+    #                 "publications": "oa.publications.gtr.primary",
+    #                 "disparity_matrix": f"cwts.topics.{level}.distance_matrix",
+    #                 "cwts_data": f"cwts.topics.{level}.distance_matrix",
+    #                 "level": f"params:tm.levels.{level}",
+    #             },
+    #             outputs=f"publications.{level}.paper_diversity_scores.intermediate",
+    #             name=f"calculate_paper_diversity_{level}",
+    #         )
+    #         for level in ["subfield", "field", "domain"]
+    #     ]
+    #     + [
+    #         node(
+    #             func=calculate_coauthor_diversity,
+    #             inputs={
+    #                 "publications": "oa.publications.gtr.primary",
+    #                 "author_topics": f"authors.{level}.cumulative_aggregates.intermediate",
+    #                 "disparity_matrix": f"cwts.topics.{level}.distance_matrix",
+    #             },
+    #             outputs=f"publications.{level}.coauthor_diversity_scores.intermediate",
+    #             name=f"calculate_coauthor_diversity_{level}",
+    #         )
+    #         for level in ["subfield", "field", "domain"]
+    #     ],
+    #     tags="calculate_discipline_diversity_metrics",
+    # )
+
+    return (
+        sample_pipeline
+        + focal_collection_pipeline
+        + reference_collection_pipeline
+        + disruption_index_pipeline
+        + discipline_diversity_pipeline
+    )
