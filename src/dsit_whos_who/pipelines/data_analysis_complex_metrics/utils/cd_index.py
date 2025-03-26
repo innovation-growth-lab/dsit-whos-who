@@ -134,7 +134,7 @@ def process_disruption_indices(
 ) -> pd.DataFrame:
     """
     Process disruption indices for all focal papers using efficient set operations.
-    Uses batch-level set operations to minimize iterations and maximize efficiency.
+    Uses batch-level set operations to minimizse iterations and maximise efficiency.
 
     Args:
         focal_papers (pd.DataFrame): DataFrame containing focal papers with 'id' and
@@ -153,7 +153,7 @@ def process_disruption_indices(
     focal_ids_set = set(focal_ids)
     focal_refs_sets = [set(refs) for refs in focal_papers["referenced_works"].values]
 
-    # Initialize count arrays
+    # instantiate count arrays
     n_f = np.zeros(len(focal_ids), dtype=np.int32)
     n_b = np.zeros(len(focal_ids), dtype=np.int32)
 
@@ -193,7 +193,7 @@ def process_disruption_indices(
 
     combined_results = pd.DataFrame(result_data)
 
-    # Calculate disruption index using vectorized operations
+    # Calculate disruption index using vectorised operations
     mask = combined_results["total"] > 0
     combined_results["disruption_index"] = np.nan
     combined_results.loc[mask, "disruption_index"] = (
