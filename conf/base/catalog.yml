@@ -137,3 +137,7 @@ ad.coverage_analysis.tmp:
 analysis.complex_metrics.publications.sampled:
   <<: *_pq
   filepath: s3://igl-public/02_whos_who/data/01_raw/author_analysis/complex_metrics/publications.parquet
+
+analysis.complex_metrics.reference_works:
+  <<: *_pq
+  filepath: s3://igl-public/02_whos_who/data/02_intermediate/author_analysis/complex_metrics/reference_works.parquet

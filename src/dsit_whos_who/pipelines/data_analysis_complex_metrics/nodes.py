@@ -171,7 +171,14 @@ def refactor_reference_works(works: pd.DataFrame) -> List[str]:
     works = works.explode("referenced_works")
 
     # count these, remove top 3% frequency (~ Deng & Zeng, 2023)
-    works["count"] = works["referenced_works"].value_counts()
+    works["count"] = works.groupby("referenced_works")["referenced_works"].transform(
+        "count"
+    )
+
+    # drop duplicates
+    works = works.drop_duplicates(subset=["referenced_works"]).reset_index(drop=True)
+
+    # prune
     works = works[works["count"] <= works["count"].quantile(0.97)]
     works = works.drop(columns=["count"])
 
@@ -220,9 +227,10 @@ def fetch_author_work_references(
         cleaned_works = []
         for batch_return in data:
             df = pd.DataFrame(batch_return)
+            df["id"] = df["id"].str.replace("W", "").astype(int)
             df["referenced_works"] = df["referenced_works"].apply(
                 lambda x: (
-                    [int(ref.replace("W", "")) for ref in x]
+                    [int(ref.replace("https://openalex.org/W", "")) for ref in x]
                     if isinstance(x, list)
                     else x
                 )
@@ -231,19 +239,26 @@ def fetch_author_work_references(
         cleaned_works = pd.concat(cleaned_works)
 
         # find the corresponding id in the chunk, after "|" splitting the ids, remove W
-        chunk_ids = [int(id.replace("W", "")) for id in [id.split("|") for id in chunk]]
+        chunk_ids = [
+            int(id_part.replace("W", "")) for id in chunk for id_part in id.split("|")
+        ]
 
         # find the corresponding chunk_id in the cleaned_works' referenced_works column
         cleaned_works["reference_id"] = cleaned_works["referenced_works"].apply(
             lambda x: [id for id in chunk_ids if id in x]  # pylint: disable=W0640
         )
 
-        # convert ID column - remove 'W' prefix and convert to int (efficiency)
-        cleaned_works["id"] = cleaned_works["id"].str.replace("W", "").astype(int)
+        # explode the reference_id column
+        cleaned_works_e = cleaned_works.explode("reference_id")
 
         # groupby reference_id, create list of ids
-        cleaned_works = (
-            cleaned_works.groupby("reference_id").agg(ids=("id", list)).reset_index()
+        cleaned_works_agg = (
+            cleaned_works_e.groupby("reference_id").agg(ids=("id", list)).reset_index()
         )
 
-        yield {f"works_{i}": cleaned_works}
+        # relabel reference_id to id, and ids to citing_ids
+        cleaned_works_agg = cleaned_works_agg.rename(
+            columns={"reference_id": "id", "ids": "citing_ids"}
+        )
+
+        yield {f"works_{i}": cleaned_works_agg}
