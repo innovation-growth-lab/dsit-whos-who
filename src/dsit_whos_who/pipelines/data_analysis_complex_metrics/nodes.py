@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 def sample_cited_work_ids(
-    works: pd.DataFrame, authors: pd.DataFrame, n_jobs: int = 8
+    works: pd.DataFrame, authors: pd.DataFrame, n_jobs: int = 12
 ) -> pd.DataFrame:
     """
     Create a stratified sample of OpenAlex work IDs from a DataFrame of works.
@@ -137,7 +137,7 @@ def fetch_author_work_citations(
     Fetches and processes works from OpenAlex who cite focal works.
     """
     logger.info(
-        "Beginning to fetch %s OpenAlex records from %s endpoint", len(ids), endpoint
+        "Beginning to fetch %s OpenAlex works from %s endpoint", len(ids), endpoint
     )
 
     # slice oa_ids
@@ -146,6 +146,8 @@ def fetch_author_work_citations(
 
     seen_ids = set()
     for i, chunk in enumerate(oa_id_chunks, 1):
+        if i <= 110:
+            continue
         logger.info(
             "Processing chunk %s of %s (%s%% complete)",
             i,
@@ -363,7 +365,9 @@ def compute_subfield_embeddings(
     cwts_data = cwts_data.copy()[cwts_data["level"] == 2]
 
     # retrieve id (last item after splitting on ">" id_path)
-    cwts_data["subfield_id"] = cwts_data["id_path"].apply(lambda x: x.split(">")[-1])
+    cwts_data["subfield_id"] = (
+        cwts_data["id_path"].apply(lambda x: x.split("> ")[-1]).astype(int)
+    )
 
     logger.info("Computing embeddings for topics")
     cwts_data["subfield_embeddings"] = cwts_data["label"].apply(encoder.encode)
@@ -408,7 +412,7 @@ def create_author_aggregates(
     # keep relevant cols: authorships, year, subfield_id
     authors_data = authors_data[["authorships", "year", "subfield_ids"]]
 
-    # explode authorships
+    logger.info("Exploding authorships")
     authors_data = authors_data.explode("authorships")
 
     # rename authorships to author
@@ -417,7 +421,7 @@ def create_author_aggregates(
     # keep rows only if author in authors["oa_id"]
     authors_data = authors_data[authors_data["author"].isin(authors["oa_id"])]
 
-    # create author and year frequency data
+    logger.info("Creating author and year frequency data")
     author_frequencies = create_author_and_year_subfield_frequency(
         authors_data, cwts_data
     )
