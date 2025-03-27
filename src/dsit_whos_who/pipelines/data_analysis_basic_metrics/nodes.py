@@ -269,8 +269,10 @@ def compute_basic_metrics(
     """
     author_data = author_data.drop_duplicates(subset=["id", "gtr_id"])
 
-    logger.info("Computing basic metrics for %s authors", len(author_data))
+    # drop counts_by_year from author_data (use publications instead)
+    author_data = author_data.drop(columns=["counts_by_year"])
 
+    logger.info("Computing basic metrics for %s authors", len(author_data))
     merged_data = author_data.merge(
         person_data, left_on="gtr_id", right_on="person_id", how="inner", validate="1:1"
     )
