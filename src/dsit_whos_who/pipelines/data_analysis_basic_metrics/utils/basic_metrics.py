@@ -336,6 +336,25 @@ def _process_affiliations(row: pd.Series) -> dict:
     }
 
 
+def _redefine_counts_by_year(publications: pd.DataFrame) -> pd.DataFrame:
+    """
+    Recreate the counts_by_year data combining cited_by_count, n_pubs, and year
+    to create a new column with a list of three elements. This is necessary because
+    the author data only has data from 2012 onwards.
+    """
+    publications["counts_by_year"] = publications.apply(
+        lambda row: [row["year"], row["n_pubs"], row["cited_by_count"]], axis=1
+    )
+
+    # create the author group'd version of the counts_by_year data
+    author_grouped = publications.groupby("author_id")
+    author_grouped["counts_by_year"] = author_grouped["counts_by_year"].apply(
+        lambda x: x.tolist()
+    )
+
+    return author_grouped
+
+
 def _process_counts_by_year(row: pd.Series) -> dict:
     """
     Process publication and citation counts from counts_by_year data.
@@ -458,6 +477,10 @@ def add_publication_metrics(
         pd.DataFrame: DataFrame with added publication metrics
     """
     logger.info("Processing publication metrics...")
+    counts_by_year = _redefine_counts_by_year(publications)
+
+    # replace the counts_by_year column in the df with the author group'd version
+    df["counts_by_year"] = df["author_id"].map(counts_by_year["counts_by_year"])
 
     # Process counts_by_year data
     logger.info("Processing citation and publication counts...")

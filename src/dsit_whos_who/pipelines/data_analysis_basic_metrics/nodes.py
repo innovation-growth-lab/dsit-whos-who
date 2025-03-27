@@ -287,13 +287,17 @@ def compute_basic_metrics(
     # Add international experience metrics
     merged_data = add_international_metrics(merged_data, publications)
 
-    # Drop duplicate columns and reorder
-    merged_data = merged_data.drop(columns=["gtr_id", "person_id"])
+    # Drop person_id
+    merged_data = merged_data.drop(columns=["gtr_id"])
+
+    # Rename id to oa_id
+    merged_data = merged_data.rename(columns={"id": "oa_id"})
 
     # Reorder columns thematically
     column_order = [
         # Personal identifiers
-        "id",  # OpenAlex ID
+        "oa_id",  # OpenAlex ID
+        "gtr_id",  # GTR ID
         "orcid",  # ORCID
         "display_name",  # Full name
         "first_name",  # First name from GTR
