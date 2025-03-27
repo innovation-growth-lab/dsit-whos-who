@@ -130,6 +130,7 @@ analysis.basic_metrics.publications.filtered:
       - id
       - authorships
       - fwci
+      - cited_by_count
       - publication_date
       - referenced_works
 

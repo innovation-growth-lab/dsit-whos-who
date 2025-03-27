@@ -51,6 +51,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
         ],
         tags="collection_pipeline",
     )
+
     processing_pipeline = pipeline(
         [
             node(

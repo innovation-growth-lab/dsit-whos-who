@@ -60,7 +60,9 @@ def fetch_openalex_matched_author_works(
     **kwargs,
 ) -> pd.DataFrame:
     """Node for fetching OpenAlex works."""
-    return fetch_openalex_matched_author_works(ids, mails, perpage, filter_criteria, **kwargs)
+    return fetch_openalex_matched_author_works(
+        ids, mails, perpage, filter_criteria, **kwargs
+    )
 
 
 def process_matched_author_metadata(
@@ -116,7 +118,8 @@ def process_matched_person_gtr_data(
     Args:
         persons (pd.DataFrame): DataFrame containing person data from GTR
         projects (pd.DataFrame): DataFrame containing project data from GTR
-        matched_authors (pd.DataFrame): DataFrame containing matched author IDs between GTR and OpenAlex
+        matched_authors (pd.DataFrame): DataFrame containing matched author IDs between
+            GTR and OpenAlex
 
     Returns:
         pd.DataFrame: Processed person data containing project timelines, grant categories,
@@ -208,6 +211,8 @@ def process_matched_author_works(
                 "author_id",
                 "year",
                 "fwci",
+                "cited_by_count",
+                "n_pubs",
                 "n_collab_uk",
                 "n_collab_abroad",
                 "n_collab_unknown",
@@ -221,6 +226,7 @@ def process_matched_author_works(
         .agg(
             {
                 "fwci": "mean",
+                "cited_by_count": "sum",
                 "n_collab_uk": "sum",
                 "n_collab_abroad": "sum",
                 "n_collab_unknown": "sum",
@@ -230,8 +236,10 @@ def process_matched_author_works(
                 "collab_ids": lambda x: sorted(
                     list(set(id for ids in x for id in ids))
                 ),
+                "author_id": "size",  # Count number of rows per group
             }
         )
+        .rename(columns={"author_id": "n_pubs"})
         .reset_index()
     )
 
