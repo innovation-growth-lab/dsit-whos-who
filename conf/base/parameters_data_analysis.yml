@@ -20,6 +20,7 @@ basic_metrics:
       - "id"
       - "publication_date"
       - "fwci"
+      - "cited_by_count"
       - "authorships"
       - "topics"
       - "referenced_works"

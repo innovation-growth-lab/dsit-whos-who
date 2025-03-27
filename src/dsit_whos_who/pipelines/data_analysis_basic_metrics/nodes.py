@@ -60,7 +60,7 @@ def fetch_openalex_matched_author_works(
     **kwargs,
 ) -> pd.DataFrame:
     """Node for fetching OpenAlex works."""
-    return fetch_openalex_matched_author_works(
+    return fetch_openalex_works(
         ids, mails, perpage, filter_criteria, **kwargs
     )
 
