@@ -346,10 +346,12 @@ def _redefine_counts_by_year(publications: pd.DataFrame) -> pd.DataFrame:
         lambda row: [row["year"], row["n_pubs"], row["cited_by_count"]], axis=1
     )
 
+    # rename author_id to id
+    publications = publications.rename(columns={"author_id": "id"})
+
     # create the author group'd version of the counts_by_year data
-    author_grouped = publications.groupby("author_id")
-    author_grouped["counts_by_year"] = author_grouped["counts_by_year"].apply(
-        lambda x: x.tolist()
+    author_grouped = publications.groupby("id").agg(
+        {"counts_by_year": lambda x: x.tolist()}
     )
 
     return author_grouped
@@ -480,7 +482,7 @@ def add_publication_metrics(
     counts_by_year = _redefine_counts_by_year(publications)
 
     # replace the counts_by_year column in the df with the author group'd version
-    df["counts_by_year"] = df["author_id"].map(counts_by_year["counts_by_year"])
+    df["counts_by_year"] = df["id"].map(counts_by_year["counts_by_year"])
 
     # Process counts_by_year data
     logger.info("Processing citation and publication counts...")
