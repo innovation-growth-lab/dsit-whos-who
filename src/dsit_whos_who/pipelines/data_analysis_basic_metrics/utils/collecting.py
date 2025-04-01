@@ -101,7 +101,7 @@ def process_works_batch(data: List[Dict], seen_ids: set) -> pd.DataFrame:
     logger.debug("Cleaning and filtering data")
     df_batch = (
         df_batch.drop_duplicates(subset=["id"])
-        .loc[lambda x: x["publication_date"] >= "2002-01-01"]
+        .loc[lambda x: x["publication_date"] >= "1980-01-01"]
         .assign(
             fwci=lambda x: pd.to_numeric(
                 x["fwci"].replace("", np.nan).infer_objects(copy=False)

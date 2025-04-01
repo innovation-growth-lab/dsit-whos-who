@@ -3,14 +3,13 @@ basic_metrics:
     api: &api
       # API configuration
       mails:
-        - "david.ampudia@nesta.org.uk"
-        - "data_analytics@nesta.org.uk"
-        - "david.ampudia@bse.eu"
-        - "david.ampudia@upf.edu"
-        - "george.richardson@nesta.org.uk"
-        - "yanyan.leung@nesta.org.uk"
-        - "innovationgrowthlab@nesta.org.uk"
-      mailto: "innovationgrowthlab@nesta.org.uk"
+        - "marion.restrepo@innpulsacolombia.com"
+        - "alejandro.garcia@innpulsacolombia.com"
+        - "juan.pablo.garcia@upf.edu"
+        - "emilio.fernandez@upf.edu"
+        - "jeremy.davis@nesta.org.uk"
+        - "sara.garcia-arteagoitia@nesta.org.uk"
+        - "maria.sorbo@ec.europa.eu"
       perpage: "200"
     filter: author.id
     n_jobs: 8

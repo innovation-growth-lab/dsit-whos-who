@@ -269,22 +269,20 @@ def compute_basic_metrics(
     """
     author_data = author_data.drop_duplicates(subset=["id", "gtr_id"])
 
-    # drop counts_by_year from author_data (use publications instead)
-    author_data = author_data.drop(columns=["counts_by_year"])
-
     logger.info("Computing basic metrics for %s authors", len(author_data))
     merged_data = author_data.merge(
         person_data, left_on="gtr_id", right_on="person_id", how="inner", validate="1:1"
     )
     logger.info("Merged data contains %s records", len(merged_data))
 
+    # Add publication metrics
+    merged_data = add_publication_metrics(merged_data, publications)
+    
     # Compute academic age
     merged_data["academic_age_at_first_grant"] = merged_data.apply(
         compute_academic_age, axis=1
     ).astype("Int64")
 
-    # Add publication metrics
-    merged_data = add_publication_metrics(merged_data, publications)
 
     # Add international experience metrics
     merged_data = add_international_metrics(merged_data, publications)

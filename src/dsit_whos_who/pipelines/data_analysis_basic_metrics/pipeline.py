@@ -49,7 +49,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                 name="fetch_openalex_matched_author_works",
             ),
         ],
-        tags="collection_pipeline",
+        tags="collection_pipeline_basic_metrics",
     )
 
     processing_pipeline = pipeline(
@@ -76,7 +76,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
             node(
                 func=process_matched_author_works,
                 inputs={
-                    "publications": "analysis.basic_metrics.publications.filtered",
+                    "publications": "analysis.basic_metrics.publications.intermediate",
                     "matched_authors": "ad.matched_authors.primary",
                     "n_jobs": "params:basic_metrics.oa.n_jobs",
                     "batch_size": "params:basic_metrics.oa.batch_size",

@@ -121,21 +121,8 @@ ad.coverage_analysis.tmp:
   <<: *_pq
   filepath: s3://igl-public/02_whos_who/data/03_primary/author_analysis/{metric}.parquet
 
-# 4a. Basic metrics:
-analysis.basic_metrics.publications.filtered:
-  <<: *_pq
-  filepath: s3://igl-public/02_whos_who/data/02_intermediate/author_analysis/basic_metrics/publications.parquet
-  load_args:
-    columns:
-      - id
-      - authorships
-      - fwci
-      - cited_by_count
-      - publication_date
-      - referenced_works
-
-# 4b. Complex metrics:
-# 4b1. Disruption indices:
+# 5. Complex metrics:
+# 5-1. Disruption indices:
 analysis.complex_metrics.publications.sampled: &analysis_complex_metrics_publications_sampled
   <<: *_pq
   filepath: s3://igl-public/02_whos_who/data/01_raw/author_analysis/complex_metrics/publications.parquet
@@ -150,7 +137,7 @@ analysis.complex_metrics.reference_works:
   <<: *_pq
   filepath: s3://igl-public/02_whos_who/data/02_intermediate/author_analysis/complex_metrics/reference_works.parquet
 
-# 4b2. Discipline diversity:
+# 5-2. Discipline diversity:
 analysis.complex_metrics.cwts.subfield.distance_matrix:
   <<: *_pq
   filepath: s3://igl-public/02_whos_who/data/02_intermediate/author_analysis/complex_metrics/discipline_diversity/cwts_subfield_distance_matrix.parquet

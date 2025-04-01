@@ -27,13 +27,13 @@ def process_author_metadata(
         how="inner",
     )
 
-    # get the first year of publication
-    author_df["first_work_year"] = pd.to_numeric(
-        author_df["counts_by_year"].apply(
-            lambda x: min(y[0] for y in x) if x else None
-        ),
-        errors="coerce",
-    ).astype("Int64")
+    # # get the first year of publication
+    # author_df["first_work_year"] = pd.to_numeric(
+    #     author_df["counts_by_year"].apply(
+    #         lambda x: min(y[0] for y in x) if x else None
+    #     ),
+    #     errors="coerce",
+    # ).astype("Int64")
 
     # citations per publication
     author_df["citations_per_publication"] = (
