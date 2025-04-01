@@ -210,13 +210,14 @@ def process_matched_author_works(
             columns=[
                 "author_id",
                 "year",
+                "affiliation_countries_abroad",
                 "fwci",
                 "cited_by_count",
                 "n_pubs",
                 "n_collab_uk",
                 "n_collab_abroad",
                 "n_collab_unknown",
-                "countries_abroad",
+                "collab_countries_abroad",
                 "collab_ids",
             ]
         )
@@ -225,12 +226,15 @@ def process_matched_author_works(
         result_df.groupby(["author_id", "year"])
         .agg(
             {
+                "affiliation_countries_abroad": lambda x: sorted(
+                    list(set(country for countries in x for country in countries))
+                ),
                 "fwci": "mean",
                 "cited_by_count": "sum",
                 "n_collab_uk": "sum",
                 "n_collab_abroad": "sum",
                 "n_collab_unknown": "sum",
-                "countries_abroad": lambda x: sorted(
+                "collab_countries_abroad": lambda x: sorted(
                     list(set(country for countries in x for country in countries))
                 ),
                 "collab_ids": lambda x: sorted(

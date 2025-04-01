@@ -139,14 +139,18 @@ def add_publication_metrics(
     for field in [
         "n_pubs_before",
         "n_pubs_after",
-        "total_citations_before",
-        "total_citations_after",
+        "total_citations_pubyear_before",
+        "total_citations_pubyear_after",
+        "mean_citations_pubyear_before",
+        "mean_citations_pubyear_after",
+        "citations_pp_pubyear_before",
+        "citations_pp_pubyear_after",
         "mean_citations_before",
         "mean_citations_after",
-        "citations_per_pub_before",
-        "citations_per_pub_after",
+        "citations_pp_before",
+        "citations_pp_after",
     ]:
-        df[field] = metrics.apply(lambda x: x[field])
+        df[field] = metrics.apply(lambda x: x[field])  # pylint: disable=W0640
 
     # Process FWCI data
     logger.info("Processing FWCI metrics...")
@@ -158,8 +162,8 @@ def add_publication_metrics(
     int_fields = [
         "n_pubs_before",
         "n_pubs_after",
-        "total_citations_before",
-        "total_citations_after",
+        "total_citations_pubyear_before",
+        "total_citations_pubyear_after",
     ]
     for field in int_fields:
         df[field] = df[field].astype("Int64")

@@ -215,31 +215,39 @@ def process_publication_batch(
             abroad_collabs = 0
             unknown_collabs = 0
             collab_ids = set()
-            countries = set()
+            affiliation_countries = set()
+            collab_countries = set()
 
             for collab_id, country in author_countries.items():
-                if collab_id == main_author_id:
-                    continue
-
                 if pd.isna(country):
                     continue
-                elif country == "":
+
+                # if main author, tally up affiliation countries
+                if collab_id == main_author_id:
+                    if country == "" or country == "GB":
+                        continue
+                    affiliation_countries.add(country)
+                    continue
+
+                # if not main author, tally up collab countries
+                if country == "":
                     unknown_collabs += 1
                 elif country == "GB":
                     uk_collabs += 1
                 else:
                     abroad_collabs += 1
-                    countries.add(country)
+                    collab_countries.add(country)
                 collab_ids.add(collab_id)
 
             processed_data.append(
                 {
                     "author_id": main_author_id,
                     "year": year,
+                    "affiliation_countries_abroad": sorted(list(affiliation_countries)),
                     "n_collab_uk": uk_collabs,
                     "n_collab_abroad": abroad_collabs,
                     "n_collab_unknown": unknown_collabs,
-                    "countries_abroad": sorted(list(countries)),
+                    "collab_countries_abroad": sorted(list(collab_countries)),
                     "collab_ids": sorted(list(collab_ids)),
                     "fwci": fwci,
                     "cited_by_count": cited_by_count,
