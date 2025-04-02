@@ -1,6 +1,13 @@
+"""
+Utility functions for computing complex metrics.
+"""
+
 import logging
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
+
+tqdm.pandas()
 
 logger = logging.getLogger(__name__)
 
@@ -90,12 +97,12 @@ def preprocess_disruption_to_merge_with_publications(
     # Calculate weighted mean disruption index, falling back to simple mean when weights sum to zero
     weighted_metrics = (
         disruption_publications.groupby(["authorships", "year"])
-        .apply(_weighted_mean_with_fallback)
+        .progress_apply(_weighted_mean_with_fallback)
         .reset_index()
     )
     weighted_metrics.columns = ["authorships", "year", "disruption_index_weighted"]
 
-    # Merge weighted metrics
+    logger.info("Merge weighted metrics")
     author_year_metrics = author_year_disruption.merge(
         weighted_metrics, on=["authorships", "year"], how="left"
     )
@@ -130,3 +137,178 @@ def _weighted_mean_with_fallback(group):
         return np.average(group["disruption_index"], weights=group["fwci_weights"])
     except ZeroDivisionError:
         return np.nan
+
+
+def process_disruption_metrics(author_disruption: pd.Series, ref_year: int) -> dict:
+    """
+    Process disruption metrics for an author before and after their first funding.
+
+    Args:
+        author_disruption (pd.Series): Series containing author's yearly disruption metrics
+        ref_year (int): Reference year (first funding year)
+
+    Returns:
+        dict: Dictionary containing mean disruption metrics before and after first funding
+    """
+    if pd.isna(ref_year):
+        return {
+            "mean_disruption_before": np.nan,
+            "mean_disruption_after": np.nan,
+            "mean_weighted_disruption_before": np.nan,
+            "mean_weighted_disruption_after": np.nan,
+        }
+
+    metrics_before = []
+    metrics_after = []
+    weighted_before = []
+    weighted_after = []
+
+    for year_data in author_disruption:
+        try:
+            year = int(year_data[0])
+            disruption = float(year_data[1])
+            weighted_disruption = float(year_data[2])
+
+            if year < ref_year:
+                metrics_before.append(disruption)
+                weighted_before.append(weighted_disruption)
+            else:
+                metrics_after.append(disruption)
+                weighted_after.append(weighted_disruption)
+        except (ValueError, IndexError):
+            continue
+
+    return {
+        "mean_disruption_before": (
+            round(np.nanmean(metrics_before), 3) if metrics_before else np.nan
+        ),
+        "mean_disruption_after": (
+            round(np.nanmean(metrics_after), 3) if metrics_after else np.nan
+        ),
+        "mean_weighted_disruption_before": (
+            round(np.nanmean(weighted_before), 3) if weighted_before else np.nan
+        ),
+        "mean_weighted_disruption_after": (
+            round(np.nanmean(weighted_after), 3) if weighted_after else np.nan
+        ),
+    }
+
+
+def process_diversity_metrics(author_diversity: pd.Series, ref_year: int) -> dict:
+    """
+    Process diversity metrics for an author before and after their first funding.
+
+    Args:
+        author_diversity (pd.Series): Series containing author's yearly diversity metrics
+        ref_year (int): Reference year (first funding year)
+
+    Returns:
+        dict: Dictionary containing mean diversity metrics before and after first funding
+    """
+    if pd.isna(ref_year):
+        return {
+            "mean_variety_before": np.nan,
+            "mean_variety_after": np.nan,
+            "mean_evenness_before": np.nan,
+            "mean_evenness_after": np.nan,
+            "mean_disparity_before": np.nan,
+            "mean_disparity_after": np.nan,
+        }
+
+    variety_before = []
+    variety_after = []
+    evenness_before = []
+    evenness_after = []
+    disparity_before = []
+    disparity_after = []
+
+    for year_data in author_diversity:
+        try:
+            year = int(year_data[0])
+            variety = float(year_data[1])
+            evenness = float(year_data[2])
+            disparity = float(year_data[3])
+
+            if year < ref_year:
+                variety_before.append(variety)
+                evenness_before.append(evenness)
+                disparity_before.append(disparity)
+            else:
+                variety_after.append(variety)
+                evenness_after.append(evenness)
+                disparity_after.append(disparity)
+        except (ValueError, IndexError):
+            continue
+
+    return {
+        "mean_variety_before": (
+            round(np.nanmean(variety_before), 3) if variety_before else np.nan
+        ),
+        "mean_variety_after": (
+            round(np.nanmean(variety_after), 3) if variety_after else np.nan
+        ),
+        "mean_evenness_before": (
+            round(np.nanmean(evenness_before), 3) if evenness_before else np.nan
+        ),
+        "mean_evenness_after": (
+            round(np.nanmean(evenness_after), 3) if evenness_after else np.nan
+        ),
+        "mean_disparity_before": (
+            round(np.nanmean(disparity_before), 3) if disparity_before else np.nan
+        ),
+        "mean_disparity_after": (
+            round(np.nanmean(disparity_after), 3) if disparity_after else np.nan
+        ),
+    }
+
+
+def compute_before_after_metrics(
+    author_disruption: pd.DataFrame,
+    author_diversity: pd.DataFrame,
+    author_earliest_year: pd.Series,
+) -> pd.DataFrame:
+    """
+    Compute mean metrics before and after first funding for each author.
+
+    Args:
+        author_disruption (pd.DataFrame): DataFrame with author disruption metrics
+        author_diversity (pd.DataFrame): DataFrame with author diversity metrics
+        author_earliest_year (pd.Series): Series with author's first funding year
+
+    Returns:
+        pd.DataFrame: DataFrame with mean metrics before and after first funding
+    """
+    logger.info("Computing before/after metrics for each author...")
+
+    results = []
+    for author in tqdm(author_earliest_year.index):
+        ref_year = author_earliest_year[author]
+
+        # if ref_year is length >1, pick the smallest
+        if isinstance(ref_year, pd.Series):
+            ref_year = ref_year.min()
+
+        # Process disruption metrics if available
+        disruption_metrics = {}
+        if author in author_disruption.index:
+            disruption_metrics = process_disruption_metrics(
+                author_disruption.loc[author]["author_year_disruption"], ref_year
+            )
+
+        # Process diversity metrics if available
+        diversity_metrics = {}
+        if author in author_diversity.index:
+            diversity_metrics = process_diversity_metrics(
+                author_diversity.loc[author]["author_year_diversity"], ref_year
+            )
+
+        # Combine metrics
+        combined_metrics = {
+            "author": author,
+            "first_funding_year": ref_year,
+            **disruption_metrics,
+            **diversity_metrics,
+        }
+        results.append(combined_metrics)
+
+    return pd.DataFrame(results)

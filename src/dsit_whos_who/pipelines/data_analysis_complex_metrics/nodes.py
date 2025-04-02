@@ -34,6 +34,7 @@ from .utils.discipline_diversity import (
 )
 from .utils.complex_metrics import (
     preprocess_disruption_to_merge_with_publications,
+    compute_before_after_metrics,
 )
 
 logger = logging.getLogger(__name__)
@@ -526,17 +527,35 @@ def compute_complex_metrics(
 ) -> pd.DataFrame:
     """
     Compute complex metrics for a given set of publications and authors.
+
+    Args:
+        basic_metrics (pd.DataFrame): DataFrame containing basic metrics and earliest_start_date
+        publications (pd.DataFrame): DataFrame containing publication data
+        disruption_indices (pd.DataFrame): DataFrame containing disruption indices
+        author_diversity (pd.DataFrame): DataFrame containing diversity metrics
+
+    Returns:
+        pd.DataFrame: DataFrame with complex metrics added
     """
-    author_year_metrics = preprocess_disruption_to_merge_with_publications(
+    # Process disruption indices and merge with publications
+    author_disruption = preprocess_disruption_to_merge_with_publications(
         disruption_indices, publications, basic_metrics
     )
 
+    logger.info("Create single-author nested disruption list")
     disruption_annual_metrics = (
-        author_year_metrics.groupby("author")["author_year_disruption"]
+        author_disruption.groupby("author")["author_year_disruption"]
         .apply(list)
         .reset_index()
+        .set_index("author")
     )
 
+    logger.info("Round diversity metrics to 3 decimal places")
+    author_diversity["variety"] = author_diversity["variety"].round(3)
+    author_diversity["evenness"] = author_diversity["evenness"].round(3)
+    author_diversity["disparity"] = author_diversity["disparity"].round(3)
+
+    logger.info("Create nested list for diversity metrics")
     author_diversity["author_year_diversity"] = author_diversity.apply(
         lambda row: [
             str(row["year"]),
@@ -547,14 +566,46 @@ def compute_complex_metrics(
         axis=1,
     )
 
+    logger.info("Create single-author nested diversity list")
     diversity_annual_metrics = (
         author_diversity.groupby("author")["author_year_diversity"]
         .apply(list)
         .reset_index()
+        .set_index("author")
     )
 
-    # create before and after disruption scores
-    # create before and after diversity scores
-    # merge all dataframes
+    logger.info("Get earliest funding year for each author")
+    author_earliest_year = (
+        pd.to_datetime(basic_metrics.set_index("oa_id")["earliest_start_date"])
+        .dt.year.astype(pd.Int64Dtype())
+        .dropna()
+    )
 
-    return disruption_annual_metrics
+    logger.info("Compute before/after metrics")
+    complex_metrics = compute_before_after_metrics(
+        disruption_annual_metrics,
+        diversity_annual_metrics,
+        author_earliest_year,
+    )
+
+    logger.info("Add the nested lists to the complex metrics")
+    complex_metrics = complex_metrics.set_index("author")
+    complex_metrics["author_year_disruption"] = disruption_annual_metrics[
+        "author_year_disruption"
+    ]
+    complex_metrics["author_year_diversity"] = diversity_annual_metrics[
+        "author_year_diversity"
+    ]
+
+    logger.info("Reset index and rename author column to match basic_metrics")
+    complex_metrics = (
+        complex_metrics.reset_index()
+        .rename(columns={"author": "oa_id"})
+        .drop_duplicates(subset=["oa_id"])
+        .drop(columns=["first_funding_year"])
+    )
+
+    logger.info("Merge with basic_metrics")
+    result = basic_metrics.merge(complex_metrics, on="oa_id", how="left")
+
+    return result

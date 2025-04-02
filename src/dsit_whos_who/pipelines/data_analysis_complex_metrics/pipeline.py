@@ -36,7 +36,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
             node(
                 func=sample_cited_work_ids,
                 inputs={
-                    "works": "analysis.basic_metrics.publications.filtered",
+                    "works": "analysis.basic_metrics.publications.intermediate",
                     "authors": "ad.matched_authors.primary",
                 },
                 outputs="analysis.complex_metrics.publications.sampled",
@@ -116,7 +116,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                 func=calculate_disruption_indices,
                 inputs={
                     "sample_ids": "analysis.complex_metrics.publications.sampled_ids",
-                    "focal_papers": "analysis.basic_metrics.publications.filtered",
+                    "focal_papers": "analysis.basic_metrics.publications.intermediate",
                     "citing_papers_dataset": "analysis.complex_metrics.focal_publications.raw",
                 },
                 outputs="analysis.complex_metrics.disruption_indices.intermediate",
