@@ -60,9 +60,7 @@ def fetch_openalex_matched_author_works(
     **kwargs,
 ) -> pd.DataFrame:
     """Node for fetching OpenAlex works."""
-    return fetch_openalex_works(
-        ids, mails, perpage, filter_criteria, **kwargs
-    )
+    return fetch_openalex_works(ids, mails, perpage, filter_criteria, **kwargs)
 
 
 def process_matched_author_metadata(
@@ -210,14 +208,17 @@ def process_matched_author_works(
             columns=[
                 "author_id",
                 "year",
-                "affiliation_countries_abroad",
+                "affiliation_countries",
+                "n_affils_uk",
+                "n_affils_abroad",
+                "n_affils_unknown",
                 "fwci",
                 "cited_by_count",
                 "n_pubs",
                 "n_collab_uk",
                 "n_collab_abroad",
                 "n_collab_unknown",
-                "collab_countries_abroad",
+                "collab_countries",
                 "collab_ids",
             ]
         )
@@ -226,15 +227,18 @@ def process_matched_author_works(
         result_df.groupby(["author_id", "year"])
         .agg(
             {
-                "affiliation_countries_abroad": lambda x: sorted(
+                "affiliation_countries": lambda x: sorted(
                     list(set(country for countries in x for country in countries))
                 ),
+                "n_affils_uk": "sum",
+                "n_affils_abroad": "sum",
+                "n_affils_unknown": "sum",
                 "fwci": "mean",
                 "cited_by_count": "sum",
                 "n_collab_uk": "sum",
                 "n_collab_abroad": "sum",
                 "n_collab_unknown": "sum",
-                "collab_countries_abroad": lambda x: sorted(
+                "collab_countries": lambda x: sorted(
                     list(set(country for countries in x for country in countries))
                 ),
                 "collab_ids": lambda x: sorted(
@@ -243,7 +247,13 @@ def process_matched_author_works(
                 "author_id": "size",  # Count number of rows per group
             }
         )
-        .rename(columns={"author_id": "n_pubs"})
+        .rename(
+            columns={
+                "author_id": "n_pubs",
+                "collab_countries": "unique_collab_countries",
+                "collab_ids": "unique_collab_ids",
+            }
+        )
         .reset_index()
     )
 
@@ -281,12 +291,11 @@ def compute_basic_metrics(
 
     # Add publication metrics
     merged_data = add_publication_metrics(merged_data, publications)
-    
+
     # Compute academic age
     merged_data["academic_age_at_first_grant"] = merged_data.apply(
         compute_academic_age, axis=1
     ).astype("Int64")
-
 
     # Add international experience metrics
     merged_data = add_international_metrics(merged_data, publications)

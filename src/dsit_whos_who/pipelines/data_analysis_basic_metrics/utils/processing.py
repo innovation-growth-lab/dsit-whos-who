@@ -214,9 +214,12 @@ def process_publication_batch(
             uk_collabs = 0
             abroad_collabs = 0
             unknown_collabs = 0
-            collab_ids = set()
-            affiliation_countries = list()
             collab_countries = set()
+            collab_ids = set()
+            uk_affils = 0
+            abroad_affils = 0
+            unknown_affils = 0
+            affiliation_countries = list()
 
             for collab_id, country in author_countries.items():
                 if pd.isna(country):
@@ -225,7 +228,11 @@ def process_publication_batch(
                 # if main author, tally up affiliation countries
                 if collab_id == main_author_id:
                     if country == "":
-                        continue
+                        unknown_affils += 1
+                    elif country == "GB":
+                        uk_affils += 1
+                    else:
+                        abroad_affils += 1
                     affiliation_countries.append(country)
                     continue
 
@@ -247,6 +254,9 @@ def process_publication_batch(
                     "author_id": main_author_id,
                     "year": year,
                     "affiliation_countries": sorted(affiliation_countries),
+                    "n_affils_uk": uk_affils,
+                    "n_affils_abroad": abroad_affils,
+                    "n_affils_unknown": unknown_affils,
                     "n_collab_uk": uk_collabs,
                     "n_collab_abroad": abroad_collabs,
                     "n_collab_unknown": unknown_collabs,
