@@ -531,10 +531,30 @@ def compute_complex_metrics(
         disruption_indices, publications, basic_metrics
     )
 
-    author_metrics = (
+    disruption_annual_metrics = (
         author_year_metrics.groupby("author")["author_year_disruption"]
         .apply(list)
         .reset_index()
     )
 
-    return author_metrics
+    author_diversity["author_year_diversity"] = author_diversity.apply(
+        lambda row: [
+            row["year"],
+            row["variety"],
+            row["evenness"],
+            row["disparity"],
+        ],
+        axis=1,
+    )
+
+    diversity_annual_metrics = (
+        author_diversity.groupby("author")["author_year_diversity"]
+        .apply(list)
+        .reset_index()
+    )
+
+    # create before and after disruption scores
+    # create before and after diversity scores
+    # merge all dataframes
+
+    return disruption_annual_metrics

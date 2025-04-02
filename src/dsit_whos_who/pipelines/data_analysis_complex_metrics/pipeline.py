@@ -21,6 +21,7 @@ from .nodes import (
     create_author_aggregates,
     cumulative_author_aggregates,
     calculate_author_diversity,
+    compute_complex_metrics,
 )
 
 
@@ -163,10 +164,26 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
         tags="discipline_diversity_pipeline",
     )
 
+    compute_metrics_pipeline = pipeline(
+        [
+            node(
+                func=compute_complex_metrics,
+                inputs={
+                    "basic_metrics": "analysis.basic_metrics.primary",
+                    "publications": "analysis.basic_metrics.publications.intermediate",
+                    "disruption_indices": "analysis.complex_metrics.disruption_indices.intermediate",  # pylint: disable=C0301
+                    "author_diversity": "analysis.complex_metrics.author_diversity.intermediate",
+                },
+                outputs="analysis.complex_metrics.primary",
+                name="compute_complex_metrics",
+            ),
+        ]
+    )
     return (
         sample_pipeline
         + focal_collection_pipeline
         + reference_collection_pipeline
         + disruption_index_pipeline
         + discipline_diversity_pipeline
+        + compute_metrics_pipeline
     )
