@@ -539,10 +539,10 @@ def compute_complex_metrics(
 
     author_diversity["author_year_diversity"] = author_diversity.apply(
         lambda row: [
-            row["year"],
-            row["variety"],
-            row["evenness"],
-            row["disparity"],
+            str(row["year"]),
+            str(row["variety"]),
+            str(row["evenness"]),
+            str(row["disparity"]),
         ],
         axis=1,
     )
