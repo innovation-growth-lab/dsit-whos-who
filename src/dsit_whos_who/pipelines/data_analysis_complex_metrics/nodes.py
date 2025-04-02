@@ -32,6 +32,9 @@ from .utils.discipline_diversity import (
     weight_function,
     calculate_diversity_components,
 )
+from .utils.complex_metrics import (
+    preprocess_disruption_to_merge_with_publications,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -513,3 +516,25 @@ def calculate_author_diversity(
     )
 
     return diversity_components[["author", "year", "variety", "evenness", "disparity"]]
+
+
+def compute_complex_metrics(
+    basic_metrics: pd.DataFrame,
+    publications: pd.DataFrame,
+    disruption_indices: pd.DataFrame,
+    author_diversity: pd.DataFrame,
+) -> pd.DataFrame:
+    """
+    Compute complex metrics for a given set of publications and authors.
+    """
+    author_year_metrics = preprocess_disruption_to_merge_with_publications(
+        disruption_indices, publications, basic_metrics
+    )
+
+    author_metrics = (
+        author_year_metrics.groupby("author")["author_year_disruption"]
+        .apply(list)
+        .reset_index()
+    )
+
+    return author_metrics
