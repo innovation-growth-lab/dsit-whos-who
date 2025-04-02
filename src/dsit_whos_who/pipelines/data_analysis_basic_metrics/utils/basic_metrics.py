@@ -8,9 +8,10 @@ import logging
 import pandas as pd
 from tqdm import tqdm
 from .publication_metrics import (
-    compile_citations_by_year,
+    compile_counts_by_pubyear,
     process_counts_by_year,
     process_fwci,
+    compile_fwci_by_author,
 )
 from .affiliation_metrics import (
     process_last_institution,
@@ -53,11 +54,26 @@ def add_international_metrics(
     Returns:
         pd.DataFrame: DataFrame with added international metrics
     """
-    # Apply the affiliation processing
-    affiliation_metrics = df.progress_apply(process_affiliations, axis=1)
+    # Merge reference dates to publications
+    publications = publications.merge(
+        df[["id", "earliest_start_date"]],
+        left_on="author_id",
+        right_on="id",
+        how="left",
+    )
 
-    # Add the computed metrics to the dataframe
-    metrics = [
+    logger.info("Processing affiliation metrics...")
+    affiliation_metrics = publications.groupby("author_id").progress_apply(
+        process_affiliations
+    )
+
+    logger.info("Processing collaboration metrics...")
+    collab_metrics = publications.groupby("author_id").progress_apply(
+        process_collaborations
+    )
+
+    # Map metrics back to original dataframe
+    affiliation_fields = [
         "abroad_experience_before",
         "abroad_experience_after",
         "countries_before",
@@ -65,22 +81,6 @@ def add_international_metrics(
         "abroad_fraction_before",
         "abroad_fraction_after",
     ]
-
-    # Create a new dataframe with the metrics and explicitly assign back to original df
-    for metric in metrics:
-        df[metric] = affiliation_metrics.apply(
-            lambda x: x[metric]  # pylint: disable=W0640
-        )
-
-    # Add last known institution info
-    df["last_known_institution_uk"] = df.progress_apply(
-        process_last_institution, axis=1
-    )
-
-    logger.info("Processing publication collaborations...")
-    collab_metrics = df.progress_apply(
-        lambda x: process_collaborations(x, publications), axis=1
-    )
 
     collab_fields = [
         "collab_countries_before",
@@ -95,14 +95,27 @@ def add_international_metrics(
         "collab_countries_list_after",
     ]
 
-    for field in collab_fields:
-        df[field] = collab_metrics.apply(lambda x: x[field])  # pylint: disable=W0640
+    # Map affiliation metrics
+    for field in affiliation_fields:
+        df[field] = df["id"].map(affiliation_metrics.apply(lambda x: x[field]))
 
-    # make int vars be Int64 to accomodate missing
-    df["total_collabs_before"] = df["total_collabs_before"].astype("Int64")
-    df["total_collabs_after"] = df["total_collabs_after"].astype("Int64")
-    df["unique_collabs_before"] = df["unique_collabs_before"].astype("Int64")
-    df["unique_collabs_after"] = df["unique_collabs_after"].astype("Int64")
+    # Map collaboration metrics
+    for field in collab_fields:
+        df[field] = df["id"].map(collab_metrics.apply(lambda x: x[field]))
+
+    # Add last known institution info
+    df["last_known_institution_uk"] = df.progress_apply(
+        process_last_institution, axis=1
+    )
+
+    # Convert integer fields to Int64 to handle missing values
+    int_fields = [
+        "total_collabs_before",
+        "total_collabs_after",
+        "unique_collabs_before",
+        "unique_collabs_after",
+    ]
+    df[int_fields] = df[int_fields].astype("Int64")
 
     return df
 
@@ -112,7 +125,8 @@ def add_publication_metrics(
     publications: pd.DataFrame,
 ) -> pd.DataFrame:
     """
-    Add publication metrics including FWCI, citations, and publication counts before and after first grant.
+    Add publication metrics including FWCI, citations, and publication counts
+    before and after first grant.
 
     Args:
         df (pd.DataFrame): DataFrame with counts_by_year and earliest_start_date
@@ -122,15 +136,17 @@ def add_publication_metrics(
         pd.DataFrame: DataFrame with added publication metrics
     """
     logger.info("Processing publication metrics...")
-    counts_by_publication_year = compile_citations_by_year(publications)
+    counts_by_publication_year = compile_counts_by_pubyear(publications)
 
     # replace the counts_by_year column in the df with the author group'd version
-    df["citations_by_year"] = df["id"].map(
-        counts_by_publication_year["citations_by_year"]
+    df["counts_by_pubyear"] = df["id"].map(
+        counts_by_publication_year["counts_by_pubyear"]
     )
 
-    # Get first publication year for each author and map to main dataframe
-    df["first_work_year"] = df["id"].map(publications.groupby("id")["year"].min())
+    # get first publication year for each author and map to main dataframe
+    df["first_work_year"] = (
+        df["id"].map(publications.groupby("author_id")["year"].min()).astype("Int64")
+    )
 
     # Process counts_by_year data
     logger.info("Processing citation and publication counts...")
@@ -152,9 +168,13 @@ def add_publication_metrics(
     ]:
         df[field] = metrics.apply(lambda x: x[field])  # pylint: disable=W0640
 
+    # Pre-aggregate FWCI data
+    logger.info("Pre-aggregating FWCI data...")
+    author_fwci = compile_fwci_by_author(publications)
+
     # Process FWCI data
     logger.info("Processing FWCI metrics...")
-    fwci_metrics = df.progress_apply(lambda x: process_fwci(x, publications), axis=1)
+    fwci_metrics = df.progress_apply(lambda x: process_fwci(x, author_fwci), axis=1)
     df["mean_fwci_before"] = fwci_metrics.apply(lambda x: x[0])
     df["mean_fwci_after"] = fwci_metrics.apply(lambda x: x[1])
 
@@ -169,12 +189,3 @@ def add_publication_metrics(
         df[field] = df[field].astype("Int64")
 
     return df
-
-
-# oa work only has up to 2012 as well.
-# so we rely on the poorer, all citations go to publication year approach. This also requires changing the way the first_work_year is computed.
-
-# To do:
-# - rerun the collection to get (again) the cited_by_count to create the "true" citations_by_year data.
-# - preprocess authors without the first_work_year (this goes only up to 2012).
-# - run the above, use the "true" citations_by_year data to create metrics, but still report the counts_by_year data.

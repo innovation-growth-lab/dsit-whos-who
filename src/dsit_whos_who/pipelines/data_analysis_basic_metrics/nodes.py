@@ -304,24 +304,38 @@ def compute_basic_metrics(
     merged_data = merged_data.drop(columns=["gtr_id"])
 
     # Rename id to oa_id
-    merged_data = merged_data.rename(columns={"id": "oa_id"})
+    merged_data = merged_data.rename(
+        columns={
+            "id": "oa_id",
+            "project_publications": "gtr_project_publications",
+            "project_id": "gtr_project_id",
+            "project_timeline": "gtr_project_timeline",
+            "project_topics": "gtr_project_topics",
+            "project_authors": "gtr_project_oa_authors",
+            "project_oa_ids": "gtr_project_oa_ids",
+            "organisation": "gtr_organisation",
+            "organisation_name": "gtr_organisation_name",
+            "person_id": "gtr_person_id",
+        }
+    )
 
     # Reorder columns thematically
     column_order = [
-        # Personal identifiers
+        # Personal identifiers and basic info
         "oa_id",  # OpenAlex ID
-        "gtr_id",  # GTR ID
-        "orcid",  # ORCID
-        "display_name",  # Full name
+        "orcid",  # ORCID ID
+        "display_name",  # Full name from OpenAlex
+        "display_name_alternatives",  # Alternative names
         "first_name",  # First name from GTR
         "surname",  # Surname from GTR
-        "display_name_alternatives",  # Alternative names
+        "gtr_person_id",  # GTR person ID
+        "match_probability",  # Probability of correct matching
         # Current institutional information
-        "organisation",  # Current organisation ID
-        "organisation_name",  # Current organisation name
-        "last_known_institution_uk",  # Whether last known institution is in UK
+        "gtr_organisation",  # Current GTR organisation ID
+        "gtr_organisation_name",  # Current GTR organisation name
         "last_known_institutions",  # List of last known institutions
-        # Academic metrics
+        "last_known_institution_uk",  # Whether last known institution is in UK
+        # Academic profile and metrics
         "works_count",  # Total number of works
         "cited_by_count",  # Total citations
         "citations_per_publication",  # Average citations per publication
@@ -329,17 +343,10 @@ def compute_basic_metrics(
         "i10_index",  # i10-index
         "first_work_year",  # First publication year
         "academic_age_at_first_grant",  # Academic age when receiving first grant
-        # Publication metrics before/after
-        "n_pubs_before",  # Number of publications before first grant
-        "n_pubs_after",  # Number of publications after first grant
-        "total_citations_before",  # Total citations before first grant
-        "total_citations_after",  # Total citations after first grant
-        "mean_citations_before",  # Mean citations per year before first grant
-        "mean_citations_after",  # Mean citations per year after first grant
-        "citations_per_pub_before",  # Citations per publication before first grant
-        "citations_per_pub_after",  # Citations per publication after first grant
-        "mean_fwci_before",  # Mean FWCI before first grant
-        "mean_fwci_after",  # Mean FWCI after first grant
+        "topics",  # Research topics
+        "affiliations",  # Historical affiliations
+        "counts_by_year",  # Publication counts by year
+        "counts_by_pubyear",  # Publication counts by publication year
         # Grant information
         "earliest_start_date",  # First grant start date
         "latest_end_date",  # Last grant end date
@@ -348,34 +355,45 @@ def compute_basic_metrics(
         "has_multiple_funders",  # Whether has multiple funders
         "grant_categories",  # List of grant categories
         "lead_funders",  # List of lead funders
-        "project_timeline",  # Detailed project timeline
-        # Research profile
-        "topics",  # Research topics
-        "affiliations",  # Historical affiliations
-        "counts_by_year",  # Publication counts by year
-        # Project outputs
-        "project_publications",  # Project-linked publications
-        "project_topics",  # Project-specific topics
-        "project_authors",  # Project collaborators
-        "project_oa_ids",  # Project OpenAlex IDs
-        # International experience
-        "abroad_experience_before",  # International experience before first grant
-        "abroad_experience_after",  # International experience after first grant
-        "countries_before",  # Countries worked in before first grant
-        "countries_after",  # Countries worked in after first grant
-        "abroad_fraction_before",  # Fraction of time abroad before first grant
-        "abroad_fraction_after",  # Fraction of time abroad after first grant
+        "gtr_project_timeline",  # Detailed project timeline
+        "gtr_project_id",  # GTR project IDs
+        "gtr_project_publications",  # Project-linked publications
+        "gtr_project_topics",  # Project-specific topics
+        "gtr_project_oa_authors",  # Project OpenAlex authors
+        "gtr_project_oa_ids",  # Project OpenAlex IDs
+        # Publication metrics before/after first grant
+        "n_pubs_before",  # Number of publications before
+        "n_pubs_after",  # Number of publications after
+        "total_citations_pubyear_before",  # Total citations by pub year before
+        "total_citations_pubyear_after",  # Total citations by pub year after
+        "mean_citations_pubyear_before",  # Mean citations by pub year before
+        "mean_citations_pubyear_after",  # Mean citations by pub year after
+        "citations_pp_pubyear_before",  # Citations per pub by pub year before
+        "citations_pp_pubyear_after",  # Citations per pub by pub year after
+        "mean_citations_before",  # Mean citations before
+        "mean_citations_after",  # Mean citations after
+        "citations_pp_before",  # Citations per pub before
+        "citations_pp_after",  # Citations per pub after
+        "mean_fwci_before",  # Mean FWCI before
+        "mean_fwci_after",  # Mean FWCI after
+        # International experience metrics
+        "abroad_experience_before",  # Had international experience before
+        "abroad_experience_after",  # Had international experience after
+        "countries_before",  # Countries worked in before
+        "countries_after",  # Countries worked in after
+        "abroad_fraction_before",  # Fraction of time abroad before
+        "abroad_fraction_after",  # Fraction of time abroad after
         # Collaboration metrics
-        "unique_collabs_before",  # Unique collaborators before first grant
-        "unique_collabs_after",  # Unique collaborators after first grant
-        "total_collabs_before",  # Total collaborations before first grant
-        "total_collabs_after",  # Total collaborations after first grant
-        "foreign_collab_fraction_before",  # Fraction of foreign collabs before
-        "foreign_collab_fraction_after",  # Fraction of foreign collabs after
-        "collab_countries_before",  # Collaboration countries before with counts
-        "collab_countries_after",  # Collaboration countries after with counts
+        "collab_countries_before",  # Collaboration countries with counts before
+        "collab_countries_after",  # Collaboration countries with counts after
         "collab_countries_list_before",  # List of collaboration countries before
         "collab_countries_list_after",  # List of collaboration countries after
+        "unique_collabs_before",  # Unique collaborators before
+        "unique_collabs_after",  # Unique collaborators after
+        "total_collabs_before",  # Total collaborations before
+        "total_collabs_after",  # Total collaborations after
+        "foreign_collab_fraction_before",  # Fraction of foreign collabs before
+        "foreign_collab_fraction_after",  # Fraction of foreign collabs after
     ]
 
     # Reindex with only existing columns (in case some are missing)

@@ -41,18 +41,17 @@ def process_last_institution(row: pd.Series) -> bool:
     return country == "GB"
 
 
-def process_collaborations(row: pd.Series, publications: pd.DataFrame) -> dict:
+def process_collaborations(publications_group: pd.Series) -> dict:
     """
     Process publication collaborations for an author.
 
     Args:
-        row (pd.Series): Row containing author ID and earliest_start_date
-        publications (pd.DataFrame): DataFrame with publication data
+        publications_group (pd.Series): Group of publications for an author with earliest_start_date
 
     Returns:
         dict: Dictionary containing collaboration metrics
     """
-    if pd.isnull(row["earliest_start_date"]):
+    if pd.isnull(publications_group["earliest_start_date"].iloc[0]):
         return {
             "collab_countries_before": [],
             "collab_countries_after": [],
@@ -66,54 +65,55 @@ def process_collaborations(row: pd.Series, publications: pd.DataFrame) -> dict:
             "collab_countries_list_after": [],
         }
 
-    # Get reference date
-    ref_year = pd.to_datetime(row["earliest_start_date"]).year
-    author_id = row["id"]
+    ref_year = pd.to_datetime(
+        publications_group["earliest_start_date"].iloc[0] + "-01-01"
+    ).year
 
-    # Get author's publications
-    author_pubs = publications[publications["author_id"] == author_id]
-
-    # Split into before and after
-    pubs_before = author_pubs[author_pubs["year"] < ref_year]
-    pubs_after = author_pubs[author_pubs["year"] >= ref_year]
+    # Split into before/after
+    before = publications_group[publications_group["year"] < ref_year]
+    after = publications_group[publications_group["year"] >= ref_year]
 
     # Process before period
-    collabs_before = set()
-    countries_before = Counter()
-    total_collabs_before = 0
-    foreign_collabs_before = 0
-
-    for _, pub in pubs_before.iterrows():
-        collabs_before.update(pub["collab_ids"])
-        countries_before.update(pub["countries_abroad"])
-        total_collabs_before += pub["n_collab_uk"] + pub["n_collab_abroad"]
-        foreign_collabs_before += pub["n_collab_abroad"]
+    uk_before = before["n_collab_uk"].sum()
+    abroad_before = before["n_collab_abroad"].sum()
+    total_before = int(uk_before + abroad_before)
+    countries_before = Counter(
+        country
+        for countries in before["unique_collab_countries"]
+        for country in countries
+        if country != "GB"
+    )
+    collabs_before = set(
+        collab_id
+        for collab_ids in before["unique_collab_ids"]
+        for collab_id in collab_ids
+    )
 
     # Process after period
-    collabs_after = set()
-    countries_after = Counter()
-    total_collabs_after = 0
-    foreign_collabs_after = 0
+    uk_after = after["n_collab_uk"].sum()
+    abroad_after = after["n_collab_abroad"].sum()
+    total_after = int(uk_after + abroad_after)
+    countries_after = Counter(
+        country
+        for countries in after["unique_collab_countries"]
+        for country in countries
+        if country != "GB"
+    )
+    collabs_after = set(
+        collab_id
+        for collab_ids in after["unique_collab_ids"]
+        for collab_id in collab_ids
+    )
 
-    for _, pub in pubs_after.iterrows():
-        collabs_after.update(pub["collab_ids"])
-        countries_after.update(pub["countries_abroad"])
-        total_collabs_after += pub["n_collab_uk"] + pub["n_collab_abroad"]
-        foreign_collabs_after += pub["n_collab_abroad"]
-
-    # Calculate fractions and means
+    # Calculate fractions
     foreign_fraction_before = (
-        round(foreign_collabs_before / total_collabs_before, 3)
-        if total_collabs_before > 0
-        else np.nan
+        float(round(abroad_before / total_before, 3)) if total_before > 0 else np.nan
     )
     foreign_fraction_after = (
-        round(foreign_collabs_after / total_collabs_after, 3)
-        if total_collabs_after > 0
-        else np.nan
+        float(round(abroad_after / total_after, 3)) if total_after > 0 else np.nan
     )
 
-    # Convert sets to lists for JSON serialisation
+    # Convert counters to list of pairs
     countries_before_list = [[k, str(v)] for k, v in countries_before.items()]
     countries_after_list = [[k, str(v)] for k, v in countries_after.items()]
 
@@ -122,8 +122,8 @@ def process_collaborations(row: pd.Series, publications: pd.DataFrame) -> dict:
         "collab_countries_after": countries_after_list,
         "unique_collabs_before": len(collabs_before),
         "unique_collabs_after": len(collabs_after),
-        "total_collabs_before": total_collabs_before,
-        "total_collabs_after": total_collabs_after,
+        "total_collabs_before": total_before,
+        "total_collabs_after": total_after,
         "foreign_collab_fraction_before": foreign_fraction_before,
         "foreign_collab_fraction_after": foreign_fraction_after,
         "collab_countries_list_before": sorted(countries_before.keys()),
@@ -131,19 +131,70 @@ def process_collaborations(row: pd.Series, publications: pd.DataFrame) -> dict:
     }
 
 
-def process_affiliations(row: pd.Series) -> dict:
+def compile_affiliations_by_author(publications: pd.DataFrame) -> dict:
+    """
+    Pre-aggregate affiliation data by author to avoid repeated filtering.
+
+    Args:
+        publications (pd.DataFrame): DataFrame with publication data
+
+    Returns:
+        dict: Dictionary mapping author_id to their yearly affiliation data
+    """
+    # Group by author and year, aggregate the counts and countries
+    agg_data = (
+        publications.groupby(["author_id", "year"])
+        .agg(
+            {
+                "n_affil_uk": "sum",
+                "n_affil_abroad": "sum",
+                "affiliation_countries_abroad": lambda x: set().union(
+                    *[
+                        set(countries) if isinstance(countries, list) else set()
+                        for countries in x
+                    ]
+                ),
+            }
+        )
+        .reset_index()
+    )
+
+    # Convert to dictionary for fast lookup
+    author_data = {}
+    for _, row in agg_data.iterrows():
+        author_id = row["author_id"]
+        if author_id not in author_data:
+            author_data[author_id] = []
+
+        author_data[author_id].append(
+            {
+                "year": row["year"],
+                "n_uk": row["n_affil_uk"] if not pd.isna(row["n_affil_uk"]) else 0,
+                "n_abroad": (
+                    row["n_affil_abroad"] if not pd.isna(row["n_affil_abroad"]) else 0
+                ),
+                "countries": (
+                    list(row["affiliation_countries_abroad"])
+                    if isinstance(row["affiliation_countries_abroad"], set)
+                    else []
+                ),
+            }
+        )
+
+    return author_data
+
+
+def process_affiliations(publications_group: pd.Series) -> dict:
     """
     Process affiliations to determine UK vs abroad experience before and after first grant.
 
     Args:
-        row (pd.Series): Row containing affiliations and earliest_start_date
+        publications_group (pd.Series): Group of publications for an author with earliest_start_date
 
     Returns:
         dict: Dictionary containing affiliation metrics
     """
-    if pd.isnull(row["earliest_start_date"]) or not isinstance(
-        row["affiliations"], np.ndarray
-    ):
+    if pd.isnull(publications_group["earliest_start_date"].iloc[0]):
         return {
             "abroad_experience_before": np.nan,
             "abroad_experience_after": np.nan,
@@ -153,66 +204,50 @@ def process_affiliations(row: pd.Series) -> dict:
             "abroad_fraction_after": np.nan,
         }
 
-    ref_date = pd.to_datetime(f"{row['earliest_start_date']}-01-01")
-    yearly_affiliations_before = defaultdict(lambda: {"uk": 0, "abroad": 0})
-    yearly_affiliations_after = defaultdict(lambda: {"uk": 0, "abroad": 0})
-    countries_before = set()
-    countries_after = set()
+    ref_year = pd.to_datetime(publications_group["earliest_start_date"]).iloc[0].year
 
-    for affiliation in row["affiliations"]:
-        if len(affiliation) >= 5:
-            country = affiliation[2]
-            if pd.isna(country):
-                continue
+    # Split into before/after
+    before = publications_group[publications_group["year"] < ref_year]
+    after = publications_group[publications_group["year"] >= ref_year]
 
-            try:
-                years = {
-                    int(y)
-                    for y in affiliation[4].split(",")
-                    if y.strip() and 1980 <= int(y) <= 2026
-                }
-            except (ValueError, TypeError):
-                continue
-
-            for year in years:
-                # Compare year directly instead of converting to datetime
-                if year < ref_date.year:  # if before the first grant
-                    if country == "GB":
-                        yearly_affiliations_before[year]["uk"] += 1
-                    else:
-                        yearly_affiliations_before[year]["abroad"] += 1
-                        countries_before.add(country)
-                else:  # if after or during the first grant year
-                    if country == "GB":
-                        yearly_affiliations_after[year]["uk"] += 1
-                    else:
-                        yearly_affiliations_after[year]["abroad"] += 1
-                        countries_after.add(country)
-
-    uk_fraction_before = calculate_uk_fraction(yearly_affiliations_before)
-    uk_fraction_after = calculate_uk_fraction(yearly_affiliations_after)
-
-    # Convert NaN to NaN for abroad fractions
-    abroad_fraction_before = (
-        np.nan if np.isnan(uk_fraction_before) else round(1 - uk_fraction_before, 3)
-    )
-    abroad_fraction_after = (
-        np.nan if np.isnan(uk_fraction_after) else round(1 - uk_fraction_after, 3)
+    # Process before period
+    uk_before = before["n_affils_uk"].sum()
+    abroad_before = before["n_affils_abroad"].sum()
+    countries_before = set(
+        country
+        for countries in before["affiliation_countries"]
+        for country in countries
+        if country != "GB" and country != ""
     )
 
-    # Set experience to NaN if we have no affiliations in the period
-    has_affiliations_before = bool(yearly_affiliations_before)
-    has_affiliations_after = bool(yearly_affiliations_after)
+    # Process after period
+    uk_after = after["n_affils_uk"].sum()
+    abroad_after = after["n_affils_abroad"].sum()
+    countries_after = set(
+        country
+        for countries in after["affiliation_countries"]
+        for country in countries
+        if country != "GB" and country != ""
+    )
+
+    # Calculate fractions
+    total_before = uk_before + abroad_before
+    total_after = uk_after + abroad_after
+
+    abroad_fraction_before = float(
+        round(abroad_before / total_before, 3) if total_before > 0 else np.nan
+    )
+    abroad_fraction_after = float(
+        round(abroad_after / total_after, 3) if total_after > 0 else np.nan
+    )
 
     return {
         "abroad_experience_before": (
-            bool(countries_before) if has_affiliations_before else np.nan
+            bool(countries_before) if total_before > 0 else np.nan
         ),
-        "abroad_experience_after": (
-            bool(countries_after) if has_affiliations_after else np.nan
-        ),
-        "countries_before": sorted(list(filter(None, countries_before))),
-        "countries_after": sorted(list(filter(None, countries_after))),
+        "abroad_experience_after": bool(countries_after) if total_after > 0 else np.nan,
+        "countries_before": sorted(list(countries_before)),
+        "countries_after": sorted(list(countries_after)),
         "abroad_fraction_before": abroad_fraction_before,
         "abroad_fraction_after": abroad_fraction_after,
     }

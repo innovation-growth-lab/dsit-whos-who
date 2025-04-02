@@ -30,15 +30,15 @@ def calculate_uk_fraction(yearly_data):
     return round(total_uk / total if total > 0 else np.nan, 3)
 
 
-def compile_citations_by_year(publications: pd.DataFrame) -> pd.DataFrame:
+def compile_counts_by_pubyear(publications: pd.DataFrame) -> pd.DataFrame:
     """
-    Recreate the citations_by_year data combining cited_by_count, n_pubs, and year
+    Recreate the counts_by_pubyear data combining cited_by_count, n_pubs, and year
     to create a new column with a list of three elements.
 
     NB. This was thought necessary because the author data only has data from 2012
     onwards, but turns out the work data also has data from 2012 onwards only.
     """
-    publications["citations_by_year"] = publications.apply(
+    publications["counts_by_pubyear"] = publications.apply(
         lambda row: [row["year"], row["n_pubs"], row["cited_by_count"]], axis=1
     )
 
@@ -47,7 +47,7 @@ def compile_citations_by_year(publications: pd.DataFrame) -> pd.DataFrame:
 
     # create the author group'd version of the counts_by_year data
     author_grouped = publications.groupby("id").agg(
-        {"citations_by_year": lambda x: x.tolist()}
+        {"counts_by_pubyear": lambda x: x.tolist()}
     )
 
     return author_grouped
@@ -55,24 +55,24 @@ def compile_citations_by_year(publications: pd.DataFrame) -> pd.DataFrame:
 
 def process_counts_by_year(row: pd.Series) -> dict:
     """
-    Process publication and citation counts from both counts_by_year and citations_by_year data.
+    Process publication and citation counts from both counts_by_year and counts_by_pubyear data.
 
     Uses two different approaches:
-    1. citations_by_year: Citations attributed to publication year (1980-)
+    1. counts_by_pubyear: Citations attributed to publication year (1980-)
     2. counts_by_year: Citations counted in the year they occur (2012-)
 
     Args:
-        row (pd.Series): Row containing counts_by_year, citations_by_year and earliest_start_date
+        row (pd.Series): Row containing counts_by_year, counts_by_pubyear and earliest_start_date
 
     Returns:
         dict: Dictionary containing publication and citation metrics
     """
     if pd.isnull(row["earliest_start_date"]) or (
         not isinstance(row["counts_by_year"], np.ndarray)
-        and not isinstance(row["citations_by_year"], np.ndarray)
+        and not isinstance(row["counts_by_pubyear"], np.ndarray)
     ):
         return {
-            "n_pubs_before": np.nan,  # these use citations_by_year (1980-)
+            "n_pubs_before": np.nan,  # these use counts_by_pubyear (1980-)
             "n_pubs_after": np.nan,
             "total_citations_pubyear_before": np.nan,
             "total_citations_pubyear_after": np.nan,
@@ -88,15 +88,15 @@ def process_counts_by_year(row: pd.Series) -> dict:
 
     ref_year = pd.to_datetime(row["earliest_start_date"]).year
 
-    # Process citations_by_year (citations attributed to publication year)
+    # Process counts_by_pubyear (citations attributed to publication year)
     pubs_before = []
     pubs_after = []
     citations_pubyear_before = []
     citations_pubyear_after = []
 
-    if isinstance(row["citations_by_year"], np.ndarray):
-        for year_data in row["citations_by_year"]:
-            if not isinstance(year_data, np.ndarray) or len(year_data) < 3:
+    if isinstance(row["counts_by_pubyear"], list):
+        for year_data in row["counts_by_pubyear"]:
+            if not isinstance(year_data, list) or len(year_data) < 3:
                 continue
 
             try:
@@ -142,7 +142,7 @@ def process_counts_by_year(row: pd.Series) -> dict:
                 annual_citations_after.append(citations)
                 annual_pubs_after.append(n_pubs)
 
-    # Calculate metrics for citations_by_year
+    # Calculate metrics for counts_by_pubyear
     total_pubs_before = sum(pubs_before) if pubs_before else 0
     total_pubs_after = sum(pubs_after) if pubs_after else 0
     total_citations_pubyear_before = (
@@ -154,21 +154,25 @@ def process_counts_by_year(row: pd.Series) -> dict:
 
     # Calculate metrics for counts_by_year
     mean_citations_before = (
-        round(np.mean(annual_citations_before), 3)
+        round(np.nanmean(annual_citations_before), 3)
         if annual_citations_before
         else np.nan
     )
     mean_citations_after = (
-        round(np.mean(annual_citations_after), 3) if annual_citations_after else np.nan
+        round(np.nanmean(annual_citations_after), 3)
+        if annual_citations_after
+        else np.nan
     )
 
     mean_annual_pubs_before = (
-        np.mean(annual_pubs_before) if annual_pubs_before else np.nan
+        np.nanmean(annual_pubs_before) if annual_pubs_before else np.nan
     )
-    mean_annual_pubs_after = np.mean(annual_pubs_after) if annual_pubs_after else np.nan
+    mean_annual_pubs_after = (
+        np.nanmean(annual_pubs_after) if annual_pubs_after else np.nan
+    )
 
     return {
-        # metrics using citations_by_year (1980-)
+        # metrics using counts_by_pubyear (1980-)
         "n_pubs_before": total_pubs_before if total_pubs_before > 0 else np.nan,
         "n_pubs_after": total_pubs_after if total_pubs_after > 0 else np.nan,
         "total_citations_pubyear_before": (
@@ -182,12 +186,12 @@ def process_counts_by_year(row: pd.Series) -> dict:
             else np.nan
         ),
         "mean_citations_pubyear_before": (
-            round(np.mean(citations_pubyear_before), 3)
+            round(np.nanmean(citations_pubyear_before), 3)
             if citations_pubyear_before
             else np.nan
         ),
         "mean_citations_pubyear_after": (
-            round(np.mean(citations_pubyear_after), 3)
+            round(np.nanmean(citations_pubyear_after), 3)
             if citations_pubyear_after
             else np.nan
         ),
@@ -217,13 +221,36 @@ def process_counts_by_year(row: pd.Series) -> dict:
     }
 
 
-def process_fwci(row: pd.Series, pubs_df: pd.DataFrame) -> tuple:
+def compile_fwci_by_author(publications: pd.DataFrame) -> pd.DataFrame:
     """
-    Process FWCI metrics from publication data.
+    Pre-aggregate FWCI data by author to avoid repeated filtering.
+
+    Args:
+        publications (pd.DataFrame): DataFrame with publication FWCI data
+
+    Returns:
+        pd.DataFrame: DataFrame with author-grouped FWCI data
+    """
+    # Group FWCI data by author and year
+    fwci_data = publications.groupby(["author_id", "year"])["fwci"].mean().reset_index()
+
+    # Create a dictionary mapping author_id to their yearly FWCI data
+    author_fwci = (
+        fwci_data.groupby("author_id")
+        .apply(lambda x: x[["year", "fwci"]].values.tolist())
+        .to_dict()
+    )
+
+    return author_fwci
+
+
+def process_fwci(row: pd.Series, author_fwci: dict) -> tuple:
+    """
+    Process FWCI metrics from pre-aggregated publication data.
 
     Args:
         row (pd.Series): Row containing author ID and earliest_start_date
-        pubs_df (pd.DataFrame): DataFrame with publication FWCI data
+        author_fwci (dict): Pre-aggregated FWCI data by author
 
     Returns:
         tuple: (mean_fwci_before, mean_fwci_after)
@@ -232,12 +259,24 @@ def process_fwci(row: pd.Series, pubs_df: pd.DataFrame) -> tuple:
         return np.nan, np.nan
 
     ref_year = pd.to_datetime(row["earliest_start_date"]).year
-    author_pubs = pubs_df[pubs_df["author_id"] == row["id"]]
 
-    fwci_before = author_pubs[author_pubs["year"] < ref_year]["fwci"]
-    fwci_after = author_pubs[author_pubs["year"] >= ref_year]["fwci"]
+    # Get author's FWCI data
+    author_data = author_fwci.get(row["id"], [])
 
-    mean_fwci_before = round(fwci_before.mean(), 3) if not fwci_before.empty else np.nan
-    mean_fwci_after = round(fwci_after.mean(), 3) if not fwci_after.empty else np.nan
+    fwci_before = []
+    fwci_after = []
+
+    # Split FWCI values into before/after
+    for year, fwci in author_data:
+        if year < ref_year:
+            fwci_before.append(fwci)
+        else:
+            fwci_after.append(fwci)
+    mean_fwci_before = (
+        round(np.nanmean(fwci_before), 3) if len(fwci_before) > 0 else np.nan
+    )
+    mean_fwci_after = (
+        round(np.nanmean(fwci_after), 3) if len(fwci_after) > 0 else np.nan
+    )
 
     return mean_fwci_before, mean_fwci_after
