@@ -1,32 +1,36 @@
 """
-This pipeline fetches data from the GtR API and preprocesses it into a format
-that can be used by the rest of the project.
+Gateway to Research data collection pipeline.
 
-Pipelines:
-    - data_collection_gtr:
-        Fetches and preprocesses data from the GtR API.
+This pipeline orchestrates the collection and preprocessing of data from the
+Gateway to Research (GtR) API. It provides:
 
-Dependencies:
-    - Kedro
-    - pandas
-    - requests
-    - logging
+Core Functionality:
+- Parallel data fetching from multiple GtR endpoints
+- Standardised data preprocessing for each endpoint type
+- Configurable test mode for development
+- Namespace management for output organisation
+
+Available Endpoints:
+- Projects: Research project metadata and relationships
+- Publications: Research outputs and citations
+- Persons: Researcher profiles and affiliations
+- Organisations: Institution details and addresses
+- Funds: Grant funding details and amounts
 
 Usage:
-    Run the pipeline to fetch and preprocess data from the GtR API.
-
-Command Line Example:
-    ```
+    Run complete pipeline:
+    ```bash
     kedro run --pipeline data_collection_gtr
     ```
-    Alternatively, you can run this pipeline for a single endpoint:
-    ```
-    kedro run --pipeline data_collection_gtr --tags projects
+
+    Run specific endpoint:
+    ```bash
+    kedro run --pipeline data_collection_gtr --tags gtr_projects
     ```
 
 Note:
-    In regards to the use of namespaces, note that these are appended as
-    prefixes to the outputs of the nodes in the pipeline.
+    Namespace prefixes are automatically applied to node outputs for
+    organisational clarity.
 """
 
 from kedro.pipeline import Pipeline, node, pipeline
@@ -35,10 +39,15 @@ from ...settings import GTR_ENDPOINTS
 
 
 def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
-    """Pipeline for data collection.
+    """Create data collection pipeline for GtR endpoints.
+
+    Constructs a modular pipeline that:
+    - Fetches raw data from configured GtR endpoints
+    - Preprocesses data into standardised formats
+    - Organises outputs using namespaced structure
 
     Returns:
-        Pipeline: The data collection pipeline.
+        Pipeline with endpoint-specific nodes and tags
     """
     template_pipeline = pipeline(
         [

@@ -1,18 +1,16 @@
 """
-This script provides functionality for preprocessing GtR (Gateway to Research)
-data. It includes a class `GtRDataPreprocessor` with methods to preprocess
-different types of GtR data such as organisations, funds, publications, and
-projects. Additionally, it includes utility functions for API configuration
-and data extraction.
+Gateway to Research (GtR) data preprocessing pipeline.
 
-Classes:
-    GtRDataPreprocessor: A class for preprocessing various types of GtR data.
+This module provides comprehensive functionality for fetching and preprocessing data
+from the Gateway to Research API. It handles:
+- Organisation, fund, publication, project, and person data preprocessing
+- API request management with retry logic
+- Parallel data fetching and processing
+- Data transformation and standardisation
 
-Functions:
-    fetch_gtr_data(parameters, endpoint, **kwargs): Fetches data from the GtR
-        API and preprocesses it.
-    concatenate_endpoint(abstract_dict): Concatenates DataFrames from a single
-        endpoint into a single DataFrame.
+The module is structured around the GtRDataPreprocessor class, which provides
+specialised methods for each data type, ensuring consistent and efficient
+data processing across all GtR endpoints.
 """
 
 import logging
@@ -39,14 +37,19 @@ logger = logging.getLogger(__name__)
 
 class GtRDataPreprocessor:
     """
-    Class for preprocessing GtR data.
+    Preprocessor for Gateway to Research data types.
 
-    This class provides methods to preprocess different types of GtR data, such as organisations,
-    funds, publications, projects, and persons.
+    Provides specialised methods for transforming raw API data into standardised
+    formats. Handles:
+    - Organisations: Address extraction and standardisation
+    - Funds: Currency and amount normalisation
+    - Publications: Date standardisation and metadata extraction
+    - Projects: Research topic classification and timeline extraction
+    - Persons: Role and affiliation processing
     """
 
     def __init__(self) -> None:
-        """Initialise the preprocessor with methods for each data type."""
+        """Initialise preprocessor with type-specific methods."""
         self.methods = {
             "organisations": self._preprocess_organisations,
             "funds": self._preprocess_funds,
@@ -56,15 +59,18 @@ class GtRDataPreprocessor:
         }
 
     def _preprocess_organisations(self, org_df: pd.DataFrame) -> pd.DataFrame:
-        """Preprocess the organisations data.
+        """Transform raw organisation data into standardised format.
 
-        Extracts the main address and drops the "links" column.
+        Processes:
+        - Main address extraction and formatting
+        - Address component standardisation
+        - Removal of redundant link data
 
         Args:
-            org_df: The organisations data.
+            org_df: Raw organisation data from GtR API
 
         Returns:
-            The preprocessed data.
+            DataFrame with standardised organisation data
         """
         address_columns = org_df["addresses"].apply(extract_main_address)
         address_columns = address_columns.drop("created", axis=1).add_prefix("address_")
@@ -73,16 +79,18 @@ class GtRDataPreprocessor:
         return org_df
 
     def _preprocess_funds(self, funds_df: pd.DataFrame) -> pd.DataFrame:
-        """Preprocess the funds data.
+        """Transform raw funding data into standardised format.
 
-        Extracts the value in pound (ie. {'currencyCode': 'GBP', 'amount': 283590})
-        for each row and drops the "links" column.
+        Processes:
+        - Currency amount extraction (GBP)
+        - Value standardisation
+        - Removal of redundant link data
 
         Args:
-            funds_df: The funds data.
+            funds_df: Raw funding data from GtR API
 
         Returns:
-            The preprocessed data.
+            DataFrame with standardised funding data
         """
         funds_df["value"] = funds_df["valuePounds"].apply(lambda x: x["amount"])
         funds_df = funds_df.drop("valuePounds", axis=1)
@@ -90,16 +98,19 @@ class GtRDataPreprocessor:
         return funds_df
 
     def _preprocess_publications(self, publications_df: pd.DataFrame) -> pd.DataFrame:
-        """Preprocess the publications data.
+        """Transform raw publication data into standardised format.
 
-        Extracts project_id, creates publication_date, renames columns,
-        and selects specific columns.
+        Processes:
+        - Project ID extraction
+        - Publication date standardisation
+        - Column renaming and selection
+        - Author metadata extraction
 
         Args:
-            publications_df: The input DataFrame containing publications data.
+            publications_df: Raw publication data from GtR API
 
         Returns:
-            The preprocessed DataFrame with selected columns.
+            DataFrame with standardised publication data
         """
         # extract project_id
         publications_df["project_id"] = publications_df["links"].apply(
@@ -149,16 +160,20 @@ class GtRDataPreprocessor:
         ]
 
     def _preprocess_projects(self, projects_df: pd.DataFrame) -> pd.DataFrame:
-        """Preprocess the projects data.
+        """Transform raw project data into standardised format.
 
-        Transforms nested dictionaries, extracts person information, dates,
-        and renames columns.
+        Processes:
+        - Research subject and topic extraction
+        - Person role identification
+        - Timeline standardisation (start/end dates)
+        - Publication linkage
+        - Nested data structure flattening
 
         Args:
-            projects_df: The projects data.
+            projects_df: Raw project data from GtR API
 
         Returns:
-            The preprocessed data.
+            DataFrame with standardised project data
         """
         columns_to_transform = {
             "identifiers": ["value", "type"],
@@ -242,15 +257,19 @@ class GtRDataPreprocessor:
         ]
 
     def _preprocess_persons(self, persons_df: pd.DataFrame) -> pd.DataFrame:
-        """Preprocess the persons data.
+        """Transform raw person data into standardised format.
 
-        Extracts project and organisation information, and renames columns.
+        Processes:
+        - Name standardisation
+        - Role extraction
+        - Project linkage
+        - Organisation affiliation processing
 
         Args:
-            persons_df: The persons data.
+            persons_df: Raw person data from GtR API
 
         Returns:
-            The preprocessed data.
+            DataFrame with standardised person data
         """
         persons_df["projects"] = persons_df["links"].apply(
             lambda x: [
@@ -304,15 +323,21 @@ class GtRDataPreprocessor:
 def fetch_gtr_data(
     parameters: Dict[str, Union[str, int]], url_endpoint: str, **kwargs
 ) -> Generator[Dict[str, pd.DataFrame], None, None]:
-    """Fetch data from the GtR API.
+    """Fetch and preprocess data from Gateway to Research API.
+
+    Implements:
+    - Parallel data fetching with retry logic
+    - Rate limiting and backoff
+    - Response validation and error handling
+    - Data preprocessing via GtRDataPreprocessor
 
     Args:
-        parameters: Parameters for the API request.
-        url_endpoint: The endpoint to fetch data from.
-        **kwargs: Additional keyword arguments, including test_mode.
+        parameters: API configuration parameters
+        url_endpoint: Target API endpoint
+        **kwargs: Additional configuration options
 
     Yields:
-        Dictionary with page number as key and preprocessed DataFrame as value.
+        Dictionary containing preprocessed data chunks
     """
     config = api_config(parameters, url_endpoint)
 
@@ -377,16 +402,19 @@ def fetch_gtr_data(
 def concatenate_endpoint(
     abstract_dict: Union[AbstractDataset, Dict[str, pd.DataFrame]],
 ) -> pd.DataFrame:
-    """
-    Concatenate DataFrames from a single endpoint into a single DataFrame.
+    """Merge preprocessed data chunks into unified dataset.
+
+    Handles:
+    - Chunk validation and error checking
+    - Memory-efficient concatenation
+    - Publication-specific data loading
+    - Index standardisation
 
     Args:
-        abstract_dict: A dictionary where the keys are the endpoint names
-            and the values are functions that load the DataFrames or
-            the DataFrames themselves.
+        abstract_dict: Dictionary of data chunks or Kedro dataset
 
     Returns:
-        The concatenated DataFrame.
+        Unified DataFrame with all preprocessed data
     """
     publications = Parallel(n_jobs=-1, verbose=10)(
         delayed(_load_publication)(key, load_function)
@@ -410,15 +438,14 @@ def concatenate_endpoint(
 def _load_publication(
     key: str, load_function: Union[Callable, pd.DataFrame]
 ) -> Optional[pd.DataFrame]:
-    """
-    Load a publication DataFrame from a function or return the DataFrame directly.
+    """Load and validate publication data chunk.
 
     Args:
-        key: The key identifying the publication.
-        load_function: Either a function that returns a DataFrame or a DataFrame.
+        key: Chunk identifier
+        load_function: Data loading function or DataFrame
 
     Returns:
-        The loaded DataFrame or None if loading fails.
+        Validated publication DataFrame or None if invalid
     """
     try:
         if callable(load_function):
