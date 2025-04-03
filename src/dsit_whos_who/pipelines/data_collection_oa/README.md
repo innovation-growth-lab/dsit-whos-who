@@ -2,6 +2,8 @@
 
 This pipeline fetches and processes data from the OpenAlex API, collecting information about authors, publications, and institutions related to GTR (Gateway to Research) data.
 
+<img src="https://upload.wikimedia.org/wikipedia/commons/8/82/OpenAlex-logo-5.2de7053c.png" alt="GtR" style="width:100%;"/>
+
 ## Pipeline Overview
 
 The pipeline consists of four main sub-pipelines:

@@ -1,4 +1,7 @@
-"""Author-specific utilities for OpenAlex data collection."""
+"""
+Author data processing utilities for OpenAlex API.
+Handles author parsing, name matching, and data transformation.
+"""
 
 import logging
 from typing import Dict, List, Optional, Tuple
@@ -9,24 +12,24 @@ logger = logging.getLogger(__name__)
 
 
 def _normalise_name(name: str) -> str:
-    """Normalise a name for comparison by lowercasing and removing punctuation."""
+    """Convert name to lowercase alphanumeric for comparison."""
     return "".join(c.lower() for c in name if c.isalnum())
 
 
 def _name_similarity(name1: str, name2: str) -> float:
-    """Calculate similarity between two names using SequenceMatcher."""
+    """Calculate string similarity ratio between two names."""
     return SequenceMatcher(None, _normalise_name(name1), _normalise_name(name2)).ratio()
 
 
 def _find_best_name_match(display_name: str, gtr_names: List[str]) -> Tuple[str, float]:
-    """Find the closest matching GTR name for a given OpenAlex display name.
+    """Match OpenAlex display name to closest GTR name variant.
 
     Args:
-        display_name (str): The display name from OpenAlex
-        gtr_names (List[str]): List of author names from GTR
+        display_name: Author name from OpenAlex
+        gtr_names: Candidate names from GTR database
 
     Returns:
-        Tuple[str, float]: The best matching GTR name and the similarity score
+        Best matching GTR name and similarity score
     """
     if not gtr_names:
         return "", 0.0
@@ -40,16 +43,22 @@ def parse_author_results(
     response: List[Dict],
     gtr_author_names: Optional[str] = None,
 ) -> List[Dict]:
-    """Parses OpenAlex API author search response and matches results to GTR author names.
+    """Extract and normalise author data from OpenAlex API response.
+
+    Processes:
+    - Basic author metadata (ID, name, metrics)
+    - Institutional affiliations and years
+    - Research topics and hierarchies
+    - Publication/citation counts by year
+    - Name matching with GTR database
 
     Args:
-        response (List[Dict]): The response from the OpenAlex API.
-        gtr_author_names (str): Pipe-separated list of GTR author names to match against.
+        response: Raw API response containing author data
+        gtr_author_names: Pipe-separated GTR names for matching
 
     Returns:
-        List[Dict]: List of dictionaries containing parsed author information with GTR matches.
+        List of normalised author records
     """
-
     parsed_response = []
     for author in response:
         # Only include important fields
@@ -130,15 +139,14 @@ def parse_author_results(
 def json_loader_authors(
     data: List[List[Dict]], include_match_info: bool = False
 ) -> pd.DataFrame:
-    """
-    Load authors JSON data into a DataFrame.
+    """Transform batched author data into structured DataFrame.
 
     Args:
-        data (List[List[Dict]]): The authors JSON data in batches.
-        include_match_info (bool): Whether to include name matching columns.
+        data: Batched author records from OpenAlex
+        include_match_info: Whether to retain GTR name matching columns
 
     Returns:
-        pandas.DataFrame: The transformed DataFrame.
+        DataFrame with normalised author data
     """
     output = []
     for batch in data:

@@ -1,5 +1,11 @@
 """
-Tmplat.e
+Core data processing nodes for OpenAlex data collection pipeline.
+
+This module contains the primary functions for processing and transforming data
+between pipeline stages. It handles:
+- Input list creation for DOIs, ORCIDs, and author names
+- OpenAlex API data fetching with parallel processing
+- Data concatenation and institution ID extraction
 """
 
 import logging

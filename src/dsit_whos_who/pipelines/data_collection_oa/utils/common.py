@@ -1,4 +1,7 @@
-"""Common utilities for OpenAlex data collection."""
+"""
+Core utilities for OpenAlex API interaction.
+Handles API requests, response parsing, and data preprocessing.
+"""
 
 import logging
 import random
@@ -17,7 +20,15 @@ logger = logging.getLogger(__name__)
 def preprocess_ids(
     ids: Union[str, List[str], Dict[str, str]], grouped: bool = True
 ) -> List[str]:
-    """Preprocesses ids to ensure they are in the correct format."""
+    """Format identifiers for OpenAlex API queries.
+
+    Args:
+        ids: Single ID or list/dict of IDs to process
+        grouped: Whether to group IDs for OR-syntax queries
+
+    Returns:
+        List of processed IDs ready for API queries
+    """
     if isinstance(ids, str):
         ids = [ids]
     if isinstance(ids, dict):
@@ -28,7 +39,15 @@ def preprocess_ids(
 
 
 def _chunk_oa_ids(ids: List[str], chunk_size: int = 50) -> Generator[str, None, None]:
-    """Yield successive chunk_size-sized chunks from ids."""
+    """Split ID list into OR-syntax chunks for API queries.
+
+    Args:
+        ids: List of IDs to chunk
+        chunk_size: Maximum IDs per chunk (default: 50)
+
+    Yields:
+        Pipe-separated ID strings for API queries
+    """
     for i in range(0, len(ids), chunk_size):
         yield "|".join(ids[i : i + chunk_size])
 
@@ -43,21 +62,20 @@ def openalex_generator(
     sample_size: int = -1,
     select_variables: Optional[List[str]] = None,
 ) -> Iterator[list]:
-    """Creates a generator that yields a list of objects from the OpenAlex API based on a
-    given ID.
+    """Generate paginated API requests with cursor-based navigation.
 
     Args:
-        mails (List[str]): The email address to use for the API.
-        perpage (str): The number of results to return per page.
-        oa_id (Union[str, List[str]): The ID to use for the API.
-        filter_criteria (Union[str, List[str]]): The filter criteria to use for the API.
-        session (requests.Session): The requests session to use.
-        endpoint (str): The OpenAlex endpoint to query (works, authors, institutions, etc).
-        sample_size (int): Number of random samples to return. -1 means no sampling.
-        select_variables (Optional[List[str]]): List of variables to select in the API response.
+        mails: Email addresses for API registration
+        perpage: Results per page
+        oa_id: ID(s) to query
+        filter_criteria: OpenAlex filter parameters
+        session: Requests session with retry handling
+        endpoint: API endpoint (works/authors/institutions)
+        sample_size: Random sample size (-1 for all)
+        select_variables: Fields to include in response
 
     Yields:
-        Iterator[list]: A generator that yields a list of objects from the OpenAlex API.
+        Lists of raw API response objects
     """
     cursor = "*"
     assert isinstance(
@@ -151,21 +169,22 @@ def fetch_openalex_objects(
     endpoint: str = "works",
     **kwargs,
 ) -> List[dict]:
-    """Fetches objects from OpenAlex API based on ID and endpoint type.
+    """Fetch and parse OpenAlex data with automatic retries.
 
     Args:
-        oa_id (Union[str, List[str]]): The ID(s) to query.
-        mails (List[str]): List of email addresses for API usage.
-        perpage (str): Number of results per page.
-        filter_criteria (Union[str, List[str]]): Filter criteria for the query.
-        endpoint (str): OpenAlex endpoint (works, authors, institutions, etc).
-        **kwargs: Additional arguments including:
-            - sample_size: Number of random samples to return
-            - keys_to_include: List of keys to include in results
-            - gtr_author_names: For author search, the original GTR names to match against
+        oa_id: ID(s) to query
+        mails: Email addresses for API registration
+        perpage: Results per page
+        filter_criteria: OpenAlex filter parameters
+        endpoint: API endpoint (works/authors/institutions)
+        **kwargs: Additional parameters:
+            - sample_size: Random sample size
+            - select_variables: Fields to include
+            - keys_to_include: Keys to keep in results
+            - gtr_author_names: Original GTR names for matching
 
     Returns:
-        List[dict]: List of fetched objects from OpenAlex.
+        List of parsed OpenAlex objects
     """
     assert isinstance(
         filter_criteria, type(oa_id)

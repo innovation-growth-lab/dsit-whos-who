@@ -1,27 +1,21 @@
 """
-This pipeline fetches data from the GtR API and preprocesses it into a format
-that can be used by the rest of the project.
+OpenAlex data collection pipeline.
 
-Pipelines:
-    - data_collection_gtr:
-        Fetches and preprocesses data from the GtR API.
+Fetches and processes data from OpenAlex API through four sub-pipelines:
+- ORCID-based author data collection
+- Author name-based search
+- DOI-based publication retrieval
+- Institution data collection
 
-Dependencies:
-    - Kedro
-    - pandas
-    - requests
-    - logging
-
-Usage:
-    Run the pipeline to fetch and preprocess data from the GtR API.
-
-Command Line Example:
+Example:
+    Run complete pipeline:
     ```
-    kedro run --pipeline data_collection_gtr
+    kedro run --pipeline data_collection_oa
     ```
-    Alternatively, you can run this pipeline for a single endpoint:
+    
+    Run specific sub-pipeline:
     ```
-    kedro run --pipeline data_collection_gtr --tags projects
+    kedro run --pipeline data_collection_oa --tags fetch_orcid
     ```
 
 Note:
@@ -41,10 +35,11 @@ from .nodes import (
 
 
 def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
-    """Pipeline for data collection.
+    """Create the OpenAlex data collection pipeline.
 
     Returns:
-        Pipeline: The data collection pipeline.
+        Pipeline combining ORCID, author search, publications, and 
+        institutions sub-pipelines
     """
     orcid_pipeline = pipeline(
         [

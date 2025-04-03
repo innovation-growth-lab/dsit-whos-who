@@ -1,52 +1,23 @@
-"""Publications-specific utilities for OpenAlex data collection."""
+"""
+Publication data processing utilities for OpenAlex API.
+Handles publication parsing, DOI preprocessing, and data transformation.
+"""
 
 import logging
-from typing import Dict, List, Optional, Sequence
+from typing import Dict, List, Optional
 import pandas as pd
 
 logger = logging.getLogger(__name__)
 
 
-def _revert_abstract_index(abstract_inverted_index: Dict[str, Sequence[int]]) -> str:
-    """Reverts the abstract inverted index to the original text.
-
-    Args:
-        abstract_inverted_index (Dict[str, Sequence[int]]): The abstract inverted index.
-
-    Returns:
-        str: The original text.
-    """
-    try:
-        length_of_text = (
-            max(
-                [
-                    index
-                    for sublist in abstract_inverted_index.values()
-                    for index in sublist
-                ]
-            )
-            + 1
-        )
-        recreated_text = [""] * length_of_text
-
-        for word, indices in abstract_inverted_index.items():
-            for index in indices:
-                recreated_text[index] = word
-
-        return " ".join(recreated_text)
-    except (AttributeError, ValueError):
-        return ""
-
-
 def preprocess_publication_doi(df: pd.DataFrame) -> pd.DataFrame:
-    """Preprocess the Gateway to Research publication data to include
-    doi values that are compatible with OA filter module.
+    """Clean DOIs from Gateway to Research data for OpenAlex compatibility.
 
     Args:
-        df (pd.DataFrame): The Gateway to Research publication data.
+        df: Publication data with DOI column
 
     Returns:
-        pd.DataFrame: The preprocessed publication data.
+        DataFrame with standardised DOI format
     """
     if "doi" in df.columns:
         df["doi"] = df["doi"].str.extract(r"(10\..+)")
@@ -56,16 +27,14 @@ def preprocess_publication_doi(df: pd.DataFrame) -> pd.DataFrame:
 def parse_works_results(
     response: List[Dict], keys_to_include: Optional[List[str]] = None
 ) -> List[Dict]:
-    """Parses OpenAlex API works response to retain specified keys or all if keys_to_include
-     is None.
+    """Extract and normalise publication data from OpenAlex API response.
 
     Args:
-        response (List[Dict]): The response from the OpenAlex API.
-        keys_to_include (Optional[List[str]]): List of keys to include in the
-            result. Returns full dictionary if None.
+        response: Raw API response containing works data
+        keys_to_include: Specific fields to keep (all if None)
 
     Returns:
-        List[Dict]: A list of dictionaries containing the parsed works information.
+        List of normalised publication records
     """
     parsed_response = []
     for paper in response:
@@ -95,14 +64,20 @@ def parse_works_results(
 
 
 def json_loader_works(data: List[List[Dict]]) -> pd.DataFrame:
-    """
-    Load works JSON data, transform it into a DataFrame, and wrangle data.
+    """Transform batched OpenAlex works data into structured DataFrame.
+
+    Processes:
+    - Publication IDs (PMID, MAG)
+    - Author affiliations and positions
+    - Citation counts by year
+    - Topic hierarchies
+    - Referenced works
 
     Args:
-        data (List[List[Dict]]): The works JSON data in batches.
+        data: Batched publication records from OpenAlex
 
     Returns:
-        pandas.DataFrame: The transformed DataFrame.
+        DataFrame with normalised publication data
     """
     output = []
     for batch in data:
@@ -198,33 +173,12 @@ def json_loader_works(data: List[List[Dict]]) -> pd.DataFrame:
             )
 
         if "citation_normalized_percentile" in df.columns:
-            # keep value key
-            df["citation_percentile"] = df[
+            df["citation_normalized_percentile"] = df[
                 "citation_normalized_percentile"
-            ].apply(lambda x: (x.get("value", 0) if x else None))
+            ].apply(lambda x: x if x else None)
 
-        # Keep all columns that exist in the DataFrame
-        available_columns = [
-            col
-            for col in [
-                "id",
-                "doi",
-                "pmid",
-                "mag_id",
-                "title",
-                "publication_date",
-                "cited_by_count",
-                "fwci",
-                "counts_by_year",
-                "authorships",
-                "topics",
-                "referenced_works",
-                "citation_percentile"
-            ]
-            if col in df.columns
-        ]
-
-        df = df[available_columns]
         output.append(df)
 
-    return pd.concat(output) if output else pd.DataFrame()
+    if output:
+        return pd.concat(output, ignore_index=True)
+    return pd.DataFrame()

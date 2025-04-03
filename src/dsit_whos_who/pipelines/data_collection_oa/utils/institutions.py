@@ -1,4 +1,7 @@
-"""Institution-specific utilities for OpenAlex data collection."""
+"""
+Institution data processing utilities for OpenAlex API.
+Handles institution parsing and relationship mapping.
+"""
 
 import logging
 from typing import Dict, List
@@ -8,13 +11,17 @@ logger = logging.getLogger(__name__)
 
 
 def parse_institution_results(response: List[Dict]) -> List[Dict]:
-    """Parses OpenAlex API institution response.
+    """Extract and normalise institution data from OpenAlex API response.
+
+    Processes:
+    - Basic institution metadata (ID)
+    - Associated institutions and relationships
 
     Args:
-        response (List[Dict]): The response from the OpenAlex API.
+        response: Raw API response containing institution data
 
     Returns:
-        List[Dict]: List of dictionaries containing parsed institution information.
+        List of normalised institution records
     """
     parsed_response = []
     for institution in response:
@@ -36,13 +43,13 @@ def parse_institution_results(response: List[Dict]) -> List[Dict]:
 
 
 def json_loader_institutions(data: List[List[Dict]]) -> pd.DataFrame:
-    """Load institutions JSON data into a DataFrame.
+    """Transform batched institution data into structured DataFrame.
 
     Args:
-        data (List[List[Dict]]): The institutions JSON data in batches.
+        data: Batched institution records from OpenAlex
 
     Returns:
-        pd.DataFrame: The transformed DataFrame.
+        DataFrame with normalised institution data
     """
     output = []
     for batch in data:
