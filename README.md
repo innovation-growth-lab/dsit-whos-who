@@ -1,81 +1,61 @@
 # Who's Who in UK Research
 
-## Connecting funded projects with authorship data for new metrics
+A data pipeline for linking Gateway to Research (GtR) and OpenAlex data to analyse research impact at the person level.
 
-### Overview
+## Project structure
 
-This project aims to create data suitable for mapping the impacts of UKRI-funded research at the person-level. We develop a methodology to disambiguate and link persons named in UKRI-funded projects listed in the Gateway to Research (GtR) database with open publication authorship data. Additionally, we outline metrics that can be used to understand the characteristics of funding recipients and their research outputs.
+The project consists of five main pipeline blocks that process data from collection through to metric computation.
 
-### Project Objectives
+### 1. Gateway to Research data collection
+The pipeline fetches data from the GtR API with a primary focus on project data. It extracts research topics, subjects, and linked publications while implementing retry mechanisms and rate limiting for robust data collection.
 
-1. Develop a robust person disambiguation and linking methodology
-2. Create a linked dataset connecting GtR person IDs with OpenAlex and ORCID IDs
-3. Implement and evaluate metrics for studying the research impact at the person level
-4. Deliver scalable, reusable code following open-source principles
+### 2. OpenAlex data collection
+Data collection from OpenAlex occurs through four interconnected sub-pipelines. The first two focus on author data, collecting through ORCID identifiers and name-based searches. The remaining pipelines retrieve publication data through DOIs and collect institution information. The system processes queries in parallel batches of 40 and implements rate limiting through email registration.
 
-### Methodology
+### 3. Author disambiguation
+The matching between GtR persons and OpenAlex authors uses a machine learning approach based on five feature categories: name similarity, institution matching, topic similarity, publication overlap, and author metadata. At a threshold of 0.80, the system achieves precision of 0.920 and recall of 0.937.
 
-#### Person Disambiguation and Linking
+The pipeline successfully links 67.6% of matchable GtR authors (85,444 out of 126,304). Coverage varies by grant type, with higher rates in academic research grants (Fellowships: 82.9%, Research Grants: 79.0%) and lower rates in industry-focused schemes (Collaborative R&D: 13.7%, Feasibility Studies: 15.1%).
 
-Our approach to linking and disambiguation leverages multiple data points:
+### 4. Basic metrics analysis
+The basic metrics cover four dimensions: academic profile (publications, citations, indices), grant information and funding patterns, international experience, and collaboration patterns. All metrics are computed before and after first funding to enable temporal analysis. The pipeline implements two citation counting approaches: a complete publication-year based method and a citation-year based method limited to 2012.
 
-- **Initial Matching**: For each person in GtR with a unique ID, we perform author searches using OpenAlex's API to generate match candidates
-- **Filtering Criteria**:
-  - Research topic overlap between OpenAlex author topics and GtR project descriptions
-  - Institutional affiliation matching between GtR and OpenAlex records
-  - Time window restrictions for considering institutional affiliations
-- **Refinement Process**:
-  - If no matches are found, we relax topic matching requirements
-  - If multiple equivalent matches are found, we tighten criteria by comparing semantic similarity of publication abstracts to project descriptions
+### 5. Complex metrics analysis
+The pipeline implements two sets of bibliometric indicators. The first is the Wu & Yan variant of the disruption index, which measures how research affects subsequent directions through citation patterns. The second implements the Leydesdorff framework for discipline diversity, measuring variety in topic coverage, evenness in distribution, and disparity through cognitive distance.
 
-#### Evaluation
+## Running the pipeline
 
-- Creation of a gold standard dataset using ORCID IDs present in both GtR and OpenAlex
-- Implementation of model accuracy metrics to monitor performance
-- Validation across research domains and publication activity levels
+Each component can be run independently:
 
-### Metrics Development
+```bash
+# GtR data collection
+kedro run --pipeline data_collection_gtr
 
-#### Basic Metrics
-- Number of papers and citations by author
-- Number of collaborators by author
-- Other simple aggregations of available metadata
+# OpenAlex data collection
+kedro run --pipeline data_collection_oa
 
-#### Advanced Metrics
-We will implement 2-3 of the following advanced metrics:
+# Author disambiguation
+kedro run --pipeline author_disambiguation
 
-1. **Disciplinary Diversity**
-   - Variety of disciplines in which authors publish
-   - Balance between publishing behavior across disciplines
-   - Disparity between disciplines
+# Basic metrics
+kedro run --pipeline data_analysis_basic_metrics
 
-2. **Collaborator Centrality Measures**
-   - Network centrality measures to assess individuals' positions in collaboration networks
+# Complex metrics
+kedro run --pipeline data_analysis_complex_metrics
+```
 
-3. **UKRI Reliance**
-   - Estimation of the fraction of publications linked to UKRI funding compared to other sources
+## Dependencies
 
-4. **Consolidation-Disruption Index**
-   - Variant of the CD index to compare distribution of disruptive research
+- Python 3.8+
+- Kedro
+- pandas
+- scikit-learn
+- torch (for SPECTER embeddings)
+- requests
+- joblib
 
-5. **Research Alignment**
-   - Semantic similarity between project and publication abstracts to assess adherence to original research plans
+## References
 
-### Expected Outcomes
-
-- **Linked Dataset**: A dataset linking person IDs in GtR data to OpenAlex IDs and ORCID IDs
-- **Scalable Code**: Python-written, user-friendly code following Open Source principles and Nesta's code writing guidelines
-- **Documentation**: Accessible notebooks detailing methodologies, code functionalities, and troubleshooting tips
-
-### Project Timeline
-
-- Project Start: June 25, 2024
-- [Additional timeline milestones to be determined]
-
-### Contributors
-
-[To be added]
-
-### License
-
-[To be determined]
+- Wu & Yan (2019). [https://doi.org/10.48550/arXiv.1905.03461]
+- Leydesdorff, Wagner, & Bornmann (2019) [https://doi.org/10.1016/j.joi.2018.12.006]
+- Leibel & Bornmann (2023) [https://doi.org/10.48550/arXiv.2308.02383]
