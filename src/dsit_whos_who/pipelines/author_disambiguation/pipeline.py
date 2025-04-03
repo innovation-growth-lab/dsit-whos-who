@@ -1,4 +1,18 @@
-"""Pipeline for author disambiguation."""
+"""
+Author disambiguation pipeline orchestration.
+
+This module defines the structure and flow of the author disambiguation process:
+
+Core Pipelines:
+- Preprocessing: Data aggregation and standardisation
+- Model Training: Feature engineering and model optimisation
+- Model Validation: Performance analysis and quality checks
+- Prediction: Author matching and result validation
+- Coverage Analysis: Match rate and data quality assessment
+
+The pipeline is designed for modular execution, allowing selective running of
+specific stages using tags.
+"""
 
 from kedro.pipeline import Pipeline, node, pipeline
 
@@ -16,10 +30,35 @@ from .nodes import (
 
 
 def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
-    """Create the author disambiguation pipeline.
+    """Create modular author disambiguation pipeline.
+
+    Constructs pipeline with five main stages:
+    1. Data Preprocessing
+       - Author information aggregation
+       - OpenAlex candidate processing
+
+    2. Model Training
+       - ORCID-based pair creation
+       - Feature engineering
+       - Model training and optimisation
+
+    3. Model Validation
+       - Performance metrics analysis
+       - Feature importance evaluation
+       - Error pattern analysis
+
+    4. Prediction
+       - Non-ORCID pair processing
+       - Match prediction and filtering
+       - Result aggregation
+
+    5. Coverage Analysis
+       - Match rate assessment
+       - Data quality validation
+       - Coverage statistics
 
     Returns:
-        A Pipeline object containing all the author disambiguation nodes.
+        Complete disambiguation pipeline with tagged components
     """
     preprocess_pipeline = pipeline(
         [

@@ -1,3 +1,24 @@
+"""
+Gateway to Research (GtR) data preprocessing utilities for author disambiguation.
+
+This module provides functions for preprocessing GtR data to support author
+disambiguation between GtR and OpenAlex profiles. It handles:
+
+Core Functionality:
+- Person data standardisation and cleaning
+- Project metadata extraction and structuring
+- Topic classification and taxonomy mapping
+- Publication matching and author aggregation
+
+Key Components:
+- GtR person profile preprocessing
+- Project metadata and timeline extraction
+- Topic classification using CWTS taxonomy
+- Publication-author relationship processing
+- Project information mapping and aggregation
+- Author count flattening and aggregation
+"""
+
 import logging
 from typing import Dict, List, Optional
 import pandas as pd
@@ -239,7 +260,9 @@ def flatten_and_aggregate_authors(authors_list: List) -> List[List[str]]:
                 continue
 
     # convert to sorted list of [author_id, total_count] pairs
-    return sorted([[str(author_id), str(count)] for author_id, count in author_counts.items()])
+    return sorted(
+        [[str(author_id), str(count)] for author_id, count in author_counts.items()]
+    )
 
 
 def _create_topic_list(hierarchy: List[str], id_path: str) -> Optional[tuple]:

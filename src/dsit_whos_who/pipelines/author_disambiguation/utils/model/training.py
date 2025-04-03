@@ -1,4 +1,16 @@
-"""Model training utilities."""
+"""
+Model training utilities for author disambiguation.
+
+This module provides functionality for:
+- Training data preparation and preprocessing
+- Model training with hyperparameter optimisation
+- Class imbalance handling via SMOTE or class weights
+- Feature importance analysis
+- Cross-validation and performance evaluation
+
+The implementation focuses on XGBoost classifiers with standardised features
+and robust evaluation metrics.
+"""
 
 # pylint: disable=E0402
 
@@ -20,16 +32,22 @@ logger = logging.getLogger(__name__)
 def prepare_training_data(
     feature_matrix: pd.DataFrame,
 ) -> Tuple[np.ndarray, np.ndarray, List[str]]:
-    """Prepare data for training.
+    """Prepare feature matrix for model training.
+
+    Processes:
+    - Feature selection and filtering
+    - Missing value handling
+    - Label extraction
+    - Data type standardisation
 
     Args:
-        feature_matrix: DataFrame with features and labels
+        feature_matrix: Raw features with labels
 
     Returns:
         Tuple containing:
-        - Feature matrix
+        - Processed feature matrix
         - Target labels
-        - List of feature names
+        - Feature name list
     """
     # Remove ID columns and label
     feature_cols = [
@@ -53,18 +71,31 @@ def train_model(
     use_smote: bool = True,
     metric_prefix: str = "",
 ) -> Dict:
-    """Train model with hyperparameter tuning.
+    """Train and optimise author disambiguation model.
+
+    Implements:
+    - Feature standardisation
+    - Class imbalance handling
+    - Hyperparameter optimisation via grid search
+    - Cross-validation with stratification
+    - Feature importance analysis
+    - Performance evaluation
 
     Args:
-        x: Feature matrix
-        y: Target labels
-        feature_names: List of feature names
-        params: Dictionary containing model training parameters
-        use_smote: Whether to use SMOTE for resampling
-        metric_prefix: Prefix to add to metric names
+        x: Standardised feature matrix
+        y: Binary match labels
+        feature_names: Feature column names
+        params: Training configuration
+        use_smote: Whether to use SMOTE resampling
+        metric_prefix: Metric name prefix
 
     Returns:
-        Dictionary containing trained model, metrics and metadata
+        Dictionary with:
+        - Trained model and scaler
+        - Best parameters
+        - Performance metrics
+        - Feature importance
+        - Cross-validation results
     """
     # Split data into train and test
     x_train, x_test, y_train, y_test = train_test_split(

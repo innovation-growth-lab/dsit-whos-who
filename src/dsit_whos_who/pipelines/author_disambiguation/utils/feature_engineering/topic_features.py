@@ -1,4 +1,15 @@
-"""Topic similarity features."""
+"""
+This module provides:
+- Topic similarity metrics computation between GTR and OpenAlex topics
+- Taxonomic level-specific comparisons (domain, field, subfield, topic)
+- Distribution-based similarity measures:
+  - Jaccard similarity
+  - Cosine similarity
+  - Jensen-Shannon divergence
+  - Topic containment ratio
+- Topic grouping and counting by taxonomic level
+- Handling of weighted topic distributions
+"""
 
 from typing import List, Dict
 import numpy as np

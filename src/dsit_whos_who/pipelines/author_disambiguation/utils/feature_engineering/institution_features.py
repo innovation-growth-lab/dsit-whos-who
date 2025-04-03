@@ -1,4 +1,17 @@
-"""Institution similarity features."""
+"""
+Institution-based feature engineering for author disambiguation.
+
+This module provides:
+- Institution similarity metrics computation between GTR and OpenAlex affiliations
+- Multiple string similarity measures:
+  - Jaro-Winkler similarity
+  - Token set ratio
+- Handling of associated institutions and child organizations
+- GB-specific affiliation analysis:
+  - GB affiliation proportion
+  - Binary GB affiliation indicators
+  - Associated GB institution matching
+"""
 
 from typing import List
 import numpy as np

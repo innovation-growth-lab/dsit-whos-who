@@ -1,4 +1,6 @@
-"""Feature computation utilities."""
+"""
+Feature computation orchestration for author disambiguation.
+"""
 
 # pylint: disable=E0402
 

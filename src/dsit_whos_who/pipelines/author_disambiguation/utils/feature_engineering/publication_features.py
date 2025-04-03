@@ -1,4 +1,11 @@
-"""Publication overlap features."""
+"""
+Publication overlap features.
+
+This module provides:
+- Publication overlap metrics computation between GTR and OpenAlex
+- Co-authorship analysis
+- Publication count comparison
+"""
 
 from typing import List
 import numpy as np

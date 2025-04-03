@@ -1,4 +1,20 @@
-"""Nodes for author disambiguation pipeline."""
+"""
+Author disambiguation pipeline nodes.
+
+This module provides functionality for matching authors between Gateway to Research
+and OpenAlex datasets. It handles:
+- Author information aggregation across multiple data sources
+- Feature engineering for author matching
+- Model training and evaluation
+- Author match prediction and validation
+
+The pipeline uses machine learning to identify matching author records, considering:
+- Name variations and standardisation
+- Institutional affiliations
+- Research topics and collaborations
+- Publication history
+- Project participation
+"""
 
 import logging
 from typing import Dict, Iterator
@@ -182,17 +198,20 @@ def aggregate_person_information(
 def preprocess_oa_candidates(
     oa_candidates: AbstractDataset, institutions: pd.DataFrame
 ) -> Iterator[pd.DataFrame]:
-    """Preprocess OpenAlex author candidates.
+    """Process OpenAlex author candidates for matching.
+
+    Standardises author information and enriches with:
+    - Institutional affiliations
+    - UK-based institution indicators
+    - Associated institution networks
+    - Publication history
 
     Args:
-        oa_candidates: Dataset containing OpenAlex author candidates
-        institutions: DataFrame with institution IDs and their associated institutions
+        oa_candidates: OpenAlex author candidate records
+        institutions: Institution reference data with relationships
 
     Returns:
-        Iterator yielding DataFrames for each batch of OpenAlex author information plus:
-        - List of institution names
-        - List of associated institution names
-        - GB affiliation indicators and proportions
+        Iterator of processed author candidate batches
     """
     logger.info("Starting preprocessing of OpenAlex candidates")
 
@@ -246,21 +265,40 @@ def preprocess_oa_candidates(
 
 
 def clean_name(name: str) -> str:
-    """Clean name by removing special characters."""
+    """Standardise author name format.
+
+    Applies consistent formatting by:
+    - Converting to lowercase
+    - Removing special characters
+    - Standardising whitespace
+
+    Args:
+        name: Raw author name
+
+    Returns:
+        Standardised name string
+    """
     return name.translate(str.maketrans("", "", ",.;:"))
 
 
 def merge_candidates_with_gtr(
     gtr_persons: pd.DataFrame, oa_candidates: dict, orcid_match: bool = True
 ) -> Iterator[pd.DataFrame]:
-    """Merge and filter by ORCID.
+    """Merge GtR and OpenAlex author records.
+
+    Creates author pairs for comparison based on:
+    - ORCID matches (when available)
+    - Name similarity
+    - Institutional overlap
+    - Publication history
 
     Args:
-        gtr_persons: DataFrame containing GtR person information
-        oa_candidates: Dictionary of loader functions for OpenAlex candidate data
+        gtr_persons: GtR author records
+        oa_candidates: OpenAlex author candidates
+        orcid_match: Whether to use ORCID for matching
 
     Returns:
-        Iterator yielding DataFrames of merged and filtered results
+        Iterator of merged author record batches
     """
     if orcid_match:
         logger.info("Merging and filtering by ORCID")
@@ -344,13 +382,20 @@ def merge_candidates_with_gtr(
 def create_feature_matrix(
     input_data: AbstractDataset,
 ) -> Iterator[pd.DataFrame]:
-    """Create feature matrix for author pairs.
+    """Generate features for author matching.
+
+    Computes similarity metrics including:
+    - Name similarity scores
+    - Institutional overlap
+    - Research topic alignment
+    - Temporal publication overlap
+    - Collaboration network similarity
 
     Args:
-        input_data: Partitioned dataset containing matched GTR-OA pairs
+        input_data: Merged author records
 
     Returns:
-        Iterator yielding DataFrames with computed features for each batch
+        Iterator of feature matrices
     """
     aggregated_features = []
     logger.info("Starting feature computation")
@@ -377,14 +422,20 @@ def train_disambiguation_model(
     feature_matrix: pd.DataFrame,
     model_training: Dict,
 ) -> Dict:
-    """Train both SMOTE and class weights models for comparison.
+    """Train author disambiguation model.
+
+    Implements:
+    - Data splitting and validation
+    - Model parameter optimisation
+    - Performance evaluation
+    - Model persistence
 
     Args:
-        feature_matrix: DataFrame containing computed features and is_match labels
-        model_training: Dictionary containing model training parameters
+        feature_matrix: Author pair features
+        model_training: Training configuration
 
     Returns:
-        Dictionary containing both models and their performance metrics
+        Trained model and performance metrics
     """
     logger.info("Starting model training pipeline with both SMOTE and class weights")
 
@@ -456,7 +507,21 @@ def check_model_performance(
     params: Dict,
     lite: bool = False,
 ) -> None:
-    """analyse performance of both models on train and test splits"""
+    """Evaluate model performance metrics.
+
+    Analyses:
+    - Classification accuracy
+    - Precision and recall
+    - Feature importance
+    - Error patterns
+    - Performance stability
+
+    Args:
+        feature_matrix: Test data features
+        model_versions: Trained model versions
+        params: Evaluation parameters
+        lite: Whether to run lightweight evaluation
+    """
     logger.info("starting model performance analysis")
 
     # prepare data
@@ -509,15 +574,21 @@ def check_model_performance(
 def predict_author_matches(
     model_dict: Dict, feature_matrix: pd.DataFrame, params: Dict
 ) -> pd.DataFrame:
-    """Predict matches for all author pairs.
+    """Predict matching author pairs.
+
+    Applies trained model to:
+    - Score potential matches
+    - Filter high-confidence pairs
+    - Resolve conflicting matches
+    - Apply matching thresholds
 
     Args:
-        model_dict: Dictionary containing trained models and metadata
-        feature_matrix: DataFrame containing features for prediction
-        params: Dictionary containing prediction parameters including model choice and threshold
+        model_dict: Trained model and configuration
+        feature_matrix: Author pair features
+        params: Prediction parameters
 
     Returns:
-        DataFrame containing predicted matches, with at most one match per GtR ID
+        DataFrame of predicted author matches
     """
     logger.info("Predicting matches for %d pairs", len(feature_matrix))
 
@@ -543,14 +614,20 @@ def predict_author_matches(
 def get_matched_authors(
     predictions: pd.DataFrame, merged_candidates: dict
 ) -> pd.DataFrame:
-    """Get full author information for predicted matches from pre-merged candidates.
+    """Extract final author matches.
+
+    Processes prediction results to:
+    - Select best matches
+    - Resolve ambiguous cases
+    - Combine author information
+    - Validate match consistency
 
     Args:
-        predictions: DataFrame containing gtr_id and oa_id pairs that were predicted as matches
-        merged_candidates: Dictionary of loader functions for pre-merged GtR and OpenAlex data
+        predictions: Model predictions
+        merged_candidates: Original author records
 
     Returns:
-        DataFrame containing matched author information
+        DataFrame of finalised author matches
     """
     logger.info(
         "Getting full author information for %d predicted matches", len(predictions)
@@ -606,16 +683,23 @@ def check_prediction_coverage(
     gtr_projects: pd.DataFrame,
     feature_matrix: pd.DataFrame,
 ) -> Dict:
-    """Checks prediction coverage across different dimensions.
+    """Analyse author matching coverage.
+
+    Evaluates:
+    - Match rate by author type
+    - Coverage across institutions
+    - Project and publication coverage
+    - Unmatched author analysis
+    - Data quality impact
 
     Args:
-        matched_authors: DataFrame containing matched author pairs and metadata
-        gtr_persons: DataFrame containing GtR person information
-        gtr_projects: DataFrame containing GtR project information
-        feature_matrix: DataFrame containing all potential matches
+        matched_authors: Final author matches
+        gtr_persons: Original GtR authors
+        gtr_projects: Project data
+        feature_matrix: Features used for matching
 
     Returns:
-        Dictionary containing coverage statistics
+        Coverage analysis metrics
     """
     logger.info("Checking prediction coverage")
     return evaluate_model_performance_on_full_data(

@@ -1,4 +1,15 @@
-"""Name similarity features."""
+"""
+Name-based feature engineering for author disambiguation.
+
+This module provides:
+- Name similarity metrics computation between GTR and OpenAlex author names
+- Multiple string similarity measures:
+  - Levenshtein distance
+  - Jaro-Winkler similarity 
+  - Token set ratio
+- Exact matching of name components (surname, first name, initials)
+- Handling of alternative name variants from OpenAlex
+"""
 
 from typing import List
 import numpy as np

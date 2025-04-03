@@ -1,4 +1,16 @@
-"""Model prediction utilities."""
+"""
+Model prediction utilities for author disambiguation.
+
+This module provides:
+- Batch prediction functionality
+- Prediction post-processing
+- Threshold optimisation
+- Confidence score computation
+- Result formatting and validation
+
+The implementation handles both binary predictions
+and probability scores for pair-wise author matching.
+"""
 
 import logging
 from typing import Dict

@@ -1,4 +1,6 @@
-"""Author metadata features."""
+"""
+Metadata-based feature engineering for author disambiguation.
+"""
 
 
 def compute_metadata_features(

@@ -1,8 +1,27 @@
-"""OpenAlex preprocessing utilities."""
+"""
+OpenAlex data preprocessing utilities for author disambiguation.
+
+This module provides functions for preprocessing OpenAlex data to support author
+disambiguation between GtR and OpenAlex profiles. It handles:
+
+Core functionality:
+- Author affiliation processing and standardization
+- Institution mapping and relationship extraction
+- Geographic location analysis
+- Affiliation metrics computation
+
+Key components:
+- Affiliation data extraction and cleaning
+- Institution name and ID mapping
+- GB/UK institution identification
+- Associated institution relationship processing
+- Affiliation proportion calculations
+"""
 
 from typing import List, Tuple
 import logging
 import numpy as np
+
 logger = logging.getLogger(__name__)
 
 
@@ -61,7 +80,7 @@ def get_associated_institutions(
         associated = institutions_dict.get(inst_id)
         if not isinstance(associated, np.ndarray):
             continue
-            
+
         for assoc in associated:
             associated_names.append(assoc[1])
             if assoc[2] == "GB":
