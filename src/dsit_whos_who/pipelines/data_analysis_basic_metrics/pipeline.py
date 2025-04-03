@@ -1,9 +1,17 @@
 """
-Command Line Example:
+Data Analysis Basic Metrics Pipeline
+
+This module defines the pipeline for computing basic metrics from OpenAlex and GTR data.
+The pipeline processes author metadata, publication data, and project information to
+generate comprehensive metrics about researchers' academic impact and collaboration patterns.
+
+Command Line Examples:
+    Run the complete pipeline:
     ```
     kedro run --pipeline data_analysis_basic_metrics
     ```
-    Alternatively, you can run this pipeline for a single endpoint:
+
+    Run a specific pipeline segment:
     ```
     kedro run --pipeline data_analysis_basic_metrics --tags projects
     ```
@@ -21,10 +29,27 @@ from .nodes import (
 
 
 def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
-    """Pipeline for data collection.
+    """
+    Create the data analysis basic metrics pipeline.
+
+    This function constructs a Kedro pipeline that processes researcher data through
+    three main stages:
+    1. Collection Pipeline:
+       - Creates lists of OpenAlex author IDs
+       - Fetches publication works data for matched authors
+
+    2. Processing Pipeline:
+       - Processes author metadata from OpenAlex
+       - Processes person data from GTR
+       - Analyses publication data for collaboration patterns
+
+    3. Metrics Computation:
+       - Combines processed data to compute comprehensive metrics
+       - Generates final analysis outputs
 
     Returns:
-        Pipeline: The data collection pipeline.
+        Pipeline: A complete Kedro pipeline that processes author data and computes
+            basic metrics for researcher analysis.
     """
     collection_pipeline = pipeline(
         [

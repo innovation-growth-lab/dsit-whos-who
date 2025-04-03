@@ -1,5 +1,12 @@
 """
 Utility functions for computing publication-related metrics.
+
+This module provides specialised functions for analysing publication data and computing
+various publication-related metrics, including:
+- Citation impact metrics
+- Publication counts and temporal patterns
+- Field-Weighted Citation Impact (FWCI)
+- UK vs international publication patterns
 """
 
 import logging
@@ -9,34 +16,24 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
-def calculate_uk_fraction(yearly_data):
-    """
-    Calculate the fraction of UK affiliations over total affiliations.
-    Returns NaN if there are no affiliations in the period.
-
-    Args:
-        yearly_data (dict): Dictionary of years with UK and abroad affiliation counts
-
-    Returns:
-        float: Fraction of UK affiliations, NaN if no affiliations exist
-    """
-    if not yearly_data:
-        return np.nan
-
-    total_uk = sum(year["uk"] for year in yearly_data.values())
-    total_abroad = sum(year["abroad"] for year in yearly_data.values())
-    total = total_uk + total_abroad
-
-    return round(total_uk / total if total > 0 else np.nan, 3)
-
-
 def compile_counts_by_pubyear(publications: pd.DataFrame) -> pd.DataFrame:
     """
-    Recreate the counts_by_pubyear data combining cited_by_count, n_pubs, and year
-    to create a new column with a list of three elements.
+    Compile publication counts and citation data by publication year.
 
-    NB. This was thought necessary because the author data only has data from 2012
-    onwards, but turns out the work data also has data from 2012 onwards only.
+    This function reorganises publication data to create year-wise summaries of
+    publication counts and citation impact. It combines cited_by_count, publication
+    counts, and year data into a structured format for further analysis.
+
+    Note: While this was initially implemented to handle historical data pre-2012,
+    the current OpenAlex data only extends back to 2012.
+
+    Args:
+        publications (pd.DataFrame): DataFrame containing publication records with
+            columns for year, publication counts, and citation counts
+
+    Returns:
+        pd.DataFrame: Author-grouped DataFrame with a 'counts_by_pubyear' column
+            containing lists of [year, n_pubs, cited_by_count] for each publication
     """
     publications["counts_by_pubyear"] = publications.apply(
         lambda row: [row["year"], row["n_pubs"], row["cited_by_count"]], axis=1
@@ -55,17 +52,37 @@ def compile_counts_by_pubyear(publications: pd.DataFrame) -> pd.DataFrame:
 
 def process_counts_by_year(row: pd.Series) -> dict:
     """
-    Process publication and citation counts from both counts_by_year and counts_by_pubyear data.
+    Process publication and citation counts using multiple counting approaches.
 
-    Uses two different approaches:
-    1. counts_by_pubyear: Citations attributed to publication year (1980-)
-    2. counts_by_year: Citations counted in the year they occur (2012-)
+    This function analyses publication and citation data using two distinct
+    methodologies:
+    1. Publication Year Attribution (1980 onwards):
+       - Citations are attributed to the year of publication
+       - Provides insight into the long-term impact of publications
+       - Better for career-long analysis
+
+    2. Citation Year Counting (2012 onwards):
+       - Citations are counted in the year they occur
+       - Better reflects current impact and citation patterns
+       - More suitable for recent impact analysis
 
     Args:
-        row (pd.Series): Row containing counts_by_year, counts_by_pubyear and earliest_start_date
+        row (pd.Series): Row containing:
+            - counts_by_year: Array of [year, n_pubs, citations] for citation years
+            - counts_by_pubyear: Array of [year, n_pubs, citations] for pub years
+            - earliest_start_date: Date of first research grant
 
     Returns:
-        dict: Dictionary containing publication and citation metrics
+        dict: Dictionary containing various publication and citation metrics:
+            Publication Year Metrics (1980-):
+            - n_pubs_before/after: Publication counts
+            - total_citations_pubyear_before/after: Total citations
+            - mean_citations_pubyear_before/after: Mean citations per year
+            - citations_pp_pubyear_before/after: Citations per publication
+
+            Citation Year Metrics (2012-):
+            - mean_citations_before/after: Mean annual citations
+            - citations_pp_before/after: Citations per publication per year
     """
     if pd.isnull(row["earliest_start_date"]) or (
         not isinstance(row["counts_by_year"], np.ndarray)
@@ -223,13 +240,20 @@ def process_counts_by_year(row: pd.Series) -> dict:
 
 def compile_fwci_by_author(publications: pd.DataFrame) -> pd.DataFrame:
     """
-    Pre-aggregate FWCI data by author to avoid repeated filtering.
+    Pre-aggregate Field-Weighted Citation Impact (FWCI) data by author.
+
+    This function processes publication-level FWCI data to create author-specific
+    summaries. FWCI is a measure that indicates how the number of citations
+    received by a publication compares to the average number of citations received
+    by similar publications.
 
     Args:
-        publications (pd.DataFrame): DataFrame with publication FWCI data
+        publications (pd.DataFrame): DataFrame containing publication records with
+            columns for author_id, year, and fwci
 
     Returns:
-        pd.DataFrame: DataFrame with author-grouped FWCI data
+        dict: Dictionary mapping author_ids to lists of [year, fwci] pairs,
+            representing their FWCI scores across different years
     """
     # Group FWCI data by author and year
     fwci_data = publications.groupby(["author_id", "year"])["fwci"].mean().reset_index()
@@ -246,14 +270,20 @@ def compile_fwci_by_author(publications: pd.DataFrame) -> pd.DataFrame:
 
 def process_fwci(row: pd.Series, author_fwci: dict) -> tuple:
     """
-    Process FWCI metrics from pre-aggregated publication data.
+    Process Field-Weighted Citation Impact (FWCI) metrics from pre-aggregated data.
+
+    This function calculates average FWCI scores for periods before and after a
+    researcher's first grant. FWCI is normalised by field, publication type, and
+    publication year, making it suitable for cross-field comparisons.
 
     Args:
-        row (pd.Series): Row containing author ID and earliest_start_date
-        author_fwci (dict): Pre-aggregated FWCI data by author
+        row (pd.Series): Row containing researcher data including earliest_start_date
+        author_fwci (dict): Dictionary mapping author IDs to lists of [year, fwci]
+            pairs from pre-aggregated FWCI data
 
     Returns:
-        tuple: (mean_fwci_before, mean_fwci_after)
+        tuple: (mean_fwci_before, mean_fwci_after) containing average FWCI scores
+            for periods before and after the researcher's first grant
     """
     if pd.isnull(row["earliest_start_date"]):
         return np.nan, np.nan

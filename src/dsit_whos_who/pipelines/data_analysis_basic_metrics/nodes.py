@@ -1,5 +1,7 @@
 """
-This module contains the nodes for the data analysis basic metrics pipeline.
+This module contains the nodes for the data analysis basic metrics pipeline. Each node
+performs a specific data processing task for analysing researcher metrics, including
+publication data, collaboration patterns, and academic impact measures.
 """
 
 import logging
@@ -30,11 +32,16 @@ def create_list_oa_author_ids(authors: pd.DataFrame) -> list:
     """
     Create a list of OpenAlex author IDs from a DataFrame of persons.
 
+    This function processes a DataFrame of authors to extract unique OpenAlex IDs and
+    prepares them for batch processing. It removes duplicates and formats the IDs
+    appropriately for API queries.
+
     Args:
-        authors (pd.DataFrame): A DataFrame containing authors information.
+        authors (pd.DataFrame): A DataFrame containing author information with an 'oa_id'
+            column representing OpenAlex identifiers.
 
     Returns:
-        list: A list of OpenAlex author IDs.
+        list: A preprocessed list of unique OpenAlex author IDs ready for API queries.
     """
     logger.info("Starting to create list of OpenAlex author IDs...")
 
@@ -59,7 +66,23 @@ def fetch_openalex_matched_author_works(
     filter_criteria: str,
     **kwargs,
 ) -> pd.DataFrame:
-    """Node for fetching OpenAlex works."""
+    """
+    Fetch publication works data from OpenAlex for matched authors.
+
+    This node retrieves detailed publication information from the OpenAlex API for a list
+    of matched author IDs. It handles pagination and applies specified filtering criteria
+    to the results.
+
+    Args:
+        ids (list): List of OpenAlex author IDs to fetch works for.
+        mails (list): List of email addresses for API authentication.
+        perpage (int): Number of results to return per page.
+        filter_criteria (str): Filter string to apply to the OpenAlex API query.
+        **kwargs: Additional keyword arguments to pass to the API query.
+
+    Returns:
+        pd.DataFrame: DataFrame containing the fetched publication works data.
+    """
     return fetch_openalex_works(ids, mails, perpage, filter_criteria, **kwargs)
 
 
@@ -67,16 +90,17 @@ def process_matched_author_metadata(
     author_loaders: AbstractDataset,
     matched_authors: pd.DataFrame,
 ) -> pd.DataFrame:
-    """Node for processing author metadata.
+    """
+    Process metadata for authors matched between OpenAlex and GTR.
 
-    This function processes metadata for authors who have been matched between OpenAlex and
-        GTR.
-    It performs the following steps:
+    This node processes metadata for authors who have been matched between OpenAlex and
+    Gateway to Research (GTR). It performs the following steps:
     1. Iterates through author data loaded from OpenAlex
-    2. For each batch, processes the metadata to extract key metrics like:
+    2. For each batch, processes the metadata to extract key metrics such as:
         - First year of publication
         - Citations per publication
-    3. Filters authors to only include those matched with GTR
+        - Publication impact measures
+    3. Filters authors to include only those matched with GTR
     4. Combines all processed batches into a single DataFrame
 
     Args:
@@ -104,14 +128,19 @@ def process_matched_person_gtr_data(
     projects: pd.DataFrame,
     matched_authors: pd.DataFrame,
 ) -> pd.DataFrame:
-    """Node for processing GTR data for matched persons.
+    """
+    Process GTR data for matched persons.
 
-    This function processes Gateway to Research (GTR) data for persons who have been matched
+    This node processes Gateway to Research (GTR) data for persons who have been matched
     to OpenAlex authors. It performs the following steps:
-    1. Preprocesses and filters persons data to only include matched authors
+    1. Preprocesses and filters persons data to include only matched authors
     2. Merges person-project relationships with project metadata
     3. Cleans project dates and processes timeline information
-    4. Creates aggregated summaries of project data per person
+    4. Creates aggregated summaries of project data per person, including:
+        - Project timelines
+        - Grant categories
+        - Funding information
+        - Collaboration patterns
 
     Args:
         persons (pd.DataFrame): DataFrame containing person data from GTR
@@ -153,11 +182,16 @@ def process_matched_author_works(
     n_jobs: int = 8,
     batch_size: int = 1000,
 ) -> pd.DataFrame:
-    """Process publication data to create a summary of collaborations per author per year.
+    """
+    Process publication data to create a summary of collaborations per author per year.
 
     This function creates an intermediate DataFrame that summarises collaboration metrics
     for each matched author in each year of their publications. This makes subsequent
-    analysis more efficient by pre-aggregating the data.
+    analysis more efficient by pre-aggregating the data. The function processes:
+        - UK and international collaborations
+        - Temporal collaboration patterns
+        - Geographic distribution of collaborators
+        - Publication impact metrics
 
     Args:
         publications (pd.DataFrame): DataFrame containing publication data with authorships
@@ -175,6 +209,7 @@ def process_matched_author_works(
             - n_collab_abroad: Number of non-UK collaborators
             - unknown_collabs: Number of collaborators with unknown country
             - countries_abroad: List of unique foreign countries
+            - collaboration_metrics: Various metrics about collaboration patterns
     """
     logger.info("Processing publication data for collaboration metrics...")
 
@@ -271,15 +306,24 @@ def compute_basic_metrics(
     publications: pd.DataFrame,
 ) -> pd.DataFrame:
     """
-    Compute basic metrics from author and person data.
+    Compute basic metrics for matched authors.
+
+    This function combines data from multiple sources to compute comprehensive metrics
+    for each matched author. It processes:
+        - Publication metrics (counts, citations, impact)
+        - Collaboration patterns (domestic and international)
+        - Career trajectory metrics
+        - Research funding patterns
+        - Academic age and career stage indicators
 
     Args:
-        author_data (pd.DataFrame): OpenAlex author data with affiliations and publication history
-        person_data (pd.DataFrame): GTR person data with project information
-        publications (pd.DataFrame): Publication data with collaboration information
+        author_data (pd.DataFrame): Processed author metadata from OpenAlex
+        person_data (pd.DataFrame): Processed person data from GTR
+        publications (pd.DataFrame): Processed publication data with collaboration info
 
     Returns:
-        pd.DataFrame: Combined data with computed metrics
+        pd.DataFrame: DataFrame containing comprehensive metrics for each matched author,
+            including publication impact, collaboration patterns, and career indicators
     """
     author_data = author_data.drop_duplicates(subset=["id", "gtr_id"])
 

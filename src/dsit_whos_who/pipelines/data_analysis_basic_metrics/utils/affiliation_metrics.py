@@ -1,27 +1,40 @@
 """
 Utility functions for computing affiliation-related metrics.
+
+This module provides functions for analysing researchers' institutional affiliations
+and collaboration patterns. It processes data about:
+- Current and historical institutional affiliations
+- UK vs international institutional relationships
+- Collaboration networks and geographic distribution
+- Career mobility patterns
 """
 
 # pylint: disable=E0402
 
 import logging
-from collections import defaultdict, Counter
+from collections import Counter
 import numpy as np
 import pandas as pd
-from .publication_metrics import calculate_uk_fraction
 
 logger = logging.getLogger(__name__)
 
 
 def process_last_institution(row: pd.Series) -> bool:
     """
-    Check if the last known institution is UK-based.
+    Determine whether a researcher's most recent institution is UK-based.
+
+    This function analyses the most recent institutional affiliation in a researcher's
+    record to determine if they are currently (or were most recently) based at a UK
+    institution. This information is useful for understanding researcher mobility and
+    current geographic distribution.
 
     Args:
-        row (pd.Series): Row containing last_known_institutions
+        row (pd.Series): Row containing 'last_known_institutions' field with an array
+            of institution records, where each record contains country information
 
     Returns:
-        bool: True if last institution is in UK, False if abroad, NaN if unknown
+        bool: True if the most recent institution is in the UK (GB),
+            False if abroad, NaN if unknown or no data available
     """
     if (
         not isinstance(row["last_known_institutions"], np.ndarray)
@@ -43,13 +56,28 @@ def process_last_institution(row: pd.Series) -> bool:
 
 def process_collaborations(publications_group: pd.Series) -> dict:
     """
-    Process publication collaborations for an author.
+    Analyse collaboration patterns for an individual researcher.
+
+    This function processes a researcher's publication record to understand their
+    collaboration patterns before and after receiving their first research grant.
+    It analyses:
+    - Geographic distribution of collaborators
+    - Number of unique collaborators
+    - Balance between domestic and international collaborations
+    - Temporal changes in collaboration patterns
 
     Args:
-        publications_group (pd.Series): Group of publications for an author with earliest_start_date
+        publications_group (pd.Series): Group of publications for an author,
+            containing collaboration data and the date of their first grant
+            ('earliest_start_date')
 
     Returns:
-        dict: Dictionary containing collaboration metrics
+        dict: Dictionary containing collaboration metrics:
+            - collab_countries_before/after: Lists of [country, count] pairs
+            - unique_collabs_before/after: Number of unique collaborators
+            - total_collabs_before/after: Total number of collaborations
+            - foreign_collab_fraction_before/after: Proportion of international collabs
+            - collab_countries_list_before/after: Lists of unique countries
     """
     if pd.isnull(publications_group["earliest_start_date"].iloc[0]):
         return {
@@ -133,13 +161,29 @@ def process_collaborations(publications_group: pd.Series) -> dict:
 
 def compile_affiliations_by_author(publications: pd.DataFrame) -> dict:
     """
-    Pre-aggregate affiliation data by author to avoid repeated filtering.
+    Pre-aggregate institutional affiliation data by author.
+
+    This function processes publication records to create a year-by-year summary of
+    each author's institutional affiliations. It tracks:
+    - UK vs non-UK institutional affiliations
+    - Geographic distribution of affiliations
+    - Temporal patterns in institutional relationships
+
+    The pre-aggregation improves performance for subsequent analyses by avoiding
+    repeated filtering operations.
 
     Args:
-        publications (pd.DataFrame): DataFrame with publication data
+        publications (pd.DataFrame): DataFrame containing publication records with
+            columns for author_id, year, and affiliation information including
+            country codes and counts
 
     Returns:
-        dict: Dictionary mapping author_id to their yearly affiliation data
+        dict: Dictionary mapping author_ids to lists of yearly affiliation data,
+            where each year's data contains:
+            - year: Publication year
+            - n_uk: Number of UK affiliations
+            - n_abroad: Number of non-UK affiliations
+            - countries: List of unique countries (excluding UK)
     """
     # Group by author and year, aggregate the counts and countries
     agg_data = (
@@ -186,13 +230,26 @@ def compile_affiliations_by_author(publications: pd.DataFrame) -> dict:
 
 def process_affiliations(publications_group: pd.Series) -> dict:
     """
-    Process affiliations to determine UK vs abroad experience before and after first grant.
+    Analyse institutional affiliation patterns before and after first grant.
+
+    This function examines a researcher's institutional affiliations to understand
+    their geographic mobility and international experience. It analyses patterns
+    both before and after their first research grant to identify changes in:
+    - International research experience
+    - Geographic diversity of affiliations
+    - Balance between UK and international institutional relationships
 
     Args:
-        publications_group (pd.Series): Group of publications for an author with earliest_start_date
+        publications_group (pd.Series): Group of publications for an author,
+            containing affiliation data and the date of their first grant
+            ('earliest_start_date')
 
     Returns:
-        dict: Dictionary containing affiliation metrics
+        dict: Dictionary containing affiliation metrics:
+            - abroad_experience_before/after: Boolean indicating international experience
+            - countries_before/after: Lists of countries (excluding UK) where the
+                researcher has held affiliations
+            - abroad_fraction_before/after: Proportion of non-UK affiliations
     """
     if pd.isnull(publications_group["earliest_start_date"].iloc[0]):
         return {

@@ -1,5 +1,14 @@
 """
-Utility functions for processing collected data.
+Utility functions for processing collected research data.
+
+This module provides functions for processing and transforming raw data collected
+from various sources (OpenAlex, GTR) into structured formats suitable for analysis.
+It handles:
+- Author metadata processing
+- Date standardisation
+- Project data aggregation
+- Publication metrics computation
+- Collaboration network analysis
 """
 
 # pylint: disable=E0402
@@ -16,7 +25,26 @@ logger = logging.getLogger(__name__)
 def process_author_metadata(
     author_dict: Dict, matched_authors: pd.DataFrame
 ) -> pd.DataFrame:
-    """Process metadata for a single author batch."""
+    """
+    Process metadata for a batch of authors from OpenAlex.
+
+    This function transforms raw author metadata into a structured format and
+    enriches it with additional metrics. It:
+    - Creates a DataFrame from the raw JSON data
+    - Filters to include only authors matched with GTR records
+    - Computes citation impact metrics
+    - Standardises publication dates and counts
+
+    Args:
+        author_dict (Dict): Dictionary containing raw author metadata from OpenAlex
+        matched_authors (pd.DataFrame): DataFrame containing matched author IDs
+            between GTR and OpenAlex, with columns for 'gtr_id', 'id', and
+            'match_probability'
+
+    Returns:
+        pd.DataFrame: Processed author metadata with computed metrics including
+            citation counts and impact measures
+    """
     # create dataframe
     author_df = json_loader_authors(author_dict)
 
@@ -44,7 +72,25 @@ def process_author_metadata(
 
 
 def date_cleaner(df: pd.DataFrame) -> pd.DataFrame:
-    """Clean the dates in the dataframe."""
+    """
+    Standardise and clean date fields in project data.
+
+    This function processes date fields in project records to ensure consistency
+    and handle edge cases. It:
+    - Converts string dates to datetime objects
+    - Handles missing or invalid dates
+    - Resolves project extensions by using extended end dates where available
+    - Ensures all dates are in a consistent format
+
+    Args:
+        df (pd.DataFrame): DataFrame containing project records with date fields:
+            - start_date: Project start date
+            - end_date: Original project end date
+            - extended_end: Extended project end date (if applicable)
+
+    Returns:
+        pd.DataFrame: DataFrame with cleaned and standardised date fields
+    """
     df["start_date"] = pd.to_datetime(df["start_date"], errors="coerce")
     df["end_date"] = pd.to_datetime(df["end_date"], errors="coerce")
     df["extended_end"] = pd.to_datetime(df["extended_end"], errors="coerce")
@@ -58,7 +104,33 @@ def date_cleaner(df: pd.DataFrame) -> pd.DataFrame:
 def process_person_gtr_data(
     persons_projects: pd.DataFrame,
 ) -> pd.DataFrame:
-    """Process GTR data for a group of persons."""
+    """
+    Process Gateway to Research (GTR) data for a group of researchers.
+
+    This function aggregates and summarises project information for each researcher
+    in the GTR database. It computes:
+    - Project timelines and duration metrics
+    - Grant categories and funding patterns
+    - Project status information
+    - Funding source diversity
+
+    The function creates a comprehensive summary of each researcher's funding
+    history and project portfolio.
+
+    Args:
+        persons_projects (pd.DataFrame): DataFrame containing person-project
+            relationships with columns for dates, grant categories, and project
+            status
+
+    Returns:
+        pd.DataFrame: Aggregated project information per person, including:
+            - earliest_start_date: Date of first project
+            - latest_end_date: Date of most recent project end
+            - project_timeline: Detailed timeline of all projects
+            - grant_categories: Distribution of grant types
+            - lead_funders: List of funding organisations
+            - has_active_project: Current project status
+    """
     logger.info("Creating aggregated project information per person")
     return (
         persons_projects.groupby("person_id")
@@ -122,7 +194,32 @@ def prepare_final_person_data(
     persons: pd.DataFrame,
     person_summaries: pd.DataFrame,
 ) -> pd.DataFrame:
-    """Prepare the final person data with all metrics."""
+    """
+    Prepare the final researcher dataset with comprehensive metrics.
+
+    This function combines personal information with computed metrics to create
+    a complete researcher profile. It organises the data into logical sections:
+    - Personal identifiers and basic information
+    - Current institutional affiliations
+    - Project timelines and funding history
+    - Research outputs and collaboration networks
+    - Grant portfolio analysis
+
+    Args:
+        persons (pd.DataFrame): Base DataFrame containing researcher information
+        person_summaries (pd.DataFrame): DataFrame containing computed metrics
+            and aggregated project information
+
+    Returns:
+        pd.DataFrame: Complete researcher profiles with columns organised into
+            sections:
+            - Personal identifiers (ID, name)
+            - Institutional information
+            - Project timelines
+            - Funding details
+            - Research outputs
+            - Collaboration networks
+    """
     return (
         persons.merge(person_summaries, on="person_id", how="left")
         .drop(columns=["orcid_gtr"])
@@ -168,14 +265,34 @@ def prepare_final_person_data(
 def process_publication_batch(
     publications_batch: pd.DataFrame, matched_ids: set
 ) -> List[Dict]:
-    """Process a batch of publications for collaboration metrics.
+    """
+    Process a batch of publications to extract collaboration metrics.
+
+    This function analyses publication authorships to understand collaboration
+    patterns. For each publication, it:
+    - Identifies relevant authors from the matched set
+    - Maps author locations and institutional affiliations
+    - Computes domestic vs international collaboration metrics
+    - Tracks unique collaborators and their geographic distribution
+
+    The function processes each publication's authorship data in two passes:
+    1. First pass: Collect all authors and their countries
+    2. Second pass: Compute collaboration metrics for matched authors
 
     Args:
-        publications_batch (pd.DataFrame): Batch of publications to process
-        matched_ids (set): Set of matched author IDs to process
+        publications_batch (pd.DataFrame): Batch of publications to process,
+            containing authorship and affiliation data
+        matched_ids (set): Set of author IDs that have been matched between
+            OpenAlex and GTR
 
     Returns:
-        List[Dict]: List of processed collaboration data dictionaries
+        List[Dict]: List of processed collaboration data dictionaries, each
+            containing:
+            - Publication year and impact metrics
+            - UK vs international collaboration counts
+            - Geographic distribution of collaborators
+            - Affiliation patterns
+            - Unique collaborator identifiers
     """
     processed_data = []
     for _, pub in publications_batch.iterrows():

@@ -1,5 +1,11 @@
 """
-Utility functions for computing basic metrics.
+Utility functions for computing basic researcher metrics.
+
+This module provides functions for calculating various metrics related to researchers'
+academic careers, including:
+- Academic age and career stage
+- International experience and collaboration patterns
+- Publication impact and citation metrics
 """
 
 # pylint: disable=E0402
@@ -25,13 +31,19 @@ logger = logging.getLogger(__name__)
 
 def compute_academic_age(row: pd.Series) -> int:
     """
-    Compute academic age (years between first publication and first grant).
+    Compute the academic age of a researcher.
+
+    Academic age is defined as the number of years between a researcher's first
+    publication and their first research grant. This metric helps understand career
+    progression and experience level.
 
     Args:
-        row (pd.Series): Row containing first_work_year and earliest_start_date
+        row (pd.Series): Row containing 'first_work_year' and 'earliest_start_date'
+            fields representing the researcher's first publication year and first
+            grant year, respectively.
 
     Returns:
-        int: Academic age in years, or None if dates are missing
+        int: Academic age in years, or None if either date is missing
     """
     if pd.isnull(row["earliest_start_date"]) or pd.isnull(row["first_work_year"]):
         return None
@@ -45,14 +57,28 @@ def add_international_metrics(
     df: pd.DataFrame, publications: pd.DataFrame = None
 ) -> pd.DataFrame:
     """
-    Add international experience metrics to the dataframe.
+    Add international experience metrics to the researcher data.
+
+    This function analyses researchers' international experience through their
+    affiliations and collaborations. It computes metrics for periods before and
+    after their first research grant, including:
+    - International affiliation experience
+    - Geographic diversity of collaborations
+    - Proportion of international vs domestic work
+    - Collaboration network breadth
 
     Args:
-        df (pd.DataFrame): DataFrame with affiliations information
-        publications (pd.DataFrame, optional): DataFrame with publication data
+        df (pd.DataFrame): DataFrame with researcher affiliations information
+        publications (pd.DataFrame, optional): DataFrame with detailed publication
+            data including author affiliations and collaborations
 
     Returns:
-        pd.DataFrame: DataFrame with added international metrics
+        pd.DataFrame: Original DataFrame augmented with international metrics columns:
+            - abroad_experience_before/after: International experience metrics
+            - countries_before/after: Lists of countries worked in
+            - abroad_fraction_before/after: Proportion of time spent abroad
+            - collab_countries_before/after: International collaboration metrics
+            - foreign_collab_fraction_before/after: International collaboration ratios
     """
     # Merge reference dates to publications
     publications = publications.merge(
@@ -125,15 +151,34 @@ def add_publication_metrics(
     publications: pd.DataFrame,
 ) -> pd.DataFrame:
     """
-    Add publication metrics including FWCI, citations, and publication counts
-    before and after first grant.
+    Add comprehensive publication metrics to researcher data.
+
+    This function computes various publication-related metrics for periods before
+    and after researchers' first grants. It processes:
+    - Publication counts and temporal patterns
+    - Citation impact metrics
+    - Field-Weighted Citation Impact (FWCI)
+    - Publication year-specific citation metrics
+
+    The function uses two different approaches for citation analysis:
+    1. Publication year attribution (1980 onwards):
+       - Citations attributed to the year of publication
+       - Useful for historical analysis and career progression
+    2. Citation year counting (2012 onwards):
+       - Citations counted in the year they occur
+       - Better for measuring recent impact
 
     Args:
-        df (pd.DataFrame): DataFrame with counts_by_year and earliest_start_date
-        publications (pd.DataFrame): DataFrame with yearly FWCI data
+        df (pd.DataFrame): DataFrame with publication counts and earliest grant dates
+        publications (pd.DataFrame): DataFrame with yearly publication and citation data
 
     Returns:
-        pd.DataFrame: DataFrame with added publication metrics
+        pd.DataFrame: Original DataFrame augmented with publication metric columns:
+            - n_pubs_before/after: Publication counts
+            - total_citations_pubyear_before/after: Total citations by publication year
+            - mean_citations_before/after: Average citations per year
+            - citations_pp_before/after: Citations per publication
+            - mean_fwci_before/after: Field-Weighted Citation Impact averages
     """
     logger.info("Processing publication metrics...")
     counts_by_publication_year = compile_counts_by_pubyear(publications)

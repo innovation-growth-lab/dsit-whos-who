@@ -24,7 +24,6 @@ The `compute_basic_metrics` function orchestrates the computation of all metrics
 #### International metrics
 - `_process_affiliations`: Analyses institutional affiliations and time spent abroad
 - `_process_last_institution`: Determines if current institution is in the UK
-- `_calculate_uk_fraction`: Computes fraction of time in UK vs abroad
 
 #### Collaboration metrics
 - `_process_collaborations`: Analyses collaboration patterns before/after first grant
