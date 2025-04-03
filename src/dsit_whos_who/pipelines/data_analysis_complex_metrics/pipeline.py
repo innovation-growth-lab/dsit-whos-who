@@ -1,9 +1,25 @@
 """
-Command Line Example:
+Pipeline for calculating complex bibliometric metrics for author analysis.
+
+This pipeline implements the calculation of complex metrics including:
+1. Disruption indices that measure how papers disrupt vs consolidate research fields
+2. Discipline diversity metrics that assess breadth and variety of research portfolios
+3. Combined metrics that integrate disruption and diversity measures
+
+The pipeline consists of several stages:
+1. Sampling papers from authors' publication records using stratified sampling
+2. Collecting citation data from OpenAlex for sampled papers and their references
+3. Computing disruption indices based on citation patterns
+4. Calculating discipline diversity metrics using CWTS field classifications
+5. Combining metrics to create composite measures
+
+Command Line Usage:
+    Run full pipeline:
     ```
     kedro run --pipeline data_analysis_complex_metrics
     ```
-    Alternatively, you can run this pipeline for a single endpoint:
+    
+    Run single component:
     ```
     kedro run --pipeline data_analysis_complex_metrics --tags projects
     ```
@@ -26,10 +42,15 @@ from .nodes import (
 
 
 def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
-    """Pipeline for data collection.
+    """Create the data analysis pipeline for complex metrics.
 
     Returns:
-        Pipeline: The data collection pipeline.
+        Pipeline: A Kedro pipeline containing nodes for:
+            - Sampling papers for analysis
+            - Collecting citation data
+            - Computing disruption indices
+            - Calculating discipline diversity
+            - Combining metrics into final measures
     """
     sample_pipeline = pipeline(
         [

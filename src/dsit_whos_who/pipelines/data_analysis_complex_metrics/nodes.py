@@ -3,11 +3,17 @@ This module contains nodes for calculating complex metrics for author analysis.
 
 The module implements functions to:
 1. Sample papers from authors' publication records using stratified sampling
-2. Fetch citation data from OpenAlex for sampled papers and their references
+2. Fetch citation data from OpenAlex for sampled papers and their references 
 3. Calculate disruption indices based on Wu and Yan (2019) methodology
+4. Calculate author diversity metrics based on publication topics
+5. Compute complex metrics combining disruption and diversity measures
 
-The disruption index measures how much a paper disrupts vs. consolidates its research field
-by checking whether papers that cite it also cite its references or not.
+The disruption index measures how much a paper disrupts versus consolidates its research field
+by analysing whether papers that cite it also cite its references or not.
+
+The diversity metrics capture the breadth and balance of an author's research topics over time,
+considering variety (number of topics), evenness (distribution across topics), and disparity 
+(how different the topics are from each other).
 """
 
 import logging

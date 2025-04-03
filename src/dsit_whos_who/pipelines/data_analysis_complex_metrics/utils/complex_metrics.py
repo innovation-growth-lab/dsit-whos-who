@@ -1,5 +1,22 @@
 """
 Utility functions for computing complex metrics.
+
+This module provides functions for calculating and analysing complex bibliometric metrics
+for academic authors, including:
+
+- Disruption indices that measure how much a paper disrupts vs consolidates its research field
+- Diversity metrics that assess the breadth and variety of an author's research portfolio
+- Before/after analysis to compare metrics before and after key career events like first funding
+
+The module handles:
+1. Preprocessing and merging disruption indices with publication data
+2. Computing weighted and unweighted disruption metrics at author-year level
+3. Processing diversity metrics including variety, evenness and disparity
+4. Calculating aggregate metrics for pre/post analysis around reference timepoints
+
+The functions expect standardised input DataFrames containing publication records, author
+information, and precomputed metrics. They output processed metrics suitable for further
+statistical analysis.
 """
 
 import logging
@@ -34,12 +51,12 @@ def preprocess_disruption_to_merge_with_publications(
             id, n_f, n_b, total, di_status, disruption_index
         publications (pd.DataFrame): DataFrame containing publication data with columns:
             id, authorships, fwci, publication_date
-        authors (pd.DataFrame): DataFrame containing author data with column:
+        basic_metrics (pd.DataFrame): DataFrame containing author data with column:
             oa_id (OpenAlex author IDs)
 
     Returns:
         pd.DataFrame: Processed DataFrame containing publication-author level data with columns:
-            id, authorships, fwci, year, disruption_index, n_f, n_b, total
+            author, year, disruption_index, fwci, disruption_index_weighted, author_year_disruption
     """
     logger.info("Preprocess disruption to merge with publications")
     disruption_indices["id"] = "W" + disruption_indices["id"].astype(str)

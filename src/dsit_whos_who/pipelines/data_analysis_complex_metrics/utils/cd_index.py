@@ -13,19 +13,26 @@ Where:
 - n_b is the number of papers citing both the focal paper and its references
 
 A positive DI (closer to 1) indicates a disruptive paper that changes the direction of research,
-while a negative DI (closer to -1) indicates a consolidating paper that reinforces existing
+whilst a negative DI (closer to -1) indicates a consolidating paper that reinforces existing
 research.
 
-References:
-- Wu & Yan (2019): https://doi.org/10.48550/arXiv.1905.03461
-- Bornmann et al. (2020): https://doi.org/10.1162/qss_a_00068
+The module provides functions for:
+- Processing batches of publication data efficiently
+- Calculating disruption indices for large sets of papers
+- Handling sampling and stratification of papers by year
+- Computing summary statistics and validation checks
 
 The decision to use the Wu and Yan (2019) disruption index was made because:
-- It overcomes a limitation of OpenAlex' forward citation collection, which requires
-    inefficient crawling through citations and millions of API calls (which runs into rate limits).
-- It performs surprisingly well when compared with labelled data, as highlighted in Leibel and
-    Bornmann (2023): https://doi.org/10.48550/arXiv.2308.02383. In particular, see Table 5.
+1. It overcomes limitations in OpenAlex's forward citation collection, which would otherwise
+   require inefficient crawling through citations and millions of API calls
+2. It demonstrates strong performance when compared with labelled data, as highlighted in
+   Leibel and Bornmann (2023)
+3. It provides a computationally efficient method for large-scale analysis
 
+References:
+    Wu & Yan (2019): https://doi.org/10.48550/arXiv.1905.03461
+    Bornmann et al. (2020): https://doi.org/10.1162/qss_a_00068
+    Leibel & Bornmann (2023): https://doi.org/10.48550/arXiv.2308.02383
 """
 
 # pylint: disable=E0402
@@ -70,7 +77,6 @@ def process_author_sampling(author_papers: pd.DataFrame) -> pd.DataFrame:
     Process sampling for a single author.
 
     Args:
-        author_id (str): The OpenAlex ID of the author
         author_papers (pd.DataFrame): DataFrame containing all papers for this author
 
     Returns:
@@ -79,7 +85,7 @@ def process_author_sampling(author_papers: pd.DataFrame) -> pd.DataFrame:
     # stratify by year
     samples_per_stratum = max(
         1, int(50 / (len(author_papers["year"].unique())))
-    )  # distributes 100 samples evenly across all year stratas
+    )  # distributes 100 samples evenly across all year strata
 
     author_samples = []
     for year in author_papers["year"].unique():
@@ -134,7 +140,7 @@ def process_disruption_indices(
 ) -> pd.DataFrame:
     """
     Process disruption indices for all focal papers using efficient set operations.
-    Uses batch-level set operations to minimizse iterations and maximise efficiency.
+    Uses batch-level set operations to minimise iterations and maximise efficiency.
 
     Args:
         focal_papers (pd.DataFrame): DataFrame containing focal papers with 'id' and

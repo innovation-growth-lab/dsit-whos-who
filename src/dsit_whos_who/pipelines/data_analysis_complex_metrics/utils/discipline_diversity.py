@@ -1,24 +1,27 @@
 """
-This script provides utility functions for computing topic embeddings, distance
-matrices, and diversity components for a given dataset.
+This module provides utility functions for computing discipline diversity metrics for academic authors.
 
-Functions:
-    - compute_distance_matrix(embeddings: np.ndarray, ids: list) -> pd.DataFrame:
-        Computes the pairwise distance matrix between embeddings and normalises
-        the matrix.
-    - _filter_single_list(topic, level):
-        Extracts the specified level from a nested list of topics.
-    - _compute_frequency_arrays(topic_counts: pd.DataFrame, author_counts:
-        pd.DataFrame, topic_to_col: dict, n_topics: int) -> list:
-        Efficiently computes topic frequency arrays for author-year combinations.
-    - create_author_and_year_frequency(data: pd.DataFrame, level: int, cwts_data:
-        pd.DataFrame) -> pd.DataFrame:
-        Aggregates taxonomy data by author and year and creates topic frequency
-        arrays.
-    - calculate_disparity(x_row: np.array, d: np.array) -> float:
-        Calculates disparity as the average distance between elements in the
-        given array based on a disparity matrix.
+The module implements functions to analyse the diversity of an author's research portfolio across 
+different scientific disciplines and subfields. It calculates three key components of diversity:
 
+1. Variety - The number of unique disciplines/subfields an author has published in
+2. Evenness - How uniformly distributed the author's publications are across disciplines 
+3. Disparity - How different or distant the disciplines are from each other
+
+The implementation follows established bibliometric approaches:
+- Uses the Leydesdorff, Wagner & Bornmann (2019) framework for measuring diversity
+- Implements the Kvålseth-Jost measure for evenness as recommended by Rousseau (2023)
+- Calculates disparity based on semantic distances between discipline embeddings
+
+Key Functions:
+- create_author_and_year_subfield_frequency: Aggregates publication counts by author, year and subfield
+- calculate_disparity: Computes the average semantic distance between disciplines
+- weight_function: Applies temporal weighting to account for changes over time
+- calculate_diversity_components: Calculates the three diversity components for each author
+
+The module expects standardised input DataFrames containing publication records with discipline 
+classifications and pre-computed discipline embedding distances. It outputs processed diversity 
+metrics suitable for further analysis.
 """
 
 import logging
@@ -30,7 +33,16 @@ logger = logging.getLogger(__name__)
 
 
 def filter_single_list(topic, level):
-    """Util function to parse out the "level"th position of nested lists"""
+    """
+    Parse out the level-th position from nested topic classification lists.
+    
+    Args:
+        topic: List containing nested topic classifications
+        level: Integer specifying which level to extract
+        
+    Returns:
+        int: The numeric ID at the specified level, or np.nan if not found
+    """
     matches = re.findall(r"\d+", topic[level])
     return int(matches[0]) if matches else np.nan
 
@@ -77,13 +89,12 @@ def create_author_and_year_subfield_frequency(
     Aggregates taxonomy subfields by author and year, and adds publication counts.
 
     Args:
-        df (pd.DataFrame): Input DataFrame with columns 'id', 'author', 'publication_date',
-            and 'topics', where 'topics' is a list of dictionaries with keys 'topic', 'subfield',
-            'field', and 'domain'.
+        data (pd.DataFrame): Input DataFrame with columns 'id', 'author', 'publication_date',
+            and 'subfield_ids'
+        cwts_data (pd.DataFrame): DataFrame containing the CWTS classification system data
 
     Returns:
-        pd.DataFrame: DataFrame with 'author_id', 'year', 'topics', 'yearly_publication_count',
-            and 'total_publication_count' aggregated.
+        pd.DataFrame: DataFrame with author, year, frequency arrays and publication counts
     """
 
     topic_to_col = {topic: i for i, topic in enumerate(sorted(cwts_data))}
@@ -115,12 +126,11 @@ def calculate_disparity(x_row: np.array, d: np.array) -> float:
     Calculates the disparity between elements in the given array.
 
     Args:
-        x_row (np.array): The input array.
-        d (np.array): The disparity matrix.
+        x_row (np.array): Array of frequencies for each topic
+        d (np.array): Matrix of pairwise distances between topics
 
     Returns:
-        float: The calculated disparity.
-
+        float: The calculated disparity value between 0 and 1
     """
     non_unit_indices = np.where(x_row >= 1)[0]
     num_non_unit = len(non_unit_indices)
@@ -136,9 +146,14 @@ def calculate_disparity(x_row: np.array, d: np.array) -> float:
 
 def weight_function(delta_year, alpha=1):
     """
-    Compute weight based on the time difference.
-    - delta_year: The difference between years.
-    - alpha: Smoothing factor (higher = steeper weight dropoff).
+    Compute weight based on the time difference between publications.
+    
+    Args:
+        delta_year (int): The difference between publication years
+        alpha (float): Smoothing factor (higher = steeper weight dropoff)
+        
+    Returns:
+        float: Weight between 0 and 1
     """
     return 1 / (1 + alpha * abs(delta_year))
 
@@ -147,24 +162,25 @@ def calculate_diversity_components(
     data: pd.DataFrame, disparity_matrix: pd.DataFrame
 ) -> pd.DataFrame:
     """
-    Calculate diversity components based on the given data and disparity matrix. The diversity
-    measure builds from Leydesdorff, Wagner, and Bornmann (2019) and consists of three components:
+    Calculate diversity components based on the given data and disparity matrix.
+    
+    The diversity measure builds from Leydesdorff, Wagner, and Bornmann (2019) and consists 
+    of three components:
 
-    - Variety: The number of unique topics an author has published on.
-    - Evenness: The distribution of publications across topics.
-    - Disparity: The diversity of topics an author has published
+    - Variety: The number of unique topics an author has published on
+    - Evenness: The distribution of publications across topics
+    - Disparity: The diversity of topics an author has published on
 
     The implementation follows Rousseau's (2023) suggestion to use the Kvålseth-Jost measure for
     evenness, which is a generalisation of the Gini coefficient presented by Jost (2006) and
     included in the meta discussion paper by Chao and Ricotta (2023).
 
     Args:
-        data (pd.DataFrame): The input data containing the necessary columns.
-        disparity_matrix (pd.DataFrame): The disparity matrix used for calculating disparity.
+        data (pd.DataFrame): DataFrame containing frequency arrays by author and year
+        disparity_matrix (pd.DataFrame): Matrix of pairwise distances between topics
 
     Returns:
-        pd.DataFrame: A DataFrame containing the diversity components.
-
+        pd.DataFrame: Original data with added columns for variety, evenness and disparity
     """
     x_matrix = data[["frequency"]].to_numpy()
     x_matrix = np.vstack(x_matrix[:, 0])
