@@ -1,11 +1,12 @@
 """
-This module provides utility functions for computing discipline diversity metrics for academic authors.
+This module provides utility functions for computing discipline diversity metrics for academic
+authors.
 
-The module implements functions to analyse the diversity of an author's research portfolio across 
+The module implements functions to analyse the diversity of an author's research portfolio across
 different scientific disciplines and subfields. It calculates three key components of diversity:
 
 1. Variety - The number of unique disciplines/subfields an author has published in
-2. Evenness - How uniformly distributed the author's publications are across disciplines 
+2. Evenness - How uniformly distributed the author's publications are across disciplines
 3. Disparity - How different or distant the disciplines are from each other
 
 The implementation follows established bibliometric approaches:
@@ -14,13 +15,14 @@ The implementation follows established bibliometric approaches:
 - Calculates disparity based on semantic distances between discipline embeddings
 
 Key Functions:
-- create_author_and_year_subfield_frequency: Aggregates publication counts by author, year and subfield
+- create_author_and_year_subfield_frequency: Aggregates publication counts by author, year and
+    subfield
 - calculate_disparity: Computes the average semantic distance between disciplines
 - weight_function: Applies temporal weighting to account for changes over time
 - calculate_diversity_components: Calculates the three diversity components for each author
 
-The module expects standardised input DataFrames containing publication records with discipline 
-classifications and pre-computed discipline embedding distances. It outputs processed diversity 
+The module expects standardised input DataFrames containing publication records with discipline
+classifications and pre-computed discipline embedding distances. It outputs processed diversity
 metrics suitable for further analysis.
 """
 
@@ -35,11 +37,11 @@ logger = logging.getLogger(__name__)
 def filter_single_list(topic, level):
     """
     Parse out the level-th position from nested topic classification lists.
-    
+
     Args:
         topic: List containing nested topic classifications
         level: Integer specifying which level to extract
-        
+
     Returns:
         int: The numeric ID at the specified level, or np.nan if not found
     """
@@ -147,11 +149,11 @@ def calculate_disparity(x_row: np.array, d: np.array) -> float:
 def weight_function(delta_year, alpha=1):
     """
     Compute weight based on the time difference between publications.
-    
+
     Args:
         delta_year (int): The difference between publication years
         alpha (float): Smoothing factor (higher = steeper weight dropoff)
-        
+
     Returns:
         float: Weight between 0 and 1
     """
@@ -163,8 +165,8 @@ def calculate_diversity_components(
 ) -> pd.DataFrame:
     """
     Calculate diversity components based on the given data and disparity matrix.
-    
-    The diversity measure builds from Leydesdorff, Wagner, and Bornmann (2019) and consists 
+
+    The diversity measure builds from Leydesdorff, Wagner, and Bornmann (2019) and consists
     of three components:
 
     - Variety: The number of unique topics an author has published on
