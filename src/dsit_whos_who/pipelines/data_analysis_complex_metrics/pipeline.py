@@ -195,7 +195,7 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                     "disruption_indices": "analysis.complex_metrics.disruption_indices.intermediate",  # pylint: disable=C0301
                     "author_diversity": "analysis.complex_metrics.author_diversity.intermediate",
                 },
-                outputs="analysis.complex_metrics.primary",
+                outputs="analysis.final_metrics.primary",
                 name="compute_complex_metrics",
             ),
         ]

@@ -2,145 +2,9 @@
 
 A data pipeline for linking Gateway to Research (GtR) and OpenAlex data to analyse research impact at the individual researcher level.
 
-```mermaid
----
-title: DSIT Who's Who Data Pipeline Overview
-config:
-  theme: base
-  themeVariables:
-    fontSize: 16px
-    mainBkg: '#FFFFFF'
-    primaryColor: '#f8f8f8'
-    primaryTextColor: '#333'
-    primaryBorderColor: '#ccc'
-    lineColor: '#555'
-    nodeBorder: '#999'
-    textColor: '#333'
----
-graph TD
-    classDef api fill:#cfe2f3,stroke:#333,stroke-width:1px,color:#333;
-    classDef data fill:#e2dcf7,stroke:#5a4f91,stroke-width:1.5px,color:#333;
-    classDef action fill:#d9ead3,stroke:#5b824d,stroke-width:1.5px,color:#333;
-    classDef methodology fill:#fceecb,stroke:#b48c34,stroke-width:1px,stroke-dasharray: 3 3,color:#444,shape:hexagon;
-    classDef outputNode fill:#fff2cc,stroke:#c49b00,stroke-width:1.5px,color:#333;
-    classDef pipelineTitle fill:#e0e0e0,stroke:#333,stroke-width:1px,color:#000,font-weight:bold;
-
-    subgraph External APIs
-        direction LR  # Changed direction
-            GTR_API[GtR API]:::api;
-            OA_API[OpenAlex API]:::api;
-    end
-
-    subgraph P1 [1.GtR Data Collection]
-        direction TB
-            P1_Title[data_collection_gtr]:::pipelineTitle;
-            P1_Fetch[Fetch GtR Data<br>Projects Focus]:::action;
-            P1_Out[GtR Data & Identifiers]:::data;
-
-            GTR_API --> P1_Fetch;
-            P1_Fetch --> P1_Out;
-    end
-
-    subgraph P2 [2.OpenAlex Data Collection]
-        direction TB
-            P2_Title[data_collection_oa]:::pipelineTitle;
-            P2_Fetch[Fetch OA Data<br>using GtR IDs]:::action;
-            P2_Out[OA Data<br>Authors, Pubs, Inst]:::data;
-
-            OA_API --> P2_Fetch;
-            P1_Out -- GtR Identifiers --> P2_Fetch;
-            P2_Fetch --> P2_Out;
-    end
-
-    subgraph P3 [3.Author Disambiguation]
-        direction TB
-            P3_Title[author_disambiguation]:::pipelineTitle;
-            P3_Match[Match GtR <=> OA Authors]:::action;
-            P3_Method[ML Model<br>Name, Inst, Topics, Pubs]:::methodology;
-            P3_Out[Matched Author Pairs]:::data;
-
-            P1_Out -- GtR Person/Project Data --> P3_Match;
-            P2_Out -- OA Author Candidates --> P3_Match;
-            P3_Match -- Uses --> P3_Method;
-            P3_Match --> P3_Out;
-    end
-
-    subgraph P4 [4.Basic Metrics Analysis]
-        direction TB
-            P4_Title[data_analysis_basic_metrics]:::pipelineTitle;
-            P4_Calc["Calculate Basic Metrics (Pubs, Cites, Collabs, Intl.)"]:::action;
-            P4_Method[Temporal Analysis<br>Before/After Grant]:::methodology;
-            P4_Out[Basic Metrics Dataset]:::data;
-
-            P3_Out -- Matched Pairs --> P4_Calc;
-            P1_Out -- GtR Grant Info --> P4_Calc;
-            P2_Out -- OA Details --> P4_Calc;
-            P4_Calc -- Uses --> P4_Method;
-            P4_Calc --> P4_Out;
-    end
-
-    subgraph P5 [5.Complex Metrics Analysis]
-        direction TB
-            P5_Title[data_analysis_complex_metrics]:::pipelineTitle;
-            P5_Calc_Disrupt[Calculate Disruption Index<br>Wu & Yan Variant]:::action;
-            P5_Calc_Diverse[Calculate Discipline Diversity<br>Leydesdorff Framework]:::action;
-            P5_Method[Based on Sampled Pubs<br>+ SPECTER Embeddings]:::methodology;
-            P5_Out[Complex Metrics Dataset]:::data;
-
-            P4_Out -- Grant Timing --> P5_Calc_Disrupt & P5_Calc_Diverse;
-            P2_Out -- Sampled OA Data/Topics --> P5_Calc_Disrupt & P5_Calc_Diverse;
-            P5_Calc_Disrupt -- Uses --> P5_Method;
-            P5_Calc_Diverse -- Uses --> P5_Method;
-            P5_Calc_Disrupt --> P5_Out;
-            P5_Calc_Diverse --> P5_Out;
-    end
-
-    subgraph Final Output
-        direction LR # Changed direction
-            Final_Combine[Combine Metrics]:::action;
-            Final_Dataset[Final Analysis Dataset]:::outputNode;
-
-            P4_Out -- Basic Metrics --> Final_Combine;
-            P5_Out -- Complex Metrics --> Final_Combine;
-            Final_Combine --> Final_Dataset;
-    end
-
-    P1 --> P2;
-    P1 --> P3;
-    P2 --> P3;
-    P3 --> P4;
-    P1 --> P4;
-    P2 --> P4;
-    P4 --> P5;
-    P2 --> P5;
-    P4 --> Final_Combine;
-    P5 --> Final_Combine;
-
-    style P1 font-size:28px;
-    style P1_Title font-size:28px;
-    style P1_Fetch fill:#d9ead3,stroke:#5b824d,stroke-width:1.5px,color:#333,font-size:28px;
-    style P1_Out fill:#e2dcf7,stroke:#5a4f91,stroke-width:1.5px,color:#333,font-size:28px;
-    style P2_Title font-size:28px;
-    style P2_Fetch fill:#d9ead3,stroke:#5b824d,stroke-width:1.5px,color:#333,font-size:28px;
-    style P2_Out fill:#e2dcf7,stroke:#5a4f91,stroke-width:1.5px,color:#333,font-size:28px;
-    style P3_Title font-size:28px;
-    style P3_Match fill:#d9ead3,stroke:#5b824d,stroke-width:1.5px,color:#333,font-size:28px;
-    style P3_Method fill:#fceecb,stroke:#b48c34,stroke-width:1px,stroke-dasharray: 3 3,color:#444,shape:hexagon,font-size:28px;
-    style P3_Out fill:#e2dcf7,stroke:#5a4f91,stroke-width:1.5px,color:#333,font-size:28px;
-    style P4_Title font-size:28px;
-    style P4_Calc fill:#d9ead3,stroke:#5b824d,stroke-width:1.5px,color:#333,font-size:28px;
-    style P4_Method fill:#fceecb,stroke:#b48c34,stroke-width:1px,stroke-dasharray: 3 3,color:#444,shape:hexagon,font-size:28px;
-    style P4_Out fill:#e2dcf7,stroke:#5a4f91,stroke-width:1.5px,color:#333,font-size:28px;
-    style P5_Title font-size:28px;
-    style P5_Calc_Disrupt fill:#d9ead3,stroke:#5b824d,stroke-width:1.5px,color:#333,font-size:28px;
-    style P5_Calc_Diverse fill:#d9ead3,stroke:#5b824d,stroke-width:1.5px,color:#333,font-size:28px;
-    style P5_Method fill:#fceecb,stroke:#b48c34,stroke-width:1px,stroke-dasharray: 3 3,color:#444,shape:hexagon,font-size:28px;
-    style P5_Out fill:#e2dcf7,stroke:#5a4f91,stroke-width:1.5px,color:#333,font-size:28px;
-    style Final_Combine fill:#d9ead3,stroke:#5b824d,stroke-width:1.5px,color:#333,font-size:28px;
-    style Final_Dataset fill:#fff2cc,stroke:#c49b00,stroke-width:1.5px,color:#333,font-size:28px;
-    style GTR_API fill:#cfe2f3,stroke:#333,stroke-width:1px,color:#333,font-size:28px;
-    style OA_API fill:#cfe2f3,stroke:#333,stroke-width:1px,color:#333,font-size:28px;
-```
+<p align="center">
+    <img src="docs/dsit-whos-who-diagram.png" alt="DSIT Who's Who Architecture Diagram" style="width:75%;"/>
+</p>
 
 ## Installation
 
@@ -195,6 +59,23 @@ kedro run --pipeline data_analysis_complex_metrics
 ```
 
 You can also run the complete sequence of pipelines if needed, though this may take significant time depending on data volume and API constraints. Specific sub-parts of pipelines can often be run using tags (refer to individual pipeline READMEs for details).
+
+## Final Dataset Structure
+
+The final dataset (`analysis.final_metrics.primary`) combines information from GtR and OpenAlex, along with calculated metrics. Key variables are grouped as follows:
+
+| Category                            | Example Variables                                                                                                                                                                                                                                                           |
+| :---------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Identifiers & Metadata**        | `oa_id`, `orcid`, `gtr_person_id`, `display_name`, `display_name_alternatives`, `first_name`, `surname`, `match_probability`, `gtr_organisation`, `gtr_organisation_name`, `affiliations`, `last_known_institutions`, `last_known_institution_uk`, `first_work_year`, `earliest_start_date` |
+| **Funding Information (GtR)**     | `has_active_project`, `number_grants`, `has_multiple_funders`, `grant_categories`, `lead_funders`, `gtr_project_timeline`, `gtr_project_id`, `gtr_project_publications`, `gtr_project_topics`, `gtr_project_oa_authors`, `gtr_project_oa_ids`                                  |
+| **Overall Bibliometrics**         | `works_count`, `cited_by_count`, `citations_per_publication`, `h_index`, `i10_index`, `topics`, `counts_by_year`, `counts_by_pubyear`                                                                                                                                               |
+| **Basic Metrics (Before/After)**  | `academic_age_at_first_grant`, `n_pubs_before`/`_after`, `total_citations_pubyear_before`/`_after`, `mean_citations_pubyear_before`/`_after`, `citations_pp_pubyear_before`/`_after`, `mean_citations_before`/`_after`, `citations_pp_before`/`_after`, `mean_fwci_before`/`_after` |
+| **Intl. Exp. (Before/After)**     | `abroad_experience_before`/`_after`, `countries_before`/`_after`, `abroad_fraction_before`/`_after`                                                                                                                                                                                 |
+| **Collaboration (Before/After)**  | `collab_countries_before`/`_after`, `collab_countries_list_before`/`_after`, `unique_collabs_before`/`_after`, `total_collabs_before`/`_after`, `foreign_collab_fraction_before`/`_after`                                                                                         |
+| **Complex Metrics (Before/After)** | Disruption: `mean_disruption_before`/`_after`, `mean_weighted_disruption_before`/`_after`<br>Diversity: `mean_variety_before`/`_after`, `mean_evenness_before`/`_after`, `mean_disparity_before`/`_after`                                                                       |
+| **Time Series Data**                | `author_year_disruption`, `author_year_diversity`                                                                                                                                                                                                                                |
+
+---
 
 ## Dependencies
 
