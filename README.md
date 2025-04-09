@@ -8,17 +8,41 @@ A data pipeline for linking Gateway to Research (GtR) and OpenAlex data to analy
 
 ## Installation
 
-To set up the project environment, install the required dependencies:
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/[organisation]/dsit-whos-who.git
+   cd dsit-whos-who
+   ```
 
-```bash
-pip install -r requirements.txt
-```
+2. **Set up Python environment**:
+   ```bash
+   conda create -n dsit_whos_who python=3.10
+   conda activate dsit_whos_who
+   ```
 
-Configuration settings for pipelines, APIs, and parameters are managed within the `conf/` directory.
+3. **Install the package**:
+   ```bash
+   pip install -e .
+   pip install -r requirements.txt
+   ```
+
+## Project Structure
+
+The project uses Kedro to organize its pipelines:
+
+- **Configuration directory (`conf/`)**:
+  - Parameters for collection, author disambiguation, and metric generation
+  - Logging configuration
+  - AWS credentials for data access (in hidden [credentials.yml](https://docs.kedro.org/en/stable/configuration/credentials.html) file)
+
+- **Source code directory (`src/`)**:
+  - Core author collection modules
+  - Author disambiguation pipeline
+  - Basic and complex metric generation
 
 ## Pipelines Overview
 
-The project is structured around five core Kedro pipelines that sequentially process data from initial collection through to complex metric computation:
+The project is structured around five core Kedro pipelines (in `src/`) that sequentially process data from initial collection through to complex metric computation:
 
 ### 1. Gateway to Research Data Collection (`data_collection_gtr`)
 This pipeline fetches data primarily concerning research projects from the UKRI Gateway to Research (GtR) API. It extracts project details, research topics, subjects, funding information, and linked publications. The process includes robust error handling, retry mechanisms, and rate limiting.
