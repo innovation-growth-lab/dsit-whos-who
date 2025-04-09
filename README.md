@@ -3,7 +3,7 @@
 A data pipeline for linking Gateway to Research (GtR) and OpenAlex data to analyse research impact at the individual researcher level.
 
 <p align="center">
-    <img src="docs/dsit-whos-who-diagram.png" alt="DSIT Who's Who Architecture Diagram" style="width:75%;"/>
+    <img src="docs/dsit-whos-who-diagram.png" alt="DSIT Who's Who Architecture Diagram" style="width:100%;"/>
 </p>
 
 ## Installation
