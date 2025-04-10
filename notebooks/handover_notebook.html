@@ -1,0 +1,2514 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.39">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="David Ampudia Vicente">
+<meta name="dcterms.date" content="2024-04-08">
+
+<title>Who’s Who Handover Guide</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="handover_notebook_files/libs/clipboard/clipboard.min.js"></script>
+<script src="handover_notebook_files/libs/quarto-html/quarto.js"></script>
+<script src="handover_notebook_files/libs/quarto-html/popper.min.js"></script>
+<script src="handover_notebook_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="handover_notebook_files/libs/quarto-html/anchor.min.js"></script>
+<link href="handover_notebook_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="handover_notebook_files/libs/quarto-html/quarto-syntax-highlighting-e26003cea8cd680ca0c55a263523d882.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="handover_notebook_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="handover_notebook_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="handover_notebook_files/libs/bootstrap/bootstrap-de5f75ba0e9a74f6dd9045a57a301c09.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a>
+  <ul class="collapse">
+  <li><a href="#key-components" id="toc-key-components" class="nav-link" data-scroll-target="#key-components">Key Components</a></li>
+  <li><a href="#current-performance" id="toc-current-performance" class="nav-link" data-scroll-target="#current-performance">Current performance</a></li>
+  <li><a href="#setup" id="toc-setup" class="nav-link" data-scroll-target="#setup">Setup</a></li>
+  <li><a href="#gateway-to-research-gtr-data-collection-data_collection_gtr" id="toc-gateway-to-research-gtr-data-collection-data_collection_gtr" class="nav-link" data-scroll-target="#gateway-to-research-gtr-data-collection-data_collection_gtr">1. Gateway to Research (GtR) Data Collection (<code>data_collection_gtr</code>)</a>
+  <ul class="collapse">
+  <li><a href="#direct-api-example" id="toc-direct-api-example" class="nav-link" data-scroll-target="#direct-api-example">Direct API Example</a></li>
+  <li><a href="#pipeline-output-example" id="toc-pipeline-output-example" class="nav-link" data-scroll-target="#pipeline-output-example">Pipeline Output Example</a></li>
+  </ul></li>
+  <li><a href="#openalex-data-collection-data_collection_oa" id="toc-openalex-data-collection-data_collection_oa" class="nav-link" data-scroll-target="#openalex-data-collection-data_collection_oa">2. OpenAlex Data Collection (<code>data_collection_oa</code>)</a>
+  <ul class="collapse">
+  <li><a href="#direct-api-example-1" id="toc-direct-api-example-1" class="nav-link" data-scroll-target="#direct-api-example-1">Direct API Example</a></li>
+  <li><a href="#pipeline-output-example-1" id="toc-pipeline-output-example-1" class="nav-link" data-scroll-target="#pipeline-output-example-1">Pipeline Output Example</a></li>
+  </ul></li>
+  <li><a href="#author-disambiguation-author_disambiguation" id="toc-author-disambiguation-author_disambiguation" class="nav-link" data-scroll-target="#author-disambiguation-author_disambiguation">3. Author Disambiguation (<code>author_disambiguation</code>)</a>
+  <ul class="collapse">
+  <li><a href="#pipeline-output-example-2" id="toc-pipeline-output-example-2" class="nav-link" data-scroll-target="#pipeline-output-example-2">Pipeline Output Example</a></li>
+  </ul></li>
+  <li><a href="#basic-metrics-analysis-data_analysis_basic_metrics" id="toc-basic-metrics-analysis-data_analysis_basic_metrics" class="nav-link" data-scroll-target="#basic-metrics-analysis-data_analysis_basic_metrics">4. Basic Metrics Analysis (<code>data_analysis_basic_metrics</code>)</a>
+  <ul class="collapse">
+  <li><a href="#pipeline-output-example-3" id="toc-pipeline-output-example-3" class="nav-link" data-scroll-target="#pipeline-output-example-3">Pipeline Output Example</a></li>
+  </ul></li>
+  <li><a href="#complex-metrics-analysis-data_analysis_complex_metrics" id="toc-complex-metrics-analysis-data_analysis_complex_metrics" class="nav-link" data-scroll-target="#complex-metrics-analysis-data_analysis_complex_metrics">5. Complex Metrics Analysis (<code>data_analysis_complex_metrics</code>)</a>
+  <ul class="collapse">
+  <li><a href="#pipeline-output-example-4" id="toc-pipeline-output-example-4" class="nav-link" data-scroll-target="#pipeline-output-example-4">Pipeline Output Example</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Who’s Who Handover Guide</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>David Ampudia Vicente </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">April 8, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div id="cell-1" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> requests</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> networkx <span class="im">as</span> nx</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sentence_transformers <span class="im">import</span> SentenceTransformer</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> transformers <span class="im">import</span> pipeline <span class="im">as</span> transformers_pipeline</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> contextlib</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> warnings</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>warnings.filterwarnings(<span class="st">"ignore"</span>)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>pd.set_option(<span class="st">'display.max_colwidth'</span>, <span class="dv">160</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
+<p>This guide provides a comprehensive overview of the <strong>Who’s Who in UK Research</strong> data pipeline. The project aims to link person data from the UKRI Gateway to Research (GtR) and OpenAlex to identify matching researchers and track activity and impact at the individual level.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="handover_notebook_files/dsit-whos-who-diagram.svg" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>DSIT Taxonomy System Architecture</figcaption>
+</figure>
+</div>
+<section id="key-components" class="level3">
+<h3 class="anchored" data-anchor-id="key-components">Key Components</h3>
+<p>The system is built using Kedro and consists of five core pipelines:</p>
+<ol type="1">
+<li><strong>Gateway to Research (GtR) Data Collection</strong>: Fetches project, funding, and researcher data from the GtR API.</li>
+<li><strong>OpenAlex Data Collection</strong>: Enriches GtR data with publication, citation, and affiliation information from OpenAlex.</li>
+<li><strong>Author Disambiguation</strong>: Matches GtR researchers to their OpenAlex profiles using a machine learning approach.</li>
+<li><strong>Basic Metrics Analysis</strong>: Calculates fundamental bibliometric and career indicators.</li>
+<li><strong>Complex Metrics Analysis</strong>: Computes research disruption and discipline diversity metrics.</li>
+</ol>
+</section>
+<section id="current-performance" class="level3">
+<h3 class="anchored" data-anchor-id="current-performance">Current performance</h3>
+<section id="overall-coverage-statistics" class="level4">
+<h4 class="anchored" data-anchor-id="overall-coverage-statistics">Overall coverage statistics</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Total GtR persons</td>
+<td>140,245</td>
+</tr>
+<tr class="even">
+<td>Matchable persons (at least one name candidate)</td>
+<td>126,304</td>
+</tr>
+<tr class="odd">
+<td>Matched persons</td>
+<td>85,444</td>
+</tr>
+<tr class="even">
+<td>Overall coverage rate</td>
+<td>60.9%</td>
+</tr>
+<tr class="odd">
+<td>Coverage of matchable persons</td>
+<td>67.6%</td>
+</tr>
+<tr class="even">
+<td>Coverage of active researchers (with projects)</td>
+<td>68.4%</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="coverage-by-grant-category" class="level4">
+<h4 class="anchored" data-anchor-id="coverage-by-grant-category">Coverage by grant category</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Category</th>
+<th>Coverage Rate</th>
+<th>Matches/Total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Fellowship</td>
+<td>82.9%</td>
+<td>7,710/9,303</td>
+</tr>
+<tr class="even">
+<td>Research and Innovation</td>
+<td>82.8%</td>
+<td>3,339/4,034</td>
+</tr>
+<tr class="odd">
+<td>Intramural</td>
+<td>82.8%</td>
+<td>1,330/1,606</td>
+</tr>
+<tr class="even">
+<td>Institute Project</td>
+<td>79.0%</td>
+<td>595/753</td>
+</tr>
+<tr class="odd">
+<td>Research Grant</td>
+<td>79.0%</td>
+<td>55,881/70,748</td>
+</tr>
+<tr class="even">
+<td>Training Grant</td>
+<td>70.7%</td>
+<td>5,285/7,477</td>
+</tr>
+<tr class="odd">
+<td>Studentship</td>
+<td>56.3%</td>
+<td>33,829/60,074</td>
+</tr>
+<tr class="even">
+<td>EU-Funded</td>
+<td>47.9%</td>
+<td>1,062/2,218</td>
+</tr>
+<tr class="odd">
+<td>Collaborative R&amp;D</td>
+<td>13.7%</td>
+<td>1,088/7,921</td>
+</tr>
+<tr class="even">
+<td>Feasibility Studies</td>
+<td>15.1%</td>
+<td>556/3,689</td>
+</tr>
+<tr class="odd">
+<td>Small Business Research Initiative</td>
+<td>16.9%</td>
+<td>136/805</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p>This guide will walk through each component, demonstrating how to:</p>
+<ol type="1">
+<li>Understand the data collection processes.</li>
+<li>Interpret the author disambiguation results.</li>
+<li>Generate and understand basic and complex metrics.</li>
+<li>Utilise the final combined dataset.</li>
+</ol>
+</section>
+</section>
+<section id="setup" class="level2">
+<h2 class="anchored" data-anchor-id="setup">Setup</h2>
+<p>We begin by setting up our Kedro environment. While Kedro pipelines are typically run through the command line interface (CLI), we can also interact with them in notebooks using the <code>kedro.ipython</code> extension. This is particularly useful for exploration and debugging.</p>
+<p>When running through CLI, <a href="https://omegaconf.readthedocs.io/en/2.3_branch/">OmegaConf</a> automatically loads <a href="https://docs.kedro.org/en/stable/configuration/configuration_basics.html">configuration</a> from:</p>
+<ul>
+<li><code>conf/base/catalog.yml</code>: Data catalog definitions</li>
+<li><code>conf/base/parameters.yml</code>: Pipeline parameters<br>
+</li>
+<li><code>conf/local/credentials.yml</code>: API keys and credentials</li>
+<li><code>conf/base/settings.yml</code>: Project settings</li>
+<li>Registered hooks in <code>src/hooks.py</code> (none in this project)</li>
+</ul>
+<p>In notebooks, we need to explicitly load these using the IPython magic commands below. See the <a href="https://docs.kedro.org/en/stable/notebooks_and_ipython/kedro_and_notebooks.html">Kedro documentation</a> for more details.</p>
+<div id="cell-4" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load Kedro extensions</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>load_ext kedro.ipython</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Reload the Kedro context</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>reload_kedro</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="gateway-to-research-gtr-data-collection-data_collection_gtr" class="level2">
+<h2 class="anchored" data-anchor-id="gateway-to-research-gtr-data-collection-data_collection_gtr">1. Gateway to Research (GtR) Data Collection (<code>data_collection_gtr</code>)</h2>
+<p>This pipeline retrieves core information about UKRI-funded research from the GtR API.</p>
+<p><strong>Purpose</strong>: To gather foundational data on projects, funding, involved personnel, organisations, and associated publications as recorded in GtR. This forms the basis for identifying researchers and their activities.</p>
+<p><strong>Key Data Points &amp; Endpoints Used</strong>:</p>
+<ul>
+<li><strong><code>projects</code></strong>: Retrieves details about funded research projects, including titles, abstracts, start/end dates, funding amounts, and grant categories. Essential for understanding the research context.</li>
+<li><strong><code>persons</code></strong>: Fetches information about individuals involved in projects (Principal Investigators, Co-Investigators, etc.), including their names and unique GtR identifiers. Crucial for the subsequent author disambiguation step.</li>
+<li><strong><code>publications</code></strong>: Collects metadata about publications linked to GtR projects, primarily DOIs. These are used to find corresponding records in OpenAlex.</li>
+<li><strong><code>organisations</code></strong>: Gathers details about the institutions involved in funded research, which aids in affiliation matching during disambiguation.</li>
+</ul>
+<p><strong>Process</strong>: The pipeline systematically interacts with these GtR API endpoints, handling pagination to retrieve all relevant records. It incorporates robust error handling, retry mechanisms for transient network issues, and adheres to API rate limits.</p>
+<section id="direct-api-example" class="level3">
+<h3 class="anchored" data-anchor-id="direct-api-example">Direct API Example</h3>
+<p>Below is a simple example demonstrating a direct request to the GtR API (using the <code>requests</code> library) to fetch data for a specific person. This illustrates the raw interaction that the Kedro pipeline nodes encapsulate.</p>
+<div id="cell-6" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>response <span class="op">=</span> requests.get(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"https://gtr.ukri.org/gtr/api/projects/FFDDCE32-AA62-447F-9F40-2D285C5CB209"</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    headers<span class="op">=</span>{<span class="st">"Accept"</span>: <span class="st">"application/vnd.rcuk.gtr.json-v7"</span>}</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> response.json()</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> {</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"id"</span>: data[<span class="st">"id"</span>],</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"title"</span>: data[<span class="st">"title"</span>],</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"abstract"</span>: data[<span class="st">"abstractText"</span>][:<span class="dv">250</span>]</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(json.dumps(result, indent<span class="op">=</span><span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>{
+  "id": "FFDDCE32-AA62-447F-9F40-2D285C5CB209",
+  "title": "Spinal inhibitory interneurons that suppress itch",
+  "abstract": "Chronic itch is a distressing feature of many diseases, including conditions affecting the skin, kidneys and blood, as well as certain forms of cancer. It is also a side-effect of certain drugs, such as morphine. Although some types of itch respond t"
+}</code></pre>
+</div>
+</div>
+</section>
+<section id="pipeline-output-example" class="level3">
+<h3 class="anchored" data-anchor-id="pipeline-output-example">Pipeline Output Example</h3>
+<p>In practice, we run the pipelines through the command interface. For example, collecting all <code>persons</code> data available through the GtR API requires the following command line:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">kedro</span> run <span class="at">--pipeline</span> data_collection_gtr <span class="at">--tags</span> publications</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This will run two nodes: a first node that creates partitions of the data fetch and saves these, and a second node that concatenates the partitioned dataset into a parquet file.</p>
+<p>After the pipeline runs, the collected and processed data is stored in the Kedro catalog. Let’s load an example of the processed <code>persons</code> data:</p>
+<div id="cell-8" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>persons <span class="op">=</span> catalog.load(<span class="st">"gtr.data_collection.persons.intermediate"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-9" class="cell" data-execution_count="5">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Shape: </span><span class="sc">{</span>persons<span class="sc">.</span>shape<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Columns:"</span>, persons.columns.tolist())</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Example data:"</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>display(persons.head(<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Shape: (140245, 8)
+Columns: ['person_id', 'orcid_id', 'first_name', 'surname', 'other_names', 'email', 'projects', 'organisations']
+Example data:</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">person_id</th>
+<th data-quarto-table-cell-role="th">orcid_id</th>
+<th data-quarto-table-cell-role="th">first_name</th>
+<th data-quarto-table-cell-role="th">surname</th>
+<th data-quarto-table-cell-role="th">other_names</th>
+<th data-quarto-table-cell-role="th">email</th>
+<th data-quarto-table-cell-role="th">projects</th>
+<th data-quarto-table-cell-role="th">organisations</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>153B0438-9136-480C-B0E1-908A9DDE2AF1</td>
+<td>None</td>
+<td>Anne</td>
+<td>Osbourn</td>
+<td></td>
+<td>None</td>
+<td>[{'id': '74DF8C7B-CA58-4961-9EFF-00FBA00803D6', 'role': 'PI_PER'}, {'id': 'DDEE52BB-6B2B-4A3E-9D67-0BF0C77EE0A9', 'role': 'PI_PER'}, {'id': 'BDC017FB-2D64-4...</td>
+<td>[{'id': '8E38A887-3CD8-49FD-87E5-A1844E81B9CF', 'role': 'EMPLOYED'}]</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>15522B00-543E-4C45-87C4-B27D78459184</td>
+<td>None</td>
+<td>Nick</td>
+<td>Plant</td>
+<td></td>
+<td>None</td>
+<td>[{'id': '4FAFE57B-4C27-4B45-9AEA-026F0DDF42DC', 'role': 'TGH_PER'}, {'id': '7AC1CF29-AA48-4716-9D21-34ADE4C075CC', 'role': 'PI_PER'}, {'id': '01C229C2-90F4-...</td>
+<td>[{'id': 'CA799973-1F1B-4936-B99A-9970F567FE67', 'role': 'EMPLOYED'}]</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="openalex-data-collection-data_collection_oa" class="level2">
+<h2 class="anchored" data-anchor-id="openalex-data-collection-data_collection_oa">2. OpenAlex Data Collection (<code>data_collection_oa</code>)</h2>
+<p>This pipeline fetches and processes data from the OpenAlex API, using identifiers gathered from the GtR dataset (persons, publications) as starting points.</p>
+<p><strong>Purpose</strong>: To collect detailed information about authors, publications, and institutions from OpenAlex that correspond to or are potentially related to the entities identified in GtR. This data serves two main goals:</p>
+<ol type="1">
+<li>Gathering potential <strong>candidate matches</strong> for GtR researchers in OpenAlex, forming the input for the <code>author_disambiguation</code> pipeline.</li>
+<li><strong>Enriching</strong> the dataset with publication and institutional details for matching and basic-metric analysis.</li>
+</ol>
+<p><strong>Sub-Pipelines Overview</strong>:</p>
+<p>This pipeline is structured into four main sub-pipelines, each targeting different entities or using different GtR identifiers:</p>
+<ol type="1">
+<li><strong>ORCID Fetch (<code>fetch_orcid</code>)</strong>: Uses ORCID iDs available for some GtR persons to directly query OpenAlex. This aims to find highly probable or exact matches and retrieve their corresponding OpenAlex author profiles.</li>
+<li><strong>Author Name Search (<code>fetch_author_names</code>)</strong>: Takes the display names of <em>all</em> GtR persons (~140,000) and searches for potential matches in OpenAlex. This generates a large pool of candidate OpenAlex authors (resulting in ~5.7 million potential GtR-OA pairs) for the disambiguation model to evaluate.</li>
+<li><strong>Publication Fetch (<code>fetch_doi_publications</code>)</strong>: Uses DOIs associated with GtR projects/publications to retrieve detailed publication records (metadata, authorships, citations, etc.) from OpenAlex.</li>
+<li><strong>Institution Fetch (<code>fetch_institutions</code>)</strong>: Extracts OpenAlex institution IDs identified in the <em>author search results</em> and fetches detailed information about these institutions.</li>
+</ol>
+<p><strong>Process</strong>: The pipeline interacts with the OpenAlex API, often batched to both process in <strong>parallel</strong> using <code>joblib</code>. Filter conditions are also joined by <code>OR</code> conditions (<code>|</code>) to reduce the number of calls by a factor of 50 (see <a href="https://docs.openalex.org/how-to-use-the-api/get-lists-of-entities/filter-entity-lists#logical-expressions">documentation details</a>).</p>
+<section id="direct-api-example-1" class="level3">
+<h3 class="anchored" data-anchor-id="direct-api-example-1">Direct API Example</h3>
+<p>Below is a simple example demonstrating a direct request to the OpenAlex API (using the <code>requests</code> library) to fetch candidates for a specific name: <code>Anouk L'Hermitte</code>. This illustrates the raw interaction that the Kedro pipeline nodes encapsulate.</p>
+<div id="cell-11" class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>response <span class="op">=</span> requests.get(</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"https://api.openalex.org/authors?filter=display_name.search:Anouk L'Hermitte"</span>,</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    params<span class="op">=</span>{<span class="st">"select"</span>: <span class="st">"id,orcid,display_name,counts_by_year"</span>}</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> response.json()</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>author <span class="op">=</span> data[<span class="st">"results"</span>][<span class="dv">0</span>]</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> {</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"id"</span>: author[<span class="st">"id"</span>],</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"orcid"</span>: author.get(<span class="st">"orcid"</span>),</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">"display_name"</span>: author[<span class="st">"display_name"</span>],</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">"counts_by_year"</span>: author[<span class="st">"counts_by_year"</span>][:<span class="dv">2</span>]</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(json.dumps(result, indent<span class="op">=</span><span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>{
+  "id": "https://openalex.org/A5004845442",
+  "orcid": "https://orcid.org/0000-0001-7595-5387",
+  "display_name": "Anouk L\u2019Hermitte",
+  "counts_by_year": [
+    {
+      "year": 2025,
+      "works_count": 0,
+      "cited_by_count": 29
+    },
+    {
+      "year": 2024,
+      "works_count": 0,
+      "cited_by_count": 99
+    }
+  ]
+}</code></pre>
+</div>
+</div>
+</section>
+<section id="pipeline-output-example-1" class="level3">
+<h3 class="anchored" data-anchor-id="pipeline-output-example-1">Pipeline Output Example</h3>
+<p>This pipeline generates multiple datasets corresponding to the outputs of its sub-pipelines (e.g., authors found via ORCID, authors found via name search, publications, institutions). Let’s load the ORCID-based data, which corresponds to the output of the following sub-pipeline:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">kedro</span> run <span class="at">--pipeline</span> data_collection_oa <span class="at">--tags</span> fetch_orcid</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Note that the names of the catalog objects are defined in <code>conf/base/catalog.yml</code>, but we use dataset factories by defining “generic” configurations and allowing OmegaConf to resolve the references. For example, <code>oa.data_collection.{filter}.intermediate</code> will correctly map the catalog object to the pipeline outputs <code>oa.data_collection.orcid.intermediate</code> and <code>oa.data_collection.publications.intermediate</code>, without needing to define each of these explicitly in the YAML file.</p>
+<div id="cell-13" class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>orcid_authors <span class="op">=</span> catalog.load(<span class="st">"oa.data_collection.orcid.intermediate"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-14" class="cell" data-execution_count="8">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Shape: </span><span class="sc">{</span>orcid_authors<span class="sc">.</span>shape<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Columns:"</span>, orcid_authors.columns.tolist())</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Example data:"</span>)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>display(orcid_authors.head(<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Shape: (16847, 12)
+Columns: ['id', 'orcid', 'display_name', 'display_name_alternatives', 'works_count', 'cited_by_count', 'h_index', 'i10_index', 'affiliations', 'last_known_institutions', 'topics', 'counts_by_year']
+Example data:</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">orcid</th>
+<th data-quarto-table-cell-role="th">display_name</th>
+<th data-quarto-table-cell-role="th">display_name_alternatives</th>
+<th data-quarto-table-cell-role="th">works_count</th>
+<th data-quarto-table-cell-role="th">cited_by_count</th>
+<th data-quarto-table-cell-role="th">h_index</th>
+<th data-quarto-table-cell-role="th">i10_index</th>
+<th data-quarto-table-cell-role="th">affiliations</th>
+<th data-quarto-table-cell-role="th">last_known_institutions</th>
+<th data-quarto-table-cell-role="th">topics</th>
+<th data-quarto-table-cell-role="th">counts_by_year</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>A5079633934</td>
+<td>0000-0003-1376-8409</td>
+<td>Adrian L. Harris</td>
+<td>[A. L Harris, A. L. Harris, Adrian. Harris, Austin Harris, AdrianL. Harris, Adrian L. Harris, AL. Harris, Al Harris, Alex L. Harris, and Adrian L. Harris, A...</td>
+<td>2061</td>
+<td>149619</td>
+<td>186</td>
+<td>1096</td>
+<td>[[I4210110594, MRC Weatherall Institute of Molecular Medicine, GB, facility, 2025,2024,2023,2022,2021,2020,2019,2018,2017,2016], [I40120149, University of O...</td>
+<td>[[I4210110594, MRC Weatherall Institute of Molecular Medicine, GB, facility], [I2801316944, Cancer Research UK, GB, nonprofit], [I40120149, University of Ox...</td>
+<td>[[T10631, Cancer, Hypoxia, and Metabolism, 627, subfields/1306, Cancer Research, fields/13, Biochemistry, Genetics and Molecular Biology, domains/1, Life Sc...</td>
+<td>[[2025, 4, 1802], [2024, 19, 11200], [2023, 312, 12997], [2022, 17, 13197], [2021, 28, 15117], [2020, 33, 13976], [2019, 42, 12614], [2018, 35, 12295], [201...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>A5019685830</td>
+<td>0000-0002-0784-8640</td>
+<td>Andrew P. Monkman</td>
+<td>[A. Monkman, Andy Monkman, Andrew T. Monkman, A.P Monkman, A. P. Monkman, Andrew P. Monkman, Andy P. Monkman, Andrew Monkman]</td>
+<td>798</td>
+<td>27353</td>
+<td>82</td>
+<td>394</td>
+<td>[[I190082696, Durham University, GB, funder, 2025,2024,2023,2022,2021,2020,2019,2018,2017,2016], [I169381384, University of Groningen, NL, funder, 2023,2003...</td>
+<td>[[I190082696, Durham University, GB, funder]]</td>
+<td>[[T10611, Organic Light-Emitting Diodes Research, 308, subfields/2208, Electrical and Electronic Engineering, fields/22, Engineering, domains/3, Physical Sc...</td>
+<td>[[2025, 2, 278], [2024, 19, 2624], [2023, 58, 2740], [2022, 42, 2860], [2021, 37, 3075], [2020, 29, 2787], [2019, 50, 2807], [2018, 36, 2682], [2017, 23, 20...</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="author-disambiguation-author_disambiguation" class="level2">
+<h2 class="anchored" data-anchor-id="author-disambiguation-author_disambiguation">3. Author Disambiguation (<code>author_disambiguation</code>)</h2>
+<p>This pipeline links researcher records from GtR to their corresponding author profiles in OpenAlex using a machine learning approach.</p>
+<p><strong>Purpose</strong>: To accurately identify and match individuals across the two datasets, resolving potential ambiguities based on names, affiliations, and research activities. This is necessary for attributing publications and metrics collected from OpenAlex back to the correct GtR person.</p>
+<p><strong>Pipeline Overview</strong>:</p>
+<ol type="1">
+<li><strong>Data Aggregation &amp; Preprocessing</strong>: Consolidates GtR person information (details, affiliations, projects, topics, publications) and processes OpenAlex candidate profiles (affiliations, metrics, name variants).</li>
+<li><strong>Candidate Generation</strong>: Creates potential GtR-OA author pairs (~5.7 million) based initially on name similarity. Uses ORCID links where available to create a validated training set.</li>
+<li><strong>Feature Engineering</strong>: Computes a wide range of features for each candidate pair to quantify the likelihood of a match across multiple dimensions.</li>
+<li><strong>Model Training</strong>: Trains a classifier (e.g., LightGBM) to predict match probability, using strategies like SMOTE or class weighting to handle the severe class imbalance (~2.4% positive class).</li>
+<li><strong>Prediction &amp; Thresholding</strong>: Applies the trained model to all candidate pairs and uses a selected probability threshold (0.80 in production) to determine the final matches, selecting the highest confidence match per GtR author.</li>
+</ol>
+<p><strong>Feature Engineering Details</strong>:</p>
+<p>The pipeline computes five categories of features for each GtR-OA author pair:</p>
+<p><strong>1. Name Similarity Features</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 79%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Feature Type</th>
+<th style="text-align: left;">Specific Features</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Direct Name Comparisons</strong></td>
+<td style="text-align: left;"><code>display_lev</code> (Levenshtein), <code>display_jw</code> (Jaro-Winkler), <code>display_token</code> (Token Set Ratio)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Name Component Matches</strong></td>
+<td style="text-align: left;"><code>surname_match</code> (Binary), <code>first_initial_match</code> (Binary), <code>full_first_match</code> (Binary)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Alternative Name Comparisons</strong></td>
+<td style="text-align: left;"><code>alt_lev_mean</code>/<code>max</code>, <code>alt_jw_mean</code>/<code>max</code>, <code>alt_token_mean</code>/<code>max</code> (Applied to OpenAlex alternative names)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>2. Institution Features</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 21%">
+<col style="width: 78%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Feature Type</th>
+<th style="text-align: left;">Specific Features</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Direct Institution Comparison</strong></td>
+<td style="text-align: left;"><code>inst_jw_max</code>, <code>inst_token_max</code> (Max similarity between GtR orgs and OA affiliations)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Associated Institution Metrics</strong></td>
+<td style="text-align: left;"><code>inst_child_jw_max</code>, <code>inst_child_token_max</code> (Max similarity including OA associated/parent/child institutions)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>GB Affiliation Indicators</strong></td>
+<td style="text-align: left;"><code>gb_affiliation_proportion</code>, <code>has_gb_affiliation</code> (Binary), <code>has_gb_associated</code> (Binary)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>3. Topic Similarity Features</strong></p>
+<p>Computed at four OpenAlex concept levels (domain, field, subfield, topic):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 87%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Feature Type</th>
+<th style="text-align: left;">Specific Features</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Overlap Metrics</strong></td>
+<td style="text-align: left;"><code>{level}_jaccard</code>, <code>{level}_cosine</code>, <code>{level}_js_div</code> (Jensen-Shannon), <code>{level}_containment</code> (Calculated for each level)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>4. Publication Features</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 17%">
+<col style="width: 82%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Feature Type</th>
+<th style="text-align: left;">Specific Features</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Coverage Metrics</strong></td>
+<td style="text-align: left;"><code>publication_coverage</code>, <code>author_proportion</code> (Relating GtR project pubs to OA author)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>5. Author Metadata Features</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 83%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Feature Type</th>
+<th style="text-align: left;">Specific Features</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Publication Metrics</strong></td>
+<td style="text-align: left;"><code>works_count</code>, <code>cited_by_count</code>, <code>h_index</code>, <code>i10_index</code>, <code>citations_per_work</code> (From OpenAlex author profile)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Model Performance &amp; Production Choice</strong>:</p>
+<p>The pipeline was tested with both SMOTE and Class Weighting strategies to handle imbalance. The Class Weights model with a threshold of <strong>0.80</strong> was selected for production.</p>
+<ul>
+<li><p><strong>Test Set Performance (Class Weights, Threshold 0.80)</strong>:</p>
+<ul>
+<li>Accuracy: 0.996</li>
+<li>Precision: 0.920</li>
+<li>Recall: 0.937</li>
+<li>F1 Score: 0.928</li>
+</ul></li>
+<li><p><strong>Confusion Matrix (Test Set)</strong>:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">True &nbsp;Predicted</th>
+<th style="text-align: right;">Negative</th>
+<th style="text-align: right;">Positive</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Negative</strong></td>
+<td style="text-align: right;">58,217</td>
+<td style="text-align: right;">118</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Positive</strong></td>
+<td style="text-align: right;">92</td>
+<td style="text-align: right;">1,357</td>
+</tr>
+</tbody>
+</table></li>
+<li><p><strong>Feature Importance</strong>: Name similarity (<code>alt_lev_max</code>) and institution matching (<code>inst_token_max</code>) were found to be the most important features, followed by publication overlap metrics. Topic similarity and author metadata features had lower importance.</p></li>
+</ul>
+<p><strong>Production Results &amp; Coverage</strong>:</p>
+<ul>
+<li><p><strong>Matches</strong>: Applied to 5.7M candidate pairs, resulting in <strong>85,444</strong> matched unique GtR persons (using the 0.80 threshold).</p></li>
+<li><p><strong>Overall Coverage</strong>: <strong>60.9%</strong> of all GtR persons, or <strong>67.6%</strong> of those considered ‘matchable’ (having at least one candidate name match in OpenAlex).</p></li>
+<li><p><strong>Coverage by Grant Category</strong>: Coverage varies significantly by the primary grant category associated with the researcher in GtR.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Category</th>
+<th style="text-align: right;">Coverage Rate</th>
+<th style="text-align: left;">Matches/Total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Fellowship</td>
+<td style="text-align: right;">82.9%</td>
+<td style="text-align: left;">7,710/9,303</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Research and Innovation</td>
+<td style="text-align: right;">82.8%</td>
+<td style="text-align: left;">3,339/4,034</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Intramural</td>
+<td style="text-align: right;">82.8%</td>
+<td style="text-align: left;">1,330/1,606</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Institute Project</td>
+<td style="text-align: right;">79.0%</td>
+<td style="text-align: left;">595/753</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Research Grant</td>
+<td style="text-align: right;">79.0%</td>
+<td style="text-align: left;">55,881/70,748</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Training Grant</td>
+<td style="text-align: right;">70.7%</td>
+<td style="text-align: left;">5,285/7,477</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Studentship</td>
+<td style="text-align: right;">56.3%</td>
+<td style="text-align: left;">33,829/60,074</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">EU-Funded</td>
+<td style="text-align: right;">47.9%</td>
+<td style="text-align: left;">1,062/2,218</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Collaborative R&amp;D</td>
+<td style="text-align: right;">13.7%</td>
+<td style="text-align: left;">1,088/7,921</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Feasibility Studies</td>
+<td style="text-align: right;">15.1%</td>
+<td style="text-align: left;">556/3,689</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Small Business Research Initiative</td>
+<td style="text-align: right;">16.9%</td>
+<td style="text-align: left;">136/805</td>
+</tr>
+</tbody>
+</table>
+<p><em>(Note: Lower coverage for industry-focused grants is expected)</em></p></li>
+</ul>
+<section id="pipeline-output-example-2" class="level3">
+<h3 class="anchored" data-anchor-id="pipeline-output-example-2">Pipeline Output Example</h3>
+<p>Let’s first load the ORCID feature data to understand how the pipeline defines the features space.</p>
+<div id="cell-16" class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>orcid_features <span class="op">=</span> catalog.load(<span class="st">"ad.orcid_labelled_feature_matrix.intermediate"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-17" class="cell" data-execution_count="26">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Display basic info about the dataset</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Dataset shape:"</span>, orcid_features.shape)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Class distribution:"</span>)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(orcid_features[<span class="st">"is_match"</span>].value_counts())</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Class distribution (normalized):"</span>)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(orcid_features[<span class="st">"is_match"</span>].value_counts(normalize<span class="op">=</span><span class="va">True</span>))</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">First row with all features:"</span>)</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>display(orcid_features.sample(<span class="dv">1</span>).iloc[<span class="dv">0</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Dataset shape: (597833, 45)
+
+Class distribution:
+is_match
+0    583344
+1     14489
+Name: count, dtype: int64
+
+Class distribution (normalized):
+is_match
+0    0.975764
+1    0.024236
+Name: proportion, dtype: float64
+
+First row with all features:</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div class="ansi-escaped-output">
+<pre>gtr_id                       <span class="ansi-bright-yellow-fg">EA1E1EB1-31ED-4CCF-893D-ACC0B98012B1</span>
+oa_id                                                 A5074272633
+is_match                                                        <span class="ansi-cyan-fg ansi-bold">0</span>
+display_lev                                              <span class="ansi-cyan-fg ansi-bold">0.857143</span>
+display_jw                                               <span class="ansi-cyan-fg ansi-bold">0.971429</span>
+display_token                                                 <span class="ansi-cyan-fg ansi-bold">1.0</span>
+surname_match                                                   <span class="ansi-cyan-fg ansi-bold">1</span>
+first_initial_match                                             <span class="ansi-cyan-fg ansi-bold">1</span>
+full_first_match                                                <span class="ansi-cyan-fg ansi-bold">1</span>
+alt_lev_mean                                             <span class="ansi-cyan-fg ansi-bold">0.857143</span>
+alt_jw_mean                                              <span class="ansi-cyan-fg ansi-bold">0.971429</span>
+alt_token_mean                                                <span class="ansi-cyan-fg ansi-bold">1.0</span>
+alt_lev_max                                              <span class="ansi-cyan-fg ansi-bold">0.857143</span>
+alt_jw_max                                               <span class="ansi-cyan-fg ansi-bold">0.971429</span>
+alt_token_max                                                 <span class="ansi-cyan-fg ansi-bold">1.0</span>
+domain_jaccard                                                <span class="ansi-cyan-fg ansi-bold">0.5</span>
+domain_cosine                                            <span class="ansi-cyan-fg ansi-bold">0.894427</span>
+domain_js_div                                            <span class="ansi-cyan-fg ansi-bold">0.363736</span>
+domain_containment                                            <span class="ansi-cyan-fg ansi-bold">0.5</span>
+field_jaccard                                            <span class="ansi-cyan-fg ansi-bold">0.666667</span>
+field_cosine                                             <span class="ansi-cyan-fg ansi-bold">0.774597</span>
+field_js_div                                             <span class="ansi-cyan-fg ansi-bold">0.379264</span>
+field_containment                                        <span class="ansi-cyan-fg ansi-bold">0.666667</span>
+subfield_jaccard                                              <span class="ansi-cyan-fg ansi-bold">0.0</span>
+subfield_cosine                                               <span class="ansi-cyan-fg ansi-bold">0.0</span>
+subfield_js_div                                          <span class="ansi-cyan-fg ansi-bold">0.832555</span>
+subfield_containment                                          <span class="ansi-cyan-fg ansi-bold">0.0</span>
+topic_jaccard                                                 <span class="ansi-cyan-fg ansi-bold">0.0</span>
+topic_cosine                                                  <span class="ansi-cyan-fg ansi-bold">0.0</span>
+topic_js_div                                             <span class="ansi-cyan-fg ansi-bold">0.832555</span>
+topic_containment                                             <span class="ansi-cyan-fg ansi-bold">0.0</span>
+inst_jw_max                                                   NaN
+inst_token_max                                                NaN
+gb_affiliation_proportion                                     NaN
+has_gb_affiliation                                            NaN
+inst_child_jw_max                                             NaN
+inst_child_token_max                                          NaN
+has_gb_associated                                             NaN
+publication_coverage                                          NaN
+author_proportion                                             NaN
+works_count                                                     <span class="ansi-cyan-fg ansi-bold">1</span>
+cited_by_count                                                 <span class="ansi-cyan-fg ansi-bold">64</span>
+h_index                                                         <span class="ansi-cyan-fg ansi-bold">1</span>
+i10_index                                                       <span class="ansi-cyan-fg ansi-bold">1</span>
+citations_per_work                                           <span class="ansi-cyan-fg ansi-bold">64.0</span>
+Name: <span class="ansi-cyan-fg ansi-bold">270924</span>, dtype: object</pre>
+</div>
+</div>
+</div>
+<p>The main output is a table linking GtR person IDs to the best-matching OpenAlex author ID, along with the match probability. Let’s load the matched authors, which includes the model’s <code>match_probability</code>.</p>
+<div id="cell-19" class="cell" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>matched_authors <span class="op">=</span> catalog.load(<span class="st">"ad.matched_authors.primary"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-20" class="cell" data-execution_count="12">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>display(matched_authors.head(<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">gtr_id</th>
+<th data-quarto-table-cell-role="th">oa_id</th>
+<th data-quarto-table-cell-role="th">match_probability</th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">orcid</th>
+<th data-quarto-table-cell-role="th">display_name</th>
+<th data-quarto-table-cell-role="th">display_name_alternatives</th>
+<th data-quarto-table-cell-role="th">works_count</th>
+<th data-quarto-table-cell-role="th">cited_by_count</th>
+<th data-quarto-table-cell-role="th">h_index</th>
+<th data-quarto-table-cell-role="th">i10_index</th>
+<th data-quarto-table-cell-role="th">topics</th>
+<th data-quarto-table-cell-role="th">gtr_author_name</th>
+<th data-quarto-table-cell-role="th">name_match_score</th>
+<th data-quarto-table-cell-role="th">institution_names</th>
+<th data-quarto-table-cell-role="th">has_gb_affiliation</th>
+<th data-quarto-table-cell-role="th">gb_affiliation_proportion</th>
+<th data-quarto-table-cell-role="th">associated_institution_names</th>
+<th data-quarto-table-cell-role="th">has_gb_associated</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>0014394C-5B8D-4475-A74A-41C2272F8061</td>
+<td>A5008934318</td>
+<td>0.999874</td>
+<td>A5008934318</td>
+<td>0000-0001-7695-9208</td>
+<td>Hazel Conley</td>
+<td>[Hazel. Conley, Hazel Margot Conley, H. Conley, Hazel M. Conley]</td>
+<td>57</td>
+<td>650</td>
+<td>16</td>
+<td>24</td>
+<td>[[T11421, Labor Movements and Unions, 25, subfields/3321, Public Administration, fields/33, Social Sciences, domains/2, Social Sciences], [T10443, Social Po...</td>
+<td>Hazel Conley</td>
+<td>1.000000</td>
+<td>[University of the West of England, Queen Mary University of London, London School of Business and Management, Cardiff University]</td>
+<td>True</td>
+<td>1.0</td>
+<td>[Hartpury University, Frenchay Hospital, Royal United Hospital, William Harvey Research Institute, University of London, Broomfield Hospital, Moorfields Eye...</td>
+<td>True</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>0021BF58-F3F1-43F3-8C81-470480622745</td>
+<td>A5054332135</td>
+<td>0.998462</td>
+<td>A5054332135</td>
+<td>None</td>
+<td>Andrew J. Counter</td>
+<td>[Andrew J. Counter, Andrew Counter, A. Counter, A. J. Counter]</td>
+<td>69</td>
+<td>118</td>
+<td>4</td>
+<td>2</td>
+<td>[[T13641, Historical Studies and Socio-cultural Analysis, 21, subfields/1207, History and Philosophy of Science, fields/12, Arts and Humanities, domains/2, ...</td>
+<td>Andrew Counter</td>
+<td>0.962963</td>
+<td>[New College, University of Oxford, King's College London, Canisius College, St. John's College of Nursing, Christ University]</td>
+<td>True</td>
+<td>0.5</td>
+<td>[CRUK/MRC Oxford Institute for Radiation Oncology, Cancer Research UK Oxford Centre, Centre for Human Genetics, Centre for the Observation and Modelling of ...</td>
+<td>True</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>Detailed predictive metrics and coverage analysis are available in a JSON format through the catalog object <code>ad.coverage_analysis.tmp</code>. This includes model performance statistics and breakdowns of matching coverage across different project types.</p>
+</section>
+</section>
+<section id="basic-metrics-analysis-data_analysis_basic_metrics" class="level2">
+<h2 class="anchored" data-anchor-id="basic-metrics-analysis-data_analysis_basic_metrics">4. Basic Metrics Analysis (<code>data_analysis_basic_metrics</code>)</h2>
+<p>This pipeline calculates standard bibliometric and career-related indicators for the matched researchers, combining data from OpenAlex and GtR.</p>
+<p><strong>Purpose</strong>: To provide fundamental quantitative measures of research output, impact, collaboration patterns, and career progression, often comparing metrics before and after the researcher received their first GtR grant.</p>
+<p><strong>Pipeline Overview</strong>:</p>
+<p>The pipeline operates in several stages:</p>
+<ol type="1">
+<li><strong>Data Integration and Preprocessing</strong>: Processes OpenAlex author metadata, GtR person/project data, and publication data for the matched authors.</li>
+<li><strong>Metric Computation</strong>: Orchestrated by the <code>compute_basic_metrics</code> function, this stage calculates various metrics, including:
+<ul>
+<li>Author metadata processing (first publication year, citation metrics)</li>
+<li>Academic age calculation</li>
+<li>Grant processing (aggregation of categories, funders, timelines)</li>
+<li>International metrics (affiliation analysis, time abroad)</li>
+<li>Collaboration metrics (analysis before/after first grant, collaborator counts)</li>
+</ul></li>
+</ol>
+<p><strong>Key Metrics Calculated</strong>:</p>
+<p>The pipeline generates a wide range of metrics, detailed in the tables below. Many metrics are computed separately for the periods <em>before</em> and <em>after</em> the researcher’s first recorded GtR grant start date.</p>
+<p><strong>Identifiers &amp; Basic Info</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 36%">
+<col style="width: 45%">
+<col style="width: 17%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Variable</th>
+<th style="text-align: left;">Description</th>
+<th style="text-align: left;">Type</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>oa_id</code></td>
+<td style="text-align: left;">OpenAlex unique identifier</td>
+<td style="text-align: left;">string</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>orcid</code></td>
+<td style="text-align: left;">ORCID identifier</td>
+<td style="text-align: left;">string</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>display_name</code></td>
+<td style="text-align: left;">Full name from OpenAlex</td>
+<td style="text-align: left;">string</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>display_name_alternatives</code></td>
+<td style="text-align: left;">Alternative names</td>
+<td style="text-align: left;">list[string]</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>first_name</code></td>
+<td style="text-align: left;">First name from GTR</td>
+<td style="text-align: left;">string</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>surname</code></td>
+<td style="text-align: left;">Surname from GTR</td>
+<td style="text-align: left;">string</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>gtr_person_id</code></td>
+<td style="text-align: left;">GTR person ID</td>
+<td style="text-align: left;">string</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>match_probability</code></td>
+<td style="text-align: left;">Probability of correct matching</td>
+<td style="text-align: left;">float</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Current Institutional Information</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 35%">
+<col style="width: 50%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Variable</th>
+<th style="text-align: left;">Description</th>
+<th style="text-align: left;">Type</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>gtr_organisation</code></td>
+<td style="text-align: left;">Current GTR organisation ID</td>
+<td style="text-align: left;">string</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>gtr_organisation_name</code></td>
+<td style="text-align: left;">Current GTR organisation name</td>
+<td style="text-align: left;">string</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>last_known_institutions</code></td>
+<td style="text-align: left;">List of last known institutions</td>
+<td style="text-align: left;">list[list]</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>last_known_institution_uk</code></td>
+<td style="text-align: left;">Whether last known institution is in UK</td>
+<td style="text-align: left;">boolean</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Academic Profile &amp; Metrics</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 30%">
+<col style="width: 58%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Variable</th>
+<th style="text-align: left;">Description</th>
+<th style="text-align: left;">Type</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>works_count</code></td>
+<td style="text-align: left;">Total number of works</td>
+<td style="text-align: left;">integer</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>cited_by_count</code></td>
+<td style="text-align: left;">Total citations</td>
+<td style="text-align: left;">integer</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>citations_per_publication</code></td>
+<td style="text-align: left;">Average citations per publication</td>
+<td style="text-align: left;">float</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>h_index</code></td>
+<td style="text-align: left;">H-index</td>
+<td style="text-align: left;">integer</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>i10_index</code></td>
+<td style="text-align: left;">i10-index</td>
+<td style="text-align: left;">integer</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>first_work_year</code></td>
+<td style="text-align: left;">First publication year</td>
+<td style="text-align: left;">integer</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>academic_age_at_first_grant</code></td>
+<td style="text-align: left;">Academic age when receiving first grant</td>
+<td style="text-align: left;">integer</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>topics</code></td>
+<td style="text-align: left;">Research topics</td>
+<td style="text-align: left;">list[list]</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>affiliations</code></td>
+<td style="text-align: left;">Historical affiliations</td>
+<td style="text-align: left;">list[list]</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>counts_by_year</code></td>
+<td style="text-align: left;">Pub counts/citations by <em>citation year</em> (OA, &lt;=2012)</td>
+<td style="text-align: left;">list[list]</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>counts_by_pubyear</code></td>
+<td style="text-align: left;">Pub counts/citations by <em>publication year</em> (OA, full)</td>
+<td style="text-align: left;">list[list]</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note on Citation Counting Methods</strong></p>
+<p>The pipeline uses two different approaches to count citations, reflected in <code>counts_by_year</code> and <code>counts_by_pubyear</code>:</p>
+<ol type="1">
+<li><strong>Publication Year Based (<code>counts_by_pubyear</code>)</strong>: Citations are attributed to the year the cited paper was published. This method provides complete time coverage and is primarily used for the before/after grant comparisons in this pipeline.</li>
+<li><strong>Citation Year Based (<code>counts_by_year</code>)</strong>: Citations are attributed to the year the citation occurred. This gives a more accurate view of <em>when</em> impact happened but is limited by OpenAlex data availability (only up to 2012 at the time of pipeline creation). Its use for before/after comparisons is limited.</li>
+</ol>
+<p>Both metrics are retained in the final dataset where available.</p>
+<p><strong>Grant Information</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 38%">
+<col style="width: 45%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Variable</th>
+<th style="text-align: left;">Description</th>
+<th style="text-align: left;">Type</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>earliest_start_date</code></td>
+<td style="text-align: left;">First grant start date</td>
+<td style="text-align: left;">date</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>latest_end_date</code></td>
+<td style="text-align: left;">Last grant end date</td>
+<td style="text-align: left;">date</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>has_active_project</code></td>
+<td style="text-align: left;">Whether has active projects</td>
+<td style="text-align: left;">boolean</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>number_grants</code></td>
+<td style="text-align: left;">Total number of grants</td>
+<td style="text-align: left;">integer</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>has_multiple_funders</code></td>
+<td style="text-align: left;">Whether has multiple funders</td>
+<td style="text-align: left;">boolean</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>grant_categories</code></td>
+<td style="text-align: left;">List of grant categories</td>
+<td style="text-align: left;">list[list]</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>lead_funders</code></td>
+<td style="text-align: left;">List of lead funders</td>
+<td style="text-align: left;">list[list]</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>gtr_project_timeline</code></td>
+<td style="text-align: left;">Detailed project timeline</td>
+<td style="text-align: left;">list[list]</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>gtr_project_id</code></td>
+<td style="text-align: left;">GTR project IDs</td>
+<td style="text-align: left;">list[string]</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>gtr_project_publications</code></td>
+<td style="text-align: left;">Project-linked publications</td>
+<td style="text-align: left;">list[string]</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>gtr_project_topics</code></td>
+<td style="text-align: left;">Project-specific topics</td>
+<td style="text-align: left;">list[list]</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>gtr_project_oa_authors</code></td>
+<td style="text-align: left;">Project OpenAlex authors</td>
+<td style="text-align: left;">list[string]</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>gtr_project_oa_ids</code></td>
+<td style="text-align: left;">Project OpenAlex IDs</td>
+<td style="text-align: left;">list[string]</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Publication Metrics (Before/After First Grant)</strong></p>
+<p>(Based primarily on <code>counts_by_pubyear</code>)</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 39%">
+<col style="width: 51%">
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Variable</th>
+<th style="text-align: left;">Description</th>
+<th style="text-align: left;">Type</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>n_pubs_before</code></td>
+<td style="text-align: left;">Number of publications before</td>
+<td style="text-align: left;">integer</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>n_pubs_after</code></td>
+<td style="text-align: left;">Number of publications after</td>
+<td style="text-align: left;">integer</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>total_citations_pubyear_before</code></td>
+<td style="text-align: left;">Total citations (by pub year) before</td>
+<td style="text-align: left;">integer</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>total_citations_pubyear_after</code></td>
+<td style="text-align: left;">Total citations (by pub year) after</td>
+<td style="text-align: left;">integer</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>mean_citations_pubyear_before</code></td>
+<td style="text-align: left;">Mean citations (by pub year) before</td>
+<td style="text-align: left;">float</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>mean_citations_pubyear_after</code></td>
+<td style="text-align: left;">Mean citations (by pub year) after</td>
+<td style="text-align: left;">float</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>citations_pp_pubyear_before</code></td>
+<td style="text-align: left;">Citations per pub (by pub year) before</td>
+<td style="text-align: left;">float</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>citations_pp_pubyear_after</code></td>
+<td style="text-align: left;">Citations per pub (by pub year) after</td>
+<td style="text-align: left;">float</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>mean_citations_before</code></td>
+<td style="text-align: left;">Mean citations before</td>
+<td style="text-align: left;">float</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>mean_citations_after</code></td>
+<td style="text-align: left;">Mean citations after</td>
+<td style="text-align: left;">float</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>citations_pp_before</code></td>
+<td style="text-align: left;">Citations per pub before</td>
+<td style="text-align: left;">float</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>citations_pp_after</code></td>
+<td style="text-align: left;">Citations per pub after</td>
+<td style="text-align: left;">float</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>mean_fwci_before</code></td>
+<td style="text-align: left;">Mean Field-Weighted Citation Impact before</td>
+<td style="text-align: left;">float</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>mean_fwci_after</code></td>
+<td style="text-align: left;">Mean Field-Weighted Citation Impact after</td>
+<td style="text-align: left;">float</td>
+</tr>
+</tbody>
+</table>
+<p><strong>International Experience Metrics (Before/After First Grant)</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 32%">
+<col style="width: 52%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Variable</th>
+<th style="text-align: left;">Description</th>
+<th style="text-align: left;">Type</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>abroad_experience_before</code></td>
+<td style="text-align: left;">Had international experience before</td>
+<td style="text-align: left;">boolean</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>abroad_experience_after</code></td>
+<td style="text-align: left;">Had international experience after</td>
+<td style="text-align: left;">boolean</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>countries_before</code></td>
+<td style="text-align: left;">Countries worked in before</td>
+<td style="text-align: left;">list[string]</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>countries_after</code></td>
+<td style="text-align: left;">Countries worked in after</td>
+<td style="text-align: left;">list[string]</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>abroad_fraction_before</code></td>
+<td style="text-align: left;">Fraction of time affiliated abroad before</td>
+<td style="text-align: left;">float</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>abroad_fraction_after</code></td>
+<td style="text-align: left;">Fraction of time affiliated abroad after</td>
+<td style="text-align: left;">float</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Collaboration Metrics (Before/After First Grant)</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 36%">
+<col style="width: 49%">
+<col style="width: 13%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Variable</th>
+<th style="text-align: left;">Description</th>
+<th style="text-align: left;">Type</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>collab_countries_before</code></td>
+<td style="text-align: left;">Collaboration countries with counts before</td>
+<td style="text-align: left;">list[list]</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>collab_countries_after</code></td>
+<td style="text-align: left;">Collaboration countries with counts after</td>
+<td style="text-align: left;">list[list]</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>collab_countries_list_before</code></td>
+<td style="text-align: left;">List of collaboration countries before</td>
+<td style="text-align: left;">list[string]</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>collab_countries_list_after</code></td>
+<td style="text-align: left;">List of collaboration countries after</td>
+<td style="text-align: left;">list[string]</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>unique_collabs_before</code></td>
+<td style="text-align: left;">Unique collaborators before</td>
+<td style="text-align: left;">integer</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>unique_collabs_after</code></td>
+<td style="text-align: left;">Unique collaborators after</td>
+<td style="text-align: left;">integer</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>total_collabs_before</code></td>
+<td style="text-align: left;">Total collaborations before</td>
+<td style="text-align: left;">integer</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>total_collabs_after</code></td>
+<td style="text-align: left;">Total collaborations after</td>
+<td style="text-align: left;">integer</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>foreign_collab_fraction_before</code></td>
+<td style="text-align: left;">Fraction of foreign collaborations before</td>
+<td style="text-align: left;">float</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>foreign_collab_fraction_after</code></td>
+<td style="text-align: left;">Fraction of foreign collaborations after</td>
+<td style="text-align: left;">float</td>
+</tr>
+</tbody>
+</table>
+<section id="pipeline-output-example-3" class="level3">
+<h3 class="anchored" data-anchor-id="pipeline-output-example-3">Pipeline Output Example</h3>
+<p>These metrics are typically added to the main author table. We can display some examples from the <code>final_metrics</code> dataset loaded earlier.</p>
+<div id="cell-24" class="cell" data-execution_count="13">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>basic_metrics <span class="op">=</span> catalog.load(<span class="st">"analysis.basic_metrics.primary"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-25" class="cell" data-execution_count="14">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Example Basic Metrics:"</span>)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Show citation metrics</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>citation_cols <span class="op">=</span> [</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"oa_id"</span>,</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"display_name"</span>, </span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"works_count"</span>,</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"cited_by_count"</span>,</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"citations_per_publication"</span>,</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"h_index"</span>,</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">"i10_index"</span>,</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>display(basic_metrics[citation_cols].sample(<span class="dv">3</span>, random_state<span class="op">=</span><span class="dv">42</span>))</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Show before/after metrics</span></span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Before/After Grant Metrics:"</span>)</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>before_after_cols <span class="op">=</span> [</span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>    <span class="st">"oa_id"</span>,</span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>    <span class="st">"display_name"</span>,</span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>    <span class="st">"n_pubs_before"</span>, </span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>    <span class="st">"n_pubs_after"</span>,</span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mean_citations_pubyear_before"</span>,</span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mean_citations_pubyear_after"</span>,</span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a>display(basic_metrics[before_after_cols].sample(<span class="dv">3</span>, random_state<span class="op">=</span><span class="dv">43</span>))</span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Show international metrics</span></span>
+<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">International Experience Metrics:"</span>)</span>
+<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a>international_cols <span class="op">=</span> [</span>
+<span id="cb21-30"><a href="#cb21-30" aria-hidden="true" tabindex="-1"></a>    <span class="st">"oa_id"</span>,</span>
+<span id="cb21-31"><a href="#cb21-31" aria-hidden="true" tabindex="-1"></a>    <span class="st">"display_name"</span>,</span>
+<span id="cb21-32"><a href="#cb21-32" aria-hidden="true" tabindex="-1"></a>    <span class="st">"abroad_experience_before"</span>,</span>
+<span id="cb21-33"><a href="#cb21-33" aria-hidden="true" tabindex="-1"></a>    <span class="st">"abroad_experience_after"</span>, </span>
+<span id="cb21-34"><a href="#cb21-34" aria-hidden="true" tabindex="-1"></a>    <span class="st">"abroad_fraction_before"</span>,</span>
+<span id="cb21-35"><a href="#cb21-35" aria-hidden="true" tabindex="-1"></a>    <span class="st">"abroad_fraction_after"</span>,</span>
+<span id="cb21-36"><a href="#cb21-36" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb21-37"><a href="#cb21-37" aria-hidden="true" tabindex="-1"></a>display(basic_metrics[international_cols].sample(<span class="dv">3</span>, random_state<span class="op">=</span><span class="dv">44</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Example Basic Metrics:</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">oa_id</th>
+<th data-quarto-table-cell-role="th">display_name</th>
+<th data-quarto-table-cell-role="th">works_count</th>
+<th data-quarto-table-cell-role="th">cited_by_count</th>
+<th data-quarto-table-cell-role="th">citations_per_publication</th>
+<th data-quarto-table-cell-role="th">h_index</th>
+<th data-quarto-table-cell-role="th">i10_index</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">64299</td>
+<td>A5043849805</td>
+<td>Andrew Jahoda</td>
+<td>230</td>
+<td>4506</td>
+<td>19.591304</td>
+<td>36</td>
+<td>98</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">41046</td>
+<td>A5081261971</td>
+<td>David R. Garrod</td>
+<td>241</td>
+<td>13096</td>
+<td>54.340249</td>
+<td>64</td>
+<td>163</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">73710</td>
+<td>A5020989903</td>
+<td>Emma V. King</td>
+<td>186</td>
+<td>3260</td>
+<td>17.526882</td>
+<td>25</td>
+<td>36</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Before/After Grant Metrics:</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">oa_id</th>
+<th data-quarto-table-cell-role="th">display_name</th>
+<th data-quarto-table-cell-role="th">n_pubs_before</th>
+<th data-quarto-table-cell-role="th">n_pubs_after</th>
+<th data-quarto-table-cell-role="th">mean_citations_pubyear_before</th>
+<th data-quarto-table-cell-role="th">mean_citations_pubyear_after</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">82720</td>
+<td>A5105470222</td>
+<td>Ralph Burton</td>
+<td>7</td>
+<td>28</td>
+<td>2.000</td>
+<td>8.400</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">34330</td>
+<td>A5101536117</td>
+<td>Daniel George</td>
+<td>&lt;NA&gt;</td>
+<td>3</td>
+<td>NaN</td>
+<td>1.333</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">61370</td>
+<td>A5083595167</td>
+<td>Simon H. Reed</td>
+<td>39</td>
+<td>45</td>
+<td>107.385</td>
+<td>33.692</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+International Experience Metrics:</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">oa_id</th>
+<th data-quarto-table-cell-role="th">display_name</th>
+<th data-quarto-table-cell-role="th">abroad_experience_before</th>
+<th data-quarto-table-cell-role="th">abroad_experience_after</th>
+<th data-quarto-table-cell-role="th">abroad_fraction_before</th>
+<th data-quarto-table-cell-role="th">abroad_fraction_after</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">63358</td>
+<td>A5065151012</td>
+<td>Neville Wylie</td>
+<td>True</td>
+<td>True</td>
+<td>0.062</td>
+<td>0.111</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">79779</td>
+<td>A5035601896</td>
+<td>Emma Barrett</td>
+<td>False</td>
+<td>True</td>
+<td>0.000</td>
+<td>0.474</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">70272</td>
+<td>A5018389548</td>
+<td>Charlotte Greene</td>
+<td>None</td>
+<td>None</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="complex-metrics-analysis-data_analysis_complex_metrics" class="level2">
+<h2 class="anchored" data-anchor-id="complex-metrics-analysis-data_analysis_complex_metrics">5. Complex Metrics Analysis (<code>data_analysis_complex_metrics</code>)</h2>
+<p>This pipeline computes iscipline diversity and research disruption indicators based on publication and citation data. This provides insights into the nature and influence of a researcher’s work, such as the degree to which their work disrupts or consolidates existing knowledge domains, and the diversity of the research topics they engage with.</p>
+<p><strong>Pipeline Overview</strong>:</p>
+<p>The calculation involves several sequential sub-pipelines:</p>
+<ol type="1">
+<li><strong>Sample Pipeline</strong>: Performs stratified sampling of publications per author (up to 50, weighted by FWCI) to avoid hitting OpenAlex daily rate limits. 5.3M papers have on average 22 citations each, which implies some 71M unique papers we need to fetch references for. OpenAlex only allows up to 5M paper searchers (100,000 queries of 50 papers each) per day (<a href="https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication">see documentation</a>).<br>
+</li>
+<li><strong>Focal Collection Pipeline</strong>: Fetches citation data for the sampled publications.</li>
+<li><strong>Reference Collection Pipeline</strong>: Fetches metadata for the references <em>within</em> the sampled publications.</li>
+<li><strong>Disruption Index Pipeline</strong>: Calculates the disruption index for sampled publications and aggregates to the author level.</li>
+<li><strong>Discipline Diversity Pipeline</strong>: Computes topic embeddings (using SPECTER), aggregates topics per author, and calculates diversity components.</li>
+<li><strong>Metric Computation Pipeline</strong>: Combines disruption and diversity metrics, computes before/after funding comparisons, and merges with basic metrics.</li>
+</ol>
+<p><strong>Methodological Approach</strong>:</p>
+<ul>
+<li><p><strong>Disruption Index</strong>: Implements the <a href="https://doi.org/10.48550/arXiv.1905.03461">Wu &amp; Yan (2019)</a> variant, following recommendations from <a href="https://doi.org/10.48550/arXiv.2308.02383">Leibel &amp; Bornmann (2023)</a>. For a focal paper <em>i</em>, this index measures how subsequent papers cite it relative to its references: <span class="math display">\[ DI = \frac{n_f - n_b}{n_f + n_b} \]</span> where <span class="math inline">\(n_f\)</span> is the count of papers citing <em>i</em> but not <em>i</em>'s references, and <span class="math inline">\(n_b\)</span> is the count of papers citing both <em>i</em> and <em>i</em>'s references. Values near +1 suggest disruption, while values near -1 suggest consolidation. Author-level scores are averaged, with an option to weight by Field-Weighted Citation Impact (FWCI).</p></li>
+<li><p><strong>Discipline Diversity</strong>: Follows <a href="https://doi.org/10.1016/j.joi.2018.12.006">Leydesdorff et al.&nbsp;(2019)</a>, combining three components:</p>
+<ol type="1">
+<li><strong>Variety</strong>: Proportion of unique topics covered by the author.</li>
+<li><strong>Evenness</strong>: Balance of publication distribution across topics (using Kvålseth-Jost measure).</li>
+<li><strong>Disparity</strong>: Average cognitive distance between topic embeddings (using SPECTER model). The overall diversity is the product: Diversity = Variety × Evenness × Disparity.</li>
+</ol></li>
+</ul>
+<p><strong>Key Metrics Calculated (Output Variables)</strong>:</p>
+<p>The pipeline produces author-level metrics aggregated for periods before and after their first GtR funding date, as well as annual time series data.</p>
+<ul>
+<li><strong>Before/After Funding Metrics (Examples)</strong>:
+<ul>
+<li><code>mean_disruption_before</code>/<code>mean_disruption_after</code>: Average unweighted disruption.</li>
+<li><code>mean_weighted_disruption_before</code>/<code>mean_weighted_disruption_after</code>: Average FWCI-weighted disruption.</li>
+<li><code>mean_variety_before</code>/<code>mean_variety_after</code>: Average topic variety.</li>
+<li><code>mean_evenness_before</code>/<code>mean_evenness_after</code>: Average topic evenness.</li>
+<li><code>mean_disparity_before</code>/<code>mean_disparity_after</code>: Average topic disparity.</li>
+</ul></li>
+<li><strong>Annual Time Series Data</strong>:
+<ul>
+<li>Contains yearly values for disruption (mean, weighted mean) and diversity (variety, evenness, disparity).</li>
+</ul></li>
+</ul>
+<section id="pipeline-output-example-4" class="level3">
+<h3 class="anchored" data-anchor-id="pipeline-output-example-4">Pipeline Output Example</h3>
+<p>These aggregated metrics are typically added to the main author table. We can display some examples from the <code>final_metrics</code> dataset loaded earlier.</p>
+<div id="cell-27" class="cell" data-execution_count="15">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>final_metrics <span class="op">=</span> catalog.load(<span class="st">"analysis.final_metrics.primary"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-28" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Example Complex Metrics (Before/After First Grant):"</span>)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>complex_metrics_cols <span class="op">=</span> [</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"oa_id"</span>,</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"display_name"</span>,</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mean_disruption_before"</span>,</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mean_disruption_after"</span>,</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mean_weighted_disruption_before"</span>,</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mean_weighted_disruption_after"</span>,</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mean_variety_before"</span>,</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mean_variety_after"</span>,</span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mean_evenness_before"</span>,</span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mean_evenness_after"</span>,</span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mean_disparity_before"</span>,</span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mean_disparity_after"</span>,</span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>display(final_metrics[complex_metrics_cols].sample(<span class="dv">10</span>, random_state<span class="op">=</span><span class="dv">42</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Example Complex Metrics (Before/After First Grant):</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">oa_id</th>
+<th data-quarto-table-cell-role="th">display_name</th>
+<th data-quarto-table-cell-role="th">mean_disruption_before</th>
+<th data-quarto-table-cell-role="th">mean_disruption_after</th>
+<th data-quarto-table-cell-role="th">mean_weighted_disruption_before</th>
+<th data-quarto-table-cell-role="th">mean_weighted_disruption_after</th>
+<th data-quarto-table-cell-role="th">mean_variety_before</th>
+<th data-quarto-table-cell-role="th">mean_variety_after</th>
+<th data-quarto-table-cell-role="th">mean_evenness_before</th>
+<th data-quarto-table-cell-role="th">mean_evenness_after</th>
+<th data-quarto-table-cell-role="th">mean_disparity_before</th>
+<th data-quarto-table-cell-role="th">mean_disparity_after</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">64299</td>
+<td>A5043849805</td>
+<td>Andrew Jahoda</td>
+<td>0.148</td>
+<td>-0.305</td>
+<td>0.227</td>
+<td>-0.235</td>
+<td>0.053</td>
+<td>0.072</td>
+<td>0.406</td>
+<td>0.303</td>
+<td>0.553</td>
+<td>0.564</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">41046</td>
+<td>A5081261971</td>
+<td>David R. Garrod</td>
+<td>-0.282</td>
+<td>-0.551</td>
+<td>-0.315</td>
+<td>-0.545</td>
+<td>0.057</td>
+<td>0.043</td>
+<td>0.338</td>
+<td>0.435</td>
+<td>0.601</td>
+<td>0.615</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">73710</td>
+<td>A5020989903</td>
+<td>Emma V. King</td>
+<td>-0.255</td>
+<td>-0.422</td>
+<td>-0.215</td>
+<td>-0.403</td>
+<td>0.087</td>
+<td>0.081</td>
+<td>0.427</td>
+<td>0.279</td>
+<td>0.603</td>
+<td>0.609</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">72234</td>
+<td>A5071118063</td>
+<td>Beth Jefferies</td>
+<td>NaN</td>
+<td>-0.600</td>
+<td>NaN</td>
+<td>-1.000</td>
+<td>0.012</td>
+<td>0.011</td>
+<td>1.000</td>
+<td>0.468</td>
+<td>0.552</td>
+<td>0.554</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">82799</td>
+<td>A5067019894</td>
+<td>Luke Griffith</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">66287</td>
+<td>A5046276492</td>
+<td>Santie de Villiers</td>
+<td>-0.373</td>
+<td>-0.196</td>
+<td>-0.357</td>
+<td>-0.157</td>
+<td>0.017</td>
+<td>0.027</td>
+<td>0.537</td>
+<td>0.591</td>
+<td>0.595</td>
+<td>0.594</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">39065</td>
+<td>A5059921894</td>
+<td>Norman Morrison</td>
+<td>-0.495</td>
+<td>-0.032</td>
+<td>-0.273</td>
+<td>0.043</td>
+<td>0.080</td>
+<td>0.141</td>
+<td>0.232</td>
+<td>0.363</td>
+<td>0.597</td>
+<td>0.613</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">62927</td>
+<td>A5089882185</td>
+<td>Daniel T. Bowron</td>
+<td>-0.401</td>
+<td>-0.644</td>
+<td>-0.396</td>
+<td>-0.665</td>
+<td>0.093</td>
+<td>0.103</td>
+<td>0.437</td>
+<td>0.513</td>
+<td>0.577</td>
+<td>0.582</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">38282</td>
+<td>A5063458205</td>
+<td>Martin C. Stennett</td>
+<td>-0.265</td>
+<td>-0.581</td>
+<td>-0.331</td>
+<td>-0.539</td>
+<td>0.045</td>
+<td>0.061</td>
+<td>0.211</td>
+<td>0.182</td>
+<td>0.577</td>
+<td>0.599</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">82704</td>
+<td>A5016855567</td>
+<td>Marion M. Hetherington</td>
+<td>-0.374</td>
+<td>-0.569</td>
+<td>-0.398</td>
+<td>-0.645</td>
+<td>0.080</td>
+<td>0.075</td>
+<td>0.357</td>
+<td>0.314</td>
+<td>0.605</td>
+<td>0.598</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<div id="cell-29" class="cell" data-execution_count="31">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Example Complex Metrics TS data (Before/After First Grant):"</span>)</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>complex_metrics_cols <span class="op">=</span> [</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"oa_id"</span>,</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"display_name"</span>,</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"author_year_disruption"</span>,</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"author_year_diversity"</span>,</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>display(final_metrics[complex_metrics_cols].sample(<span class="dv">10</span>, random_state<span class="op">=</span><span class="dv">42</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Example Complex Metrics TS data (Before/After First Grant):</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">oa_id</th>
+<th data-quarto-table-cell-role="th">display_name</th>
+<th data-quarto-table-cell-role="th">author_year_disruption</th>
+<th data-quarto-table-cell-role="th">author_year_diversity</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">64299</td>
+<td>A5043849805</td>
+<td>Andrew Jahoda</td>
+<td>[[2002, 1.0, 1.0], [2004, 0.21, 0.35], [2005, -0.3, -0.3], [2006, -0.11, -0.03], [2007, 0.19, 0.19], [2008, -0.1, 0.15], [2009, -0.08, 0.56], [2010, -0.47, ...</td>
+<td>[[2002, 0.048, 0.467, 0.547], [2004, 0.048, 0.438, 0.547], [2005, 0.048, 0.419, 0.547], [2006, 0.048, 0.401, 0.547], [2007, 0.052, 0.403, 0.546], [2008, 0.0...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">41046</td>
+<td>A5081261971</td>
+<td>David R. Garrod</td>
+<td>[[2002, -0.6, -0.6], [2003, 0.04, -0.07], [2004, -0.2, -0.39], [2005, -0.43, -0.42], [2006, -0.77, -0.54], [2007, 0.27, 0.13], [2008, -0.41, -0.4], [2009, -...</td>
+<td>[[2002, 0.056, 0.311, 0.606], [2003, 0.044, 0.413, 0.585], [2004, 0.056, 0.319, 0.571], [2005, 0.052, 0.312, 0.6], [2006, 0.067, 0.309, 0.619], [2007, 0.067...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">73710</td>
+<td>A5020989903</td>
+<td>Emma V. King</td>
+<td>[[2011, 0.33, 0.3], [2012, 0.09, -0.09], [2013, -0.42, -0.42], [2014, -0.52, -0.34], [2015, -0.62, -0.39], [2016, -0.39, -0.35], [2017, -0.42, -0.44], [2018...</td>
+<td>[[2008, 0.048, 0.587, 0.582], [2011, 0.099, 0.416, 0.611], [2012, 0.095, 0.452, 0.621], [2013, 0.099, 0.396, 0.611], [2014, 0.103, 0.374, 0.599], [2015, 0.0...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">72234</td>
+<td>A5071118063</td>
+<td>Beth Jefferies</td>
+<td>[[2015, -1.0, -1.0], [2018, 1.0, nan], [2020, -1.0, -1.0], [2021, -1.0, -1.0], [2023, -1.0, -1.0]]</td>
+<td>[[2002, 0.012, 1.0, 0.552], [2014, 0.008, 0.625, 0.567], [2015, 0.012, 0.565, 0.596], [2018, 0.012, 0.284, 0.474], [2019, 0.016, 0.435, 0.501], [2020, 0.008...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">82799</td>
+<td>A5067019894</td>
+<td>Luke Griffith</td>
+<td>None</td>
+<td>None</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">66287</td>
+<td>A5046276492</td>
+<td>Santie de Villiers</td>
+<td>[[2009, 0.0, 0.0], [2010, -0.65, -0.63], [2011, -0.47, -0.44], [2012, -0.24, -0.24], [2014, -0.14, 0.2], [2015, -0.41, -0.41], [2016, -0.41, -0.41], [2018, ...</td>
+<td>[[2006, 0.016, 0.4, 0.598], [2008, 0.016, 0.549, 0.598], [2009, 0.016, 0.607, 0.598], [2010, 0.016, 0.596, 0.598], [2011, 0.02, 0.534, 0.582], [2012, 0.02, ...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">39065</td>
+<td>A5059921894</td>
+<td>Norman Morrison</td>
+<td>[[2002, -1.0, nan], [2004, -0.63, -0.55], [2005, -0.1, -0.03], [2006, -0.25, -0.24], [2007, 0.38, 0.57], [2008, -0.24, -0.04], [2009, -0.33, -0.33], [2010, ...</td>
+<td>[[2002, 0.063, 0.375, 0.587], [2004, 0.075, 0.232, 0.612], [2005, 0.087, 0.177, 0.593], [2006, 0.095, 0.145, 0.598], [2007, 0.103, 0.231, 0.591], [2008, 0.1...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">62927</td>
+<td>A5089882185</td>
+<td>Daniel T. Bowron</td>
+<td>[[2002, -0.67, -0.62], [2003, -0.27, -0.25], [2004, -0.47, -0.06], [2005, -0.1, -0.19], [2006, 0.25, -0.15], [2007, -0.58, -0.57], [2008, -0.48, -0.66], [20...</td>
+<td>[[2002, 0.087, 0.498, 0.586], [2003, 0.083, 0.483, 0.58], [2004, 0.075, 0.481, 0.589], [2005, 0.079, 0.462, 0.58], [2006, 0.079, 0.45, 0.571], [2007, 0.083,...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">38282</td>
+<td>A5063458205</td>
+<td>Martin C. Stennett</td>
+<td>[[2002, 0.38, 0.38], [2004, -0.43, -0.43], [2005, 0.0, 0.03], [2006, 0.09, -0.43], [2007, -0.13, -0.26], [2008, -0.27, -0.24], [2009, -1.0, -1.0], [2010, -0...</td>
+<td>[[2002, 0.032, 0.28, 0.53], [2004, 0.036, 0.245, 0.574], [2005, 0.048, 0.19, 0.574], [2006, 0.044, 0.204, 0.565], [2007, 0.044, 0.209, 0.565], [2008, 0.052,...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">82704</td>
+<td>A5016855567</td>
+<td>Marion M. Hetherington</td>
+<td>[[2002, -0.12, -0.3], [2003, -0.21, -0.27], [2004, -0.23, -0.36], [2005, -0.39, -0.41], [2006, -0.33, -0.36], [2007, -0.31, -0.31], [2008, -0.45, -0.35], [2...</td>
+<td>[[2002, 0.052, 0.469, 0.608], [2003, 0.052, 0.459, 0.616], [2004, 0.06, 0.422, 0.604], [2005, 0.083, 0.332, 0.608], [2006, 0.099, 0.316, 0.604], [2007, 0.10...</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
