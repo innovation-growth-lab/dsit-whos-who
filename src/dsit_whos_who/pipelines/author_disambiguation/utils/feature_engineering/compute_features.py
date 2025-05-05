@@ -30,37 +30,42 @@ def compute_all_features(batch_df: pd.DataFrame) -> pd.DataFrame:
 
         # compute name features
         name_feats = compute_name_features(
-            row["gtr_author_name"],
-            row["display_name"],
-            row.get("display_name_alternatives", []),
+            row["gtr_author_name"], # author (from GtR, via the OA search)
+            row["display_name"], # author (from OpenAlex)
+            row.get("display_name_alternatives", []), # author (from OpenAlex)
         )
 
         # compute topic features
         topic_feats = compute_topic_features(
-            row["project_topics"],
-            row["topics"],
+            row["project_topics"], # person (from GtR)
+            row["topics"], # author (from OpenAlex)
             len(row["project_topics"]),
-            row["works_count"],
+            row["works_count"], # author (from OpenAlex)
         )
 
         # compute institution features
         inst_feats = compute_institution_features(
-            row["gb_affiliation_proportion"],
-            row["has_gb_affiliation"],
-            row["has_gb_associated"],
-            row["organisation_name"],
-            row["institution_names"],
-            row["associated_institution_names"],
+            row["gb_affiliation_proportion"], # author (from OpenAlex)
+            row["has_gb_affiliation"], # author (from OpenAlex)
+            row["has_gb_associated"], # author (from OpenAlex)
+            row["organisation_name"], # organisation (from GtR)
+            row["institution_names"], # institution (from OpenAlex)
+            row["associated_institution_names"], # institution (from OpenAlex)
         )
 
-        # compute publication features
+        # compute publication coverage features (of candidate author)
         pub_feats = compute_publication_features(
-            row["id"], row["project_publications"], row["project_authors"]
+            row["id"], # author (from OpenAlex)
+            row["project_publications"], # publication (from GtR)
+            row["project_authors"], # publication (from GtR)
         )
 
         # compute metadata features
         meta_feats = compute_metadata_features(
-            row["works_count"], row["cited_by_count"], row["h_index"], row["i10_index"]
+            row["works_count"], # author (from OpenAlex)
+            row["cited_by_count"], # author (from OpenAlex)
+            row["h_index"], # author (from OpenAlex)
+            row["i10_index"], # author (from OpenAlex)
         )
 
         # add id features

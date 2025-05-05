@@ -78,7 +78,7 @@ def get_associated_institutions(
 
     for inst_id in inst_ids:
         associated = institutions_dict.get(inst_id)
-        if not isinstance(associated, np.ndarray):
+        if not isinstance(associated, (np.ndarray, list)):
             continue
 
         for assoc in associated:

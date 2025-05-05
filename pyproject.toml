@@ -53,3 +53,6 @@ attr = "dsit_whos_who.__version__"
 [tool.setuptools.packages.find]
 where = [ "src",]
 namespaces = false
+
+[tool.kedro_telemetry]
+project_id = "8f4967cd44674669999d7a766066fbe9"
