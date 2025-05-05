@@ -4,11 +4,9 @@
 import logging
 import pandas as pd
 from kedro.io import DataCatalog
-from typing import List, Dict, Any
-import requests
-import time
+from typing import List, Dict, Any, Set
 
-# import the existing OpenAlex fetcher
+# import the existing openalex fetcher
 from dsit_whos_who.pipelines.data_collection_oa.utils.common import (
     fetch_openalex_objects,
 )
@@ -27,9 +25,176 @@ from ..models.author import OpenAlexAuthorData
 log = logging.getLogger(__name__)
 
 
+class OpenAlexFetcher:
+    """Class for fetching data from OpenAlex API."""
+
+    def __init__(self, params: Dict[str, Any]):
+        """Initialise with OpenAlex API parameters.
+
+        Args:
+            params: Dictionary containing OpenAlex API parameters.
+        """
+        self.params = params
+
+    def fetch_authors(self, name: str) -> List[Dict[str, Any]]:
+        """Fetch author data from OpenAlex based on name.
+
+        Args:
+            name: Author name to search for.
+
+        Returns:
+            List of author data dictionaries from OpenAlex.
+        """
+        return fetch_openalex_objects(
+            oa_id=name,
+            mails=self.params["api"]["mails"],
+            perpage=self.params["api"]["perpage"],
+            filter_criteria=self.params["filter_author_search"],
+            endpoint=self.params["authors_endpoint"],
+        )
+
+    def fetch_institutions(self, institution_ids: Set[str]) -> List[Dict[str, Any]]:
+        """Fetch institution data from OpenAlex based on IDs.
+
+        Args:
+            institution_ids: Set of institution IDs to fetch.
+
+        Returns:
+            List of institution data dictionaries from OpenAlex.
+        """
+        # create OR-syntax chunks of 50 IDs
+        institution_list = []
+        ids_list = list(institution_ids)
+        for i in range(0, len(ids_list), 50):
+            chunk = ids_list[i : i + 50]
+            institution_list.append("|".join(chunk))
+
+        # fetch candidate institutions
+        institution_results = []
+        for chunk in institution_list:
+            institution_results.extend(
+                fetch_openalex_objects(
+                    oa_id=chunk,
+                    mails=self.params["api"]["mails"],
+                    perpage=self.params["api"]["perpage"],
+                    filter_criteria=self.params["filter_oa"],
+                    endpoint=self.params["institutions_endpoint"],
+                )
+            )
+
+        return institution_results
+
+
+class AuthorProcessor:
+    """Class for processing author data from OpenAlex."""
+
+    def __init__(self, name: str, institution: str):
+        """Initialise with search parameters.
+
+        Args:
+            name: Author name input by the user.
+            institution: Institution name input by the user.
+        """
+        self.name = name
+        self.institution = institution
+
+    def extract_institution_ids(self, authors: List[Dict[str, Any]]) -> Set[str]:
+        """Extract institution IDs from author data.
+
+        Args:
+            authors: List of author data dictionaries.
+
+        Returns:
+            Set of institution IDs.
+        """
+        institution_ids = set()
+        for author in authors:
+            for affiliation in author.get("affiliations", []):
+                if isinstance(affiliation, list) and affiliation:
+                    inst_id = affiliation[0]
+                    if inst_id:
+                        institution_ids.add(inst_id)
+        return institution_ids
+
+    def process_candidates(
+        self, authors: List[Dict[str, Any]], institutions_dict: Dict[str, Any]
+    ) -> pd.DataFrame:
+        """Process author candidates and compute features.
+
+        Args:
+            authors: List of author data dictionaries.
+            institutions_dict: Dictionary mapping institution IDs to associated institutions.
+
+        Returns:
+            DataFrame with processed author data.
+        """
+        # process candidates
+        candidate_df = pd.DataFrame(authors)
+
+        # process affiliations
+        affiliations_processed = candidate_df["affiliations"].apply(
+            process_affiliations
+        )
+        candidate_df["institution_names"] = affiliations_processed.apply(lambda x: x[0])
+        inst_ids = affiliations_processed.apply(lambda x: x[1])
+        candidate_df["has_gb_affiliation"] = affiliations_processed.apply(
+            lambda x: x[2]
+        )
+        candidate_df["gb_affiliation_proportion"] = affiliations_processed.apply(
+            lambda x: x[3]
+        )
+
+        # process associated institutions
+        associated_processed = inst_ids.apply(
+            lambda x: get_associated_institutions(x, institutions_dict)
+        )
+        candidate_df["associated_institution_names"] = associated_processed.apply(
+            lambda x: x[0]
+        )
+        candidate_df["has_gb_associated"] = associated_processed.apply(lambda x: x[1])
+
+        # drop the columns we used to create our features
+        candidate_df = candidate_df.drop(
+            columns=["affiliations", "last_known_institutions", "counts_by_year"],
+            errors="ignore",
+        )
+
+        # add gtr_author_name
+        candidate_df["gtr_author_name"] = self.name
+
+        # add institution name
+        candidate_df["organisation_name"] = self.institution
+
+        # [TEMP] add project_topics, project_publications, project_authors as empty lists
+        candidate_df["project_topics"] = [[] for _ in range(len(candidate_df))]
+        candidate_df["project_publications"] = [[] for _ in range(len(candidate_df))]
+        candidate_df["project_authors"] = [[] for _ in range(len(candidate_df))]
+
+        # [TEMP] add placeholder person_id
+        candidate_df["person_id"] = "USER_INPUT_" + self.name.replace(" ", "_")
+
+        return candidate_df
+
+
+class FeatureComputer:
+    """Class for computing features from processed author data."""
+
+    @staticmethod
+    def compute_features(candidate_df: pd.DataFrame) -> pd.DataFrame:
+        """Compute features from processed author data.
+
+        Args:
+            candidate_df: DataFrame with processed author data.
+
+        Returns:
+            DataFrame with computed features.
+        """
+        return compute_all_features(candidate_df)
+
+
 def search_and_extract_features(
     name: str, institution: str, catalog: DataCatalog
-) -> List[str]:
+) -> pd.DataFrame:
     """Searches OpenAlex for authors, processes results, and computes features.
 
     Args:
@@ -38,95 +203,39 @@ def search_and_extract_features(
         catalog: Kedro DataCatalog for loading credentials or static data.
 
     Returns:
-        A list of dictionaries, each containing computed features for a candidate OA author.
+        A DataFrame containing computed features for candidate OA authors.
     """
     log.info(f"Starting author search for Name: '{name}', Institution: '{institution}'")
 
+    # load parameters
     params = catalog.load("params:oa.data_collection")
 
-    # fetch candidate authors from OpenAlex
-    author_results = fetch_openalex_objects(
-        oa_id=name,
-        mails=params["api"]["mails"],
-        perpage=params["api"]["perpage"],
-        filter_criteria=params["filter_author_search"],
-        endpoint=params["authors_endpoint"],
-    )
+    # create instances
+    fetcher = OpenAlexFetcher(params)
+    processor = AuthorProcessor(name, institution)
 
-    # extract candidate institutions
-    institution_ids = set()
-    for author in author_results:
-        for affiliation in author.get("affiliations", []):
-            if isinstance(affiliation, list) and affiliation:
-                inst_id = affiliation[0]
-                if inst_id:
-                    institution_ids.add(inst_id)
+    # fetch author data
+    author_results = fetcher.fetch_authors(name)
 
-    # create OR-syntax chunks of 50 IDs
-    institution_list = []
-    ids_list = list(institution_ids)
-    for i in range(0, len(ids_list), 50):
-        chunk = ids_list[i : i + 50]
-        institution_list.append("|".join(chunk))
+    # extract institution IDs
+    institution_ids = processor.extract_institution_ids(author_results)
 
-    # fetch candidate institutions
-    institution_results = []
-    for chunk in institution_list:
-        institution_results.extend(
-            fetch_openalex_objects(
-                oa_id=chunk,
-                mails=params["api"]["mails"],
-                perpage=params["api"]["perpage"],
-                filter_criteria=params["filter_oa"],
-                endpoint=params["institutions_endpoint"],
-            )
-        )
+    # fetch institution data
+    institution_results = fetcher.fetch_institutions(institution_ids)
 
-    institution_results = pd.DataFrame(institution_results)
-    institutions_dict = institution_results.set_index("id")[
-        "associated_institutions"
-    ].to_dict()
+    # create institutions dictionary
+    institution_results_df = pd.DataFrame(institution_results)
+    if not institution_results_df.empty:
+        institutions_dict = institution_results_df.set_index("id")[
+            "associated_institutions"
+        ].to_dict()
+    else:
+        institutions_dict = {}
 
     # process candidates
-    candidate_df = pd.DataFrame(author_results)
-    affiliations_processed = candidate_df["affiliations"].apply(process_affiliations)
-    # add new columns while preserving original data
-    candidate_df["institution_names"] = affiliations_processed.apply(lambda x: x[0])
-    inst_ids = affiliations_processed.apply(lambda x: x[1])
-    candidate_df["has_gb_affiliation"] = affiliations_processed.apply(lambda x: x[2])
-    candidate_df["gb_affiliation_proportion"] = affiliations_processed.apply(
-        lambda x: x[3]
-    )
+    candidate_df = processor.process_candidates(author_results, institutions_dict)
 
-    # process associated institutions
-    associated_processed = inst_ids.apply(
-        lambda x: get_associated_institutions(x, institutions_dict)
-    )
-    candidate_df["associated_institution_names"] = associated_processed.apply(
-        lambda x: x[0]
-    )
-    candidate_df["has_gb_associated"] = associated_processed.apply(lambda x: x[1])
-
-    # drop the columns we used to create our features
-    candidate_df = candidate_df.drop(
-        columns=["affiliations", "last_known_institutions", "counts_by_year"],
-        errors="ignore",
-    )
-
-    # add gtr_author_name
-    candidate_df["gtr_author_name"] = name
-
-    # add institution name
-    candidate_df["organisation_name"] = institution
-
-    # [TEMP] add project_topics, project_publications, project_authors as empty lists
-    candidate_df["project_topics"] = [[] for _ in range(len(candidate_df))]
-    candidate_df["project_publications"] = [[] for _ in range(len(candidate_df))]
-    candidate_df["project_authors"] = [[] for _ in range(len(candidate_df))]
-
-    # [TEMP] add placeholder person_id
-    candidate_df["person_id"] = "USER_INPUT_" + name.replace(" ", "_")
-
-    feature_matrix = compute_all_features(candidate_df)
+    # compute features
+    feature_matrix = FeatureComputer.compute_features(candidate_df)
 
     return feature_matrix
