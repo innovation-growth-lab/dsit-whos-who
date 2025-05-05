@@ -158,6 +158,9 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+##########################
+# repo specifics
+
 # mlflow local runs
 mlruns/*
 
@@ -166,3 +169,9 @@ mlruns/*
 
 # ignore mlflow logs
 mlflow_runs/
+
+# ignore tests - not implemented yet
+tests/
+
+# ignore .cursor rules
+.cursor/
