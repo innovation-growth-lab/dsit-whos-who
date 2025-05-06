@@ -10,9 +10,15 @@ from dsit_whos_who.app.utils.kedro_init import (
     setup_kedro_environment,
     get_kedro_context,
 )
-from dsit_whos_who.app.services.author_processing import (
-    search_and_process,
-    compute_features,
+from dsit_whos_who.app.utils.cache_utils import (
+    get_from_model_cache,
+    store_in_model_cache,
+)
+from dsit_whos_who.app.utils.author_cache import (
+    cached_search_and_process,
+    cached_compute_features,
+    load_model_dict,
+    load_disambiguation_params,
 )
 from dsit_whos_who.pipelines.author_disambiguation.nodes import predict_author_matches
 
@@ -47,11 +53,23 @@ class AuthorSearchApp:
 
             # try to load the model and parameters for author matching
             try:
-                self.model_dict = self.catalog.load("ad.model.choice")
-                self.disambiguation_params = self.catalog.load(
-                    "params:model_prediction"
-                )
+                # use cached values if available
+                model_dict = get_from_model_cache("ad_model_dict")
+                disambiguation_params = get_from_model_cache("disambiguation_params")
+
+                # if not in cache, load and store them
+                if model_dict is None:
+                    model_dict = load_model_dict()
+                    store_in_model_cache("ad_model_dict", model_dict)
+
+                if disambiguation_params is None:
+                    disambiguation_params = load_disambiguation_params()
+                    store_in_model_cache("disambiguation_params", disambiguation_params)
+
+                self.model_dict = model_dict
+                self.disambiguation_params = disambiguation_params
                 self.has_model = True
+
                 log.info("Successfully loaded author disambiguation model")
             except Exception as model_err:
                 log.warning("Could not load author disambiguation model: %s", model_err)
@@ -156,15 +174,15 @@ class AuthorSearchApp:
 
         try:
             with st.spinner("Initialising Kedro and searching..."):
-                # step 1: search and process
-                candidate_df = search_and_process(
-                    name=author_name,
-                    institution=institution_name,
-                    catalog=self.catalog,
+                # step 1: search and process - using external cached function
+                candidate_df = cached_search_and_process(
+                    name=author_name, institution=institution_name
                 )
 
-                # step 2: compute features
-                feature_matrix = compute_features(candidate_df)
+                # step 2: compute features - using external cached function
+                # Convert DataFrame to dict for hashing
+                candidate_dict = candidate_df.to_dict()
+                feature_matrix = cached_compute_features(candidate_dict)
 
                 if feature_matrix.empty:
                     results_placeholder.empty()

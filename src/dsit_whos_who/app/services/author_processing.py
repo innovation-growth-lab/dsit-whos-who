@@ -128,8 +128,18 @@ class AuthorProcessor:
         Returns:
             DataFrame with processed author data.
         """
+        # handle empty authors list
+        if not authors:
+            log.info("Empty authors list passed to process_candidates")
+            return pd.DataFrame()
+            
         # process candidates
         candidate_df = pd.DataFrame(authors)
+        
+        # check if DataFrame is empty after conversion
+        if candidate_df.empty:
+            log.info("Empty DataFrame created from authors list")
+            return candidate_df
 
         # process affiliations
         affiliations_processed = candidate_df["affiliations"].apply(
@@ -216,6 +226,11 @@ def search_and_process(
 
     # fetch author data
     author_results = fetcher.fetch_authors(name)
+    
+    # Check if author_results is empty
+    if not author_results:
+        log.info(f"No authors found for name: '{name}'")
+        return pd.DataFrame()  # Return empty DataFrame
 
     # extract institution IDs
     institution_ids = processor.extract_institution_ids(author_results)
@@ -247,4 +262,9 @@ def compute_features(candidate_df: pd.DataFrame) -> pd.DataFrame:
     Returns:
         DataFrame with computed features.
     """
+    # Check if input DataFrame is empty
+    if candidate_df.empty:
+        log.info("Empty DataFrame passed to compute_features")
+        return pd.DataFrame()
+        
     return FeatureComputer.compute_features(candidate_df)
