@@ -192,7 +192,7 @@ class FeatureComputer:
         return compute_all_features(candidate_df)
 
 
-def search_and_extract_features(
+def search_and_process(
     name: str, institution: str, catalog: DataCatalog
 ) -> pd.DataFrame:
     """Searches OpenAlex for authors, processes results, and computes features.
@@ -235,7 +235,16 @@ def search_and_extract_features(
     # process candidates
     candidate_df = processor.process_candidates(author_results, institutions_dict)
 
-    # compute features
-    feature_matrix = FeatureComputer.compute_features(candidate_df)
+    return candidate_df
 
-    return feature_matrix
+
+def compute_features(candidate_df: pd.DataFrame) -> pd.DataFrame:
+    """Compute features from processed author data.
+
+    Args:
+        candidate_df: DataFrame with processed author data.
+
+    Returns:
+        DataFrame with computed features.
+    """
+    return FeatureComputer.compute_features(candidate_df)

@@ -7,4 +7,4 @@ __all__ = [
     "AuthorSearchApp",
     "setup_kedro_environment",
     "get_kedro_context",
-] 
+]
