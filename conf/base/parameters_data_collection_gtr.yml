@@ -25,7 +25,7 @@ gtr:
       test_mode: ${test._false}
     publications:
       param_requests: ${.._param_requests}
-      url_endpoint: https://gtr.ukri.org/api/publication # V2 endpoints no longer work # updated again nov 2025.
+      label: outcomes/publications
       test_mode: ${test._false}
     organisations:
       param_requests: ${.._param_requests}
