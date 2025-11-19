@@ -55,46 +55,46 @@ projects.cwts.topics:
 # -> 1. Raw GTR data:
 "gtr.data_collection.{endpoint}.raw":
   <<: *_pq_ptd
-  path: s3://igl-public/02_whos_who/data/01_raw/gtr/{endpoint}/
+  path: s3://igl-public/02_whos_who/update/data/01_raw/gtr/{endpoint}/
 
 "gtr.data_collection.{endpoint}.intermediate":
   <<: *_pq
-  filepath: s3://igl-public/02_whos_who/data/02_intermediate/gtr/{endpoint}.parquet
+  filepath: s3://igl-public/02_whos_who/update/data/02_intermediate/gtr/{endpoint}.parquet
 
 # -> 2. OpenAlex data:
 "oa.data_collection.{filter}.list":
   <<: *_js
-  filepath: s3://igl-public/02_whos_who/data/01_raw/tmp/{filter}/
+  filepath: s3://igl-public/02_whos_who/update/data/01_raw/tmp/{filter}/
 
 "oa.data_collection.{filter}.raw":
   <<: *_js_ptd
-  path: s3://igl-public/02_whos_who/data/01_raw/oa/{filter}/
+  path: s3://igl-public/02_whos_who/update/data/01_raw/oa/{filter}/
 
 "oa.data_collection.{filter}.intermediate":
   <<: *_pq
-  filepath: s3://igl-public/02_whos_who/data/02_intermediate/oa/{filter}.parquet
+  filepath: s3://igl-public/02_whos_who/update/data/02_intermediate/oa/{filter}.parquet
 
 # -> 3. Labelled candidates:
 "ad.{group}.raw.ptd":
   <<: *_pq_ptd
-  path: s3://igl-public/02_whos_who/data/01_raw/author_disambiguation/{group}_ptd/
+  path: s3://igl-public/02_whos_who/update/data/01_raw/author_disambiguation/{group}_ptd/
 
 "ad.{group}.intermediate":
   <<: *_pq
-  filepath: s3://igl-public/02_whos_who/data/02_intermediate/author_disambiguation/{group}.parquet
+  filepath: s3://igl-public/02_whos_who/update/data/02_intermediate/author_disambiguation/{group}.parquet
 
 "ad.{group}.primary":
   <<: *_pq
-  filepath: s3://igl-public/02_whos_who/data/03_primary/author_disambiguation/{group}.parquet
+  filepath: s3://igl-public/02_whos_who/update/data/03_primary/author_disambiguation/{group}.parquet
 
 ad.model.training:
   <<: *_p
-  filepath: s3://igl-public/02_whos_who/data/03_primary/author_disambiguation/model.pkl
+  filepath: s3://igl-public/02_whos_who/update/data/03_primary/author_disambiguation/model.pkl
   versioned: true
 
 ad.model.training.ptd:
   type: partitions.PartitionedDataset
-  path: s3://igl-public/02_whos_who/data/03_primary/author_disambiguation/model.pkl/
+  path: s3://igl-public/02_whos_who/update/data/03_primary/author_disambiguation/model.pkl/
   dataset:
     type: pickle.PickleDataset
     credentials: s3_credentials
@@ -102,30 +102,30 @@ ad.model.training.ptd:
 
 ad.model.choice:
   <<: *_p
-  filepath: s3://igl-public/02_whos_who/data/03_primary/author_disambiguation/model.pkl/2025-03-14T16.09.02.782Z/model.pkl
+  filepath: s3://igl-public/02_whos_who/update/data/03_primary/author_disambiguation/model.pkl/2025-03-14T16.09.02.782Z/model.pkl
 
 ad.coverage_analysis.tmp:
   <<: *_p
-  filepath: s3://igl-public/02_whos_who/data/01_raw/author_disambiguation/coverage_analysis.pkl
+  filepath: s3://igl-public/02_whos_who/update/data/01_raw/author_disambiguation/coverage_analysis.pkl
 
 # -> 4. Author analysis:
 "analysis.{metric}.{group}.raw":
   <<: *_pq_ptd
-  path: s3://igl-public/02_whos_who/data/01_raw/author_analysis/{metric}/{group}/
+  path: s3://igl-public/02_whos_who/update/data/01_raw/author_analysis/{metric}/{group}/
 
 "analysis.{metric}.{group}.intermediate":
   <<: *_pq
-  filepath: s3://igl-public/02_whos_who/data/02_intermediate/author_analysis/{metric}/{group}.parquet
+  filepath: s3://igl-public/02_whos_who/update/data/02_intermediate/author_analysis/{metric}/{group}.parquet
 
 "analysis.{metric}.primary":
   <<: *_pq
-  filepath: s3://igl-public/02_whos_who/data/03_primary/author_analysis/{metric}.parquet
+  filepath: s3://igl-public/02_whos_who/update/data/03_primary/author_analysis/{metric}.parquet
 
 # 5. Complex metrics:
 # 5-1. Disruption indices:
 analysis.complex_metrics.publications.sampled: &analysis_complex_metrics_publications_sampled
   <<: *_pq
-  filepath: s3://igl-public/02_whos_who/data/01_raw/author_analysis/complex_metrics/publications.parquet
+  filepath: s3://igl-public/02_whos_who/update/data/01_raw/author_analysis/complex_metrics/publications.parquet
 
 analysis.complex_metrics.publications.sampled_ids:
   <<: *analysis_complex_metrics_publications_sampled
@@ -135,16 +135,16 @@ analysis.complex_metrics.publications.sampled_ids:
 
 analysis.complex_metrics.reference_works:
   <<: *_pq
-  filepath: s3://igl-public/02_whos_who/data/02_intermediate/author_analysis/complex_metrics/reference_works.parquet
+  filepath: s3://igl-public/02_whos_who/update/data/02_intermediate/author_analysis/complex_metrics/reference_works.parquet
 
 # 5-2. Discipline diversity:
 analysis.complex_metrics.cwts.subfield.distance_matrix:
   <<: *_pq
-  filepath: s3://igl-public/02_whos_who/data/02_intermediate/author_analysis/complex_metrics/discipline_diversity/cwts_subfield_distance_matrix.parquet
+  filepath: s3://igl-public/02_whos_who/update/data/02_intermediate/author_analysis/complex_metrics/discipline_diversity/cwts_subfield_distance_matrix.parquet
 
 analysis.complex_metrics.publications.topics:
   <<: *_pq
-  filepath: s3://igl-public/02_whos_who/data/02_intermediate/author_analysis/basic_metrics/publications.parquet
+  filepath: s3://igl-public/02_whos_who/update/data/02_intermediate/author_analysis/basic_metrics/publications.parquet
   load_args:
     columns:
       - authorships
