@@ -348,7 +348,7 @@ def fetch_gtr_data(
 
     while page <= total_pages:
         page_data = []
-        url = f"{url_endpoint}?p={page}&s={config['page_size']}"
+        url = f"{url_endpoint}?page={page}&fetchSize={config['page_size']}"
 
         session = requests.Session()
         retries = Retry(
