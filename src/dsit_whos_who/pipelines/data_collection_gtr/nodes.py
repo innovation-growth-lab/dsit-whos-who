@@ -275,12 +275,12 @@ class GtRDataPreprocessor:
             lambda x: [
                 {
                     "id": item["href"].replace(
-                        "http://gtr.ukri.org/gtr/apiprojects/", ""
+                        "http://gtr.ukri.org/gtr/api/projects/", ""
                     ),
                     "role": item["rel"],
                 }
                 for item in x["link"]
-                if "apiprojects" in item["href"]
+                if "api/projects" in item["href"]
             ]
         )
 
@@ -288,12 +288,12 @@ class GtRDataPreprocessor:
             lambda x: [
                 {
                     "id": item["href"].replace(
-                        "http://gtr.ukri.org/gtr/apiorganisations/", ""
+                        "http://gtr.ukri.org/gtr/api/organisations/", ""
                     ),
                     "role": item["rel"],
                 }
                 for item in x["link"]
-                if "apiorganisations" in item["href"]
+                if "api/organisations" in item["href"]
             ]
         )
 
