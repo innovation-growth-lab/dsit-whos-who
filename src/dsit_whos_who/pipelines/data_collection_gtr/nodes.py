@@ -189,12 +189,12 @@ class GtRDataPreprocessor:
             lambda x: [
                 {
                     "id": item.get("href", "").replace(
-                        "http://gtr.ukri.org/gtr/apipersons/", ""
+                        "http://gtr.ukri.org/gtr/api/persons/", ""
                     ),
                     "role": item.get("rel", ""),
                 }
                 for item in x["link"]
-                if "apipersons" in item["href"]
+                if "api/persons" in item["href"]
             ]
         )
 
