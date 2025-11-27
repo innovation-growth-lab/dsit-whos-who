@@ -401,7 +401,12 @@ def create_feature_matrix(
     logger.info("Starting feature computation")
     for key, batch_loader in input_data.items():
         logger.info("Processing batch %s", key)
-        batch_df = batch_loader()
+        try:
+            batch_df = batch_loader()
+
+        except Exception as e:
+            logger.error("Error processing batch %s: %s", key, e)
+            continue
 
         # compute features for the batch
         features = compute_all_features(batch_df)
