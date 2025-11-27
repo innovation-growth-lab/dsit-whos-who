@@ -53,11 +53,11 @@ def compute_institution_features(
     # Main institution similarities
     jw_scores = [
         jaro_winkler.similarity(gtr_institution.lower(), inst.lower())
-        for inst in oa_institutions
+        for inst in oa_institutions if inst is not None
     ]
     token_scores = [
         token_set_ratio(gtr_institution.lower(), inst.lower()) / 100
-        for inst in oa_institutions
+        for inst in oa_institutions if inst is not None
     ]
 
     features["inst_jw_max"] = max(jw_scores) if jw_scores else 0.0
@@ -70,11 +70,11 @@ def compute_institution_features(
     if len(associated_institutions) > 0:
         child_jw_scores = [
             jaro_winkler.similarity(gtr_institution.lower(), inst.lower())
-            for inst in associated_institutions
+            for inst in associated_institutions if inst is not None
         ]
         child_token_scores = [
             token_set_ratio(gtr_institution.lower(), inst.lower()) / 100
-            for inst in associated_institutions
+            for inst in associated_institutions if inst is not None
         ]
 
         features["inst_child_jw_max"] = max(child_jw_scores)
