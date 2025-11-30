@@ -210,7 +210,7 @@ def train_model(
     test_pred = best_model.predict(x_test_scaled)
     test_pred_proba = best_model.predict_proba(x_test_scaled)[:, 1]
     test_metrics = log_performance_metrics(
-        y_test, test_pred, test_pred_proba, "test", metric_prefix=metric_prefix
+        y_test, test_pred, test_pred_proba, "test"
     )
 
     return {
