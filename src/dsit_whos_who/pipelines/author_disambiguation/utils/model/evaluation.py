@@ -60,9 +60,9 @@ def log_performance_metrics(
     metrics[f"{metric_prefix}recall"] = recall_score(y_true, y_pred)
     metrics[f"{metric_prefix}f1"] = f1_score(y_true, y_pred)
     if y_prob is not None:
-        metrics[f"{metric_prefix}roc_auc"] = roc_auc_score(y_true, y_prob[:, 1])
+        metrics[f"{metric_prefix}roc_auc"] = roc_auc_score(y_true, y_prob)
     metrics[f"{metric_prefix}average_precision"] = average_precision_score(
-        y_true, y_prob[:, 1] if y_prob is not None else y_pred
+        y_true, y_prob if y_prob is not None else y_pred
     )
 
     # Calculate confusion matrix
