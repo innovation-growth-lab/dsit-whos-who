@@ -102,7 +102,7 @@ ad.model.training.ptd:
 
 ad.model.choice:
   <<: *_p
-  filepath: s3://igl-public/02_whos_who/update/data/03_primary/author_disambiguation/model.pkl/2025-03-14T16.09.02.782Z/model.pkl
+  filepath: s3://igl-public/02_whos_who/update/data/03_primary/author_disambiguation/model.pkl/2025-12-01T21.31.36.665Z/model.pkl
 
 ad.coverage_analysis.tmp:
   <<: *_p

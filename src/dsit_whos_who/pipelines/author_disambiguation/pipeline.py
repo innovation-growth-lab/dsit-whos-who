@@ -189,7 +189,8 @@ def create_pipeline(**kwargs) -> Pipeline:  # pylint: disable=W0613
                 outputs="ad.coverage_analysis.tmp",
                 name="check_prediction_coverage",
             ),
-        ]
+        ],
+        tags="model_prediction"
     )
 
     return (
