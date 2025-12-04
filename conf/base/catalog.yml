@@ -90,6 +90,7 @@ projects.cwts.topics:
 ad.model.training:
   <<: *_p
   filepath: s3://igl-public/02_whos_who/update/data/03_primary/author_disambiguation/model.pkl
+  credentials: s3_credentials
   versioned: true
 
 ad.model.training.ptd:
