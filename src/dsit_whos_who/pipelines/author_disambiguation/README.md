@@ -77,15 +77,18 @@ Computed at four taxonomic levels (domain, field, subfield, topic):
 ### 4. Model training
 
 #### Dataset characteristics
-- Training set: 538,049 pairs
-  - Positive class (matches): 13,040 (2.4%)
-  - Negative class (non-matches): 525,009 (97.6%)
-- Test set: 59,784 pairs
-  - Positive class (matches): 1,449 (2.4%)
-  - Negative class (non-matches): 58,335 (97.6%)
+
+| Dataset | Pairs | Positive | Negative | % Positive |
+|---------|-------|----------|----------|------------|
+| **Previous run** | | | | |
+| Training set | 538,049 | 13,040 (2.4%) | 525,009 (97.6%) | 2.4% |
+| Test set | 59,784 | 1,449 (2.4%) | 58,335 (97.6%) | 2.4% |
+| **Current run** | | | | |
+| Training set | 448,641 | - | - | - |
+| Test set | 49,850 | 1,585 (3.2%) | 48,265 (96.8%) | 3.2% |
 #### Model performance at optimal thresholds
 
-##### SMOTE model (Optimal threshold = 0.70)
+##### SMOTE model (Optimal threshold = 0.70) - Previous run
 Test set confusion matrix:
 | true\pred | negative | positive |
 |-----------|----------|----------|
@@ -99,7 +102,23 @@ Performance metrics:
 - F1: 0.929
 - Balanced F1: 0.959
 
-##### Class weights model (Optimal threshold = 0.80) 
+##### Class weights model (Optimal threshold = 0.80)
+
+**Current run:**
+Test set confusion matrix:
+| true\pred | negative | positive |
+|-----------|----------|----------|
+| negative | 48,047 | 218 |
+| positive | 224 | 1,361 |
+
+Performance metrics:
+- Accuracy: 0.991
+- Precision: 0.862
+- Recall: 0.859
+- F1: 0.860
+- Balanced F1: 0.922
+
+**Previous run:**
 Test set confusion matrix:
 | true\pred | negative | positive |
 |-----------|----------|----------|
@@ -113,14 +132,23 @@ Performance metrics:
 - F1: 0.928
 - Balanced F1: 0.966
 
+**Comparison:**
+| Metric | Current | Previous | Change |
+|--------|---------|----------|--------|
+| Accuracy | 0.991 | 0.996 | -0.005 |
+| Precision | 0.862 | 0.920 | -0.058 |
+| Recall | 0.859 | 0.937 | -0.078 |
+| F1 | 0.860 | 0.928 | -0.068 |
+| Balanced F1 | 0.922 | 0.966 | -0.044 |
+
 ### 5. Production predictions
 
 #### Prediction results
 - Total candidate pairs evaluated: 5,675,026
-- Unique GtR IDs processed: 126,304
-- Matches found (threshold 0.80): 85,444
-- Final matched author pairs: 83,091
-- Match rate: 67.6% of GtR authors matched
+- Unique GtR IDs processed: 129,874 (matchable persons)
+- Matches found (threshold 0.80): 75,616
+- Final matched author pairs: 75,616
+- Match rate: 58.2% of matchable GtR authors matched (52.4% overall)
 
 #### Threshold selection
 Based on a handful thresholds, we select 0.80 for production to balance precision and recall:
@@ -143,6 +171,24 @@ Based on a handful thresholds, we select 0.80 for production to balance precisio
 
 #### Class weights model - Test set performance
 
+**Current run:**
+
+| Threshold | Accuracy | Precision | Recall | F1 | Balanced F1 |
+|-----------|----------|-----------|--------|-----|-------------|
+| 0.10 | 0.984 | 0.690 | 0.912 | 0.786 | 0.947 |
+| 0.20 | 0.986 | 0.725 | 0.903 | 0.804 | 0.944 |
+| 0.30 | 0.987 | 0.739 | 0.897 | 0.810 | 0.940 |
+| 0.40 | 0.987 | 0.751 | 0.889 | 0.814 | 0.936 |
+| 0.50 | 0.988 | 0.762 | 0.884 | 0.818 | 0.934 |
+| 0.60 | 0.990 | 0.826 | 0.877 | 0.851 | 0.931 |
+| 0.70 | 0.991 | 0.845 | 0.868 | 0.857 | 0.927 |
+| 0.80 | 0.991 | 0.862 | 0.859 | 0.860 | 0.922 |
+| 0.90 | 0.991 | 0.884 | 0.842 | 0.863 | 0.913 |
+| 0.95 | 0.992 | 0.907 | 0.826 | 0.865 | 0.904 |
+| 0.99 | 0.991 | 0.936 | 0.773 | 0.847 | 0.871 |
+
+**Previous run:**
+
 | Threshold | Accuracy | Precision | Recall | F1 | Balanced F1 |
 |-----------|----------|-----------|--------|-----|-------------|
 | 0.10 | 0.988 | 0.670 | 0.978 | 0.795 | 0.983 |
@@ -156,6 +202,23 @@ Based on a handful thresholds, we select 0.80 for production to balance precisio
 | 0.90 | 0.997 | 0.936 | 0.923 | 0.929 | 0.959 |
 | 0.95 | 0.997 | 0.956 | 0.905 | 0.929 | 0.949 |
 | 0.99 | 0.996 | 0.971 | 0.849 | 0.906 | 0.918 |
+
+#### Model parameters
+
+**Current run - Class weights model:**
+- Model type: `class_weights_model`
+- Resampling strategy: `scale_pos_weight`
+- Training set size: 448,641
+- Test set size: 49,850
+- `gamma`: 0
+- `learning_rate`: 0.1
+- `max_delta_step`: 5
+- `max_depth`: 19
+- `min_child_weight`: 1
+- `n_estimators`: 1000
+- `reg_alpha`: 0.2
+- `reg_lambda`: 0.0
+- `subsample`: 0.8
 
 #### Feature importance rankings
 
@@ -181,28 +244,51 @@ Key observations:
 ### 6. Coverage analysis
 
 #### Overall coverage statistics
-- Total GtR persons: 140,245
-- Matchable persons (at least one name candidate): 126,304
-- Matched persons: 85,444
-- Overall coverage rate: 60.9%
-- Coverage of matchable persons: 67.6%
-- Coverage of active researchers (with projects): 68,329/99,945 (68.4%)
+
+| Metric | Value | % New | % Old |
+|--------|-------|-------|-------|
+| Total GtR persons | 144,371 | - | 140,245 |
+| Matchable persons (at least one name candidate) | 129,874 | - | 126,304 |
+| Matched persons | 75,616 | - | 85,444 |
+| Overall coverage rate | 52.4% | 52.4% | 60.9% |
+| Coverage of matchable persons | 58.2% | 58.2% | 67.6% |
+| Coverage of active researchers (with projects) | 63.0% (64,996/103,115) | 63.0% | 68.4% |
 
 #### Coverage by grant category
-Highest coverage rates:
-- Fellowship: 82.9% (7,710/9,303)
-- Research and Innovation: 82.8% (3,339/4,034)
-- Intramural: 82.8% (1,330/1,606)
-- Institute Project: 79.0% (595/753)
-- Research Grant: 79.0% (55,881/70,748)
-- Training Grant: 70.7% (5,285/7,477)
-- Studentship: 56.3% (33,829/60,074)
-- EU-Funded: 47.9% (1,062/2,218)
 
-Notable categories with lower coverage:
-- Collaborative R&D: 13.7% (1,088/7,921)
-- Feasibility Studies: 15.1% (556/3,689)
-- Small Business Research Initiative: 16.9% (136/805)
+| Grant Category | Matched/Total | % New | % Old |
+|----------------|---------------|-------|-------|
+| Intramural | 1,330/1,626 | 81.8% | 82.8% |
+| Fellowship | 7,197/9,066 | 79.4% | 82.9% |
+| Institute Project | 550/706 | 77.9% | 79.0% |
+| Other Grant | 57/75 | 76.0% | - |
+| Partnership and Contribution | 20/25 | 80.0% | - |
+| Other | 4/5 | 80.0% | - |
+| EU-Funded | 753/2,096 | 35.9% | 47.9% |
+| Department for Science, Innovation & Technology | 2/11 | 18.2% | - |
+| Centres | 6/77 | 7.8% | - |
+| Feasibility Studies | 229/3,767 | 6.1% | 15.1% |
+| Knowledge Transfer Partnership | 15/234 | 6.4% | - |
+| BEIS-Funded Programmes | 38/599 | 6.3% | - |
+| GRD Proof of Market | 22/367 | 6.0% | - |
+| Collaborative R&D | 490/8,533 | 5.7% | 13.7% |
+| GRD Proof of Concept | 25/530 | 4.7% | - |
+| GRD Development of Prototype | 24/529 | 4.5% | - |
+| Grant for R&D | 46/1,283 | 3.6% | - |
+| Fast Track | 1/28 | 3.6% | - |
+| Demonstrator | 2/67 | 3.0% | - |
+| CR&D Bilateral | 4/142 | 2.8% | - |
+| Investment Accelerator | 10/368 | 2.7% | - |
+| Knowledge Transfer Network | 3/91 | 3.3% | - |
+| Launchpad | 8/238 | 3.4% | - |
+| Legacy Department of Trade & Industry | 4/64 | 6.2% | - |
+| Missions | 2/22 | 9.1% | - |
+| Business Connect | 0/15 | 0.0% | - |
+| European Enterprise Network | 0/14 | 0.0% | - |
+| Large Project | 0/6 | 0.0% | - |
+| Memorandum of Agreement | 0/1 | 0.0% | - |
+
+*Note: Categories not present in the previous run are marked with "-" in the % Old column. Previous run categories not present in the new run: Research and Innovation (82.8%), Research Grant (79.0%), Training Grant (70.7%), Studentship (56.3%), Small Business Research Initiative (16.9%).*
 
 #### Temporal coverage analysis
 1. Higher coverage rates for academic research grants compared to industry-focused schemes
