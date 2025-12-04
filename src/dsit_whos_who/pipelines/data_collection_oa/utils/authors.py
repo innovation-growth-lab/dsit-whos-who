@@ -77,10 +77,12 @@ def parse_author_results(
         # Process affiliations
         parsed_author["affiliations"] = [
             [
-                aff["institution"]["id"].replace("https://openalex.org/", ""),
-                aff["institution"]["display_name"],
-                aff["institution"]["country_code"],
-                aff["institution"]["type"],
+                aff.get("institution", {}).get("id", "").replace("https://openalex.org/", "")
+                if aff.get("institution", {}).get("id")
+                else "",
+                aff.get("institution", {}).get("display_name", ""),
+                aff.get("institution", {}).get("country_code", ""),
+                aff.get("institution", {}).get("type", ""),
                 (
                     ",".join([str(y) for y in aff["years"]])
                     if isinstance(aff["years"], list)
@@ -93,10 +95,12 @@ def parse_author_results(
         # Process last known institutions
         parsed_author["last_known_institutions"] = [
             [
-                inst["id"].replace("https://openalex.org/", ""),
-                inst["display_name"],
-                inst["country_code"],
-                inst["type"],
+                inst.get("id", "").replace("https://openalex.org/", "")
+                if inst.get("id")
+                else "",
+                inst.get("display_name", ""),
+                inst.get("country_code", ""),
+                inst.get("type", ""),
             ]
             for inst in author.get("last_known_institutions", [])
         ]

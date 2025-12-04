@@ -107,23 +107,25 @@ def json_loader_works(data: List[List[Dict]]) -> pd.DataFrame:
                         (
                             (
                                 (
-                                    author["author"]["id"].replace(
-                                        "https://openalex.org/", ""
-                                    )
-                                    if author["author"]["id"]
+                                    author["author"]
+                                    .get("id", "")
+                                    .replace("https://openalex.org/", "")
+                                    if author["author"].get("id")
                                     else ""
                                 ),
-                                inst["id"].replace("https://openalex.org/", ""),
+                                inst.get("id", "").replace("https://openalex.org/", "")
+                                if inst.get("id")
+                                else "",
                                 inst.get("country_code", ""),
                                 author["author_position"],
                             )
                             if author.get("institutions")
                             else (
                                 (
-                                    author["author"]["id"].replace(
-                                        "https://openalex.org/", ""
-                                    )
-                                    if author["author"]["id"]
+                                    author["author"]
+                                    .get("id", "")
+                                    .replace("https://openalex.org/", "")
+                                    if author["author"].get("id")
                                     else ""
                                 ),
                                 "",

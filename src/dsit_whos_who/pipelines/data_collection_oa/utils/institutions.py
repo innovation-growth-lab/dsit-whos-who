@@ -29,8 +29,10 @@ def parse_institution_results(response: List[Dict]) -> List[Dict]:
             "id": institution.get("id", "").replace("https://openalex.org/", ""),
             "associated_institutions": [
                 [
-                    assoc["id"].replace("https://openalex.org/", ""),
-                    assoc["display_name"],
+                    assoc.get("id", "").replace("https://openalex.org/", "")
+                    if assoc.get("id")
+                    else "",
+                    assoc.get("display_name", ""),
                     assoc.get("country_code"),
                     assoc.get("relationship"),
                 ]
