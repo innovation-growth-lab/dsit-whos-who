@@ -64,6 +64,8 @@ def fetch_openalex_matched_author_works(
     mails: list,
     perpage: int,
     filter_criteria: str,
+    parallel_jobs: int = 8,
+    endpoint: str = "works",
     **kwargs,
 ) -> pd.DataFrame:
     """
@@ -78,12 +80,22 @@ def fetch_openalex_matched_author_works(
         mails (list): List of email addresses for API authentication.
         perpage (int): Number of results to return per page.
         filter_criteria (str): Filter string to apply to the OpenAlex API query.
+        parallel_jobs (int, optional): Number of parallel jobs for processing. Defaults to 8.
+        endpoint (str, optional): OpenAlex API endpoint to query. Defaults to "works".
         **kwargs: Additional keyword arguments to pass to the API query.
 
     Returns:
         pd.DataFrame: DataFrame containing the fetched publication works data.
     """
-    return fetch_openalex_works(ids, mails, perpage, filter_criteria, **kwargs)
+    return fetch_openalex_works(
+        ids,
+        mails,
+        perpage,
+        filter_criteria,
+        parallel_jobs=parallel_jobs,
+        endpoint=endpoint,
+        **kwargs,
+    )
 
 
 def process_matched_author_metadata(
