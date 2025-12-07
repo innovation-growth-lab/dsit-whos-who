@@ -139,6 +139,14 @@ analysis.complex_metrics.reference_works:
   <<: *_pq
   filepath: s3://igl-public/02_whos_who/update/data/02_intermediate/author_analysis/complex_metrics/reference_works.parquet
 
+analysis.complex_metrics.oa.list:
+  <<: *_js
+  filepath: s3://igl-public/02_whos_who/update/data/02_intermediate/author_analysis/complex_metrics/oa_list.json
+
+analysis.complex_metrics.oa.reference_list:
+  <<: *_js
+  filepath: s3://igl-public/02_whos_who/update/data/02_intermediate/author_analysis/complex_metrics/oa_reference_list.json
+
 # 5-2. Discipline diversity:
 analysis.complex_metrics.cwts.subfield.distance_matrix:
   <<: *_pq
