@@ -56,7 +56,6 @@ def _make_rate_limited_request(
     session: requests.Session,
     url: str,
     max_retries: int = 5,
-    request_idx: int = 0,
 ) -> requests.Response:
     """Make a rate-limited HTTP request with exponential backoff and retry logic.
 
@@ -64,7 +63,6 @@ def _make_rate_limited_request(
         session: Requests session object
         url: URL to request
         max_retries: Maximum number of retry attempts
-        request_idx: Index of request (for initial jitter)
 
     Returns:
         Response object from successful request
@@ -75,11 +73,6 @@ def _make_rate_limited_request(
     attempts = 0
     success = False
     response = None
-
-    # add initial jitter to avoid synchronized requests across parallel workers
-    if request_idx == 0:
-        initial_jitter = random.uniform(0.5, 2.0)
-        time.sleep(initial_jitter)
 
     while attempts < max_retries and not success:
         attempts += 1
@@ -181,9 +174,7 @@ def openalex_generator(
 
         try:
             # make a call to estimate total number of results
-            response = _make_rate_limited_request(
-                session, cursor_url.format(cursor), request_idx=0
-            )
+            response = _make_rate_limited_request(session, cursor_url.format(cursor))
             data = response.json()
 
             logger.info(
@@ -194,23 +185,14 @@ def openalex_generator(
             num_calls = total_results // int(perpage) + 1
             logger.info("Total results: %s, in %s calls", total_results, num_calls)
 
-            page_count = 0
             while cursor:
                 response = _make_rate_limited_request(
-                    session, cursor_url.format(cursor), request_idx=page_count
+                    session, cursor_url.format(cursor)
                 )
                 data = response.json()
                 results = data.get("results")
                 cursor = data["meta"].get("next_cursor", False)
-                page_count += 1
                 yield results
-
-                # add delay between successful requests to avoid throttling
-                if cursor:
-                    delay = 0.25 + random.uniform(
-                        0, 0.5
-                    )  # 0.25-0.75 seconds with jitter
-                    time.sleep(delay)
 
         except KeyError:
             # KeyError on "meta" indicates rate limiting
@@ -234,9 +216,7 @@ def openalex_generator(
 
         try:
             # make a call to estimate total number of results
-            response = _make_rate_limited_request(
-                session, cursor_url.format(1), request_idx=0
-            )
+            response = _make_rate_limited_request(session, cursor_url.format(1))
             data = response.json()
 
             logger.info(
@@ -247,19 +227,10 @@ def openalex_generator(
             num_calls = total_results // int(perpage) + 1
             logger.info("Total results: %s, in %s calls", total_results, num_calls)
             for page in range(1, num_calls + 1):
-                response = _make_rate_limited_request(
-                    session, cursor_url.format(page), request_idx=page - 1
-                )
+                response = _make_rate_limited_request(session, cursor_url.format(page))
                 data = response.json()
                 results = data.get("results")
                 yield results
-
-                # add delay between successful requests to avoid throttling
-                if page < num_calls:
-                    delay = 0.25 + random.uniform(
-                        0, 0.5
-                    )  # 0.25-0.75 seconds with jitter
-                    time.sleep(delay)
 
         except KeyError:
             # KeyError on "meta" indicates rate limiting
