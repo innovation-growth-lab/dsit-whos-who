@@ -3,7 +3,7 @@ This module contains nodes for calculating complex metrics for author analysis.
 
 The module implements functions to:
 1. Sample papers from authors' publication records using stratified sampling
-2. Fetch citation data from OpenAlex for sampled papers and their references 
+2. Fetch citation data from OpenAlex for sampled papers and their references
 3. Calculate disruption indices based on Wu and Yan (2019) methodology
 4. Calculate author diversity metrics based on publication topics
 5. Compute complex metrics combining disruption and diversity measures
@@ -12,7 +12,7 @@ The disruption index measures how much a paper disrupts versus consolidates its 
 by analysing whether papers that cite it also cite its references or not.
 
 The diversity metrics capture the breadth and balance of an author's research topics over time,
-considering variety (number of topics), evenness (distribution across topics), and disparity 
+considering variety (number of topics), evenness (distribution across topics), and disparity
 (how different the topics are from each other).
 """
 
@@ -160,8 +160,6 @@ def fetch_author_work_citations(
 
     seen_ids = set()
     for i, chunk in enumerate(oa_id_chunks, 1):
-        if i <= 110:
-            continue
         logger.info(
             "Processing chunk %s of %s (%s%% complete)",
             i,
@@ -258,13 +256,18 @@ def fetch_author_work_references(
             delayed(fetch_openalex_objects)(
                 oa_id, mails, perpage, filter_criteria, endpoint, **kwargs
             )
-            for oa_id in chunk
+            for oa_id in chunk[:2]
         )
 
         # clean the referenced works,
         cleaned_works = []
         for batch_return in data:
-            df = pd.DataFrame(batch_return)
+            filtered_batch = [
+                item for item in batch_return if item.get("id") is not None
+            ]
+            if not filtered_batch:
+                continue
+            df = pd.DataFrame(filtered_batch)
             df["id"] = df["id"].str.replace("W", "").astype(int)
             df["referenced_works"] = df["referenced_works"].apply(
                 lambda x: (
@@ -274,6 +277,8 @@ def fetch_author_work_references(
                 )
             )
             cleaned_works.append(df)
+        if not cleaned_works:
+            continue
         cleaned_works = pd.concat(cleaned_works)
 
         # find the corresponding id in the chunk, after "|" splitting the ids, remove W
