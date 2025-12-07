@@ -52,6 +52,84 @@ def _chunk_oa_ids(ids: List[str], chunk_size: int = 50) -> Generator[str, None, 
         yield "|".join(ids[i : i + chunk_size])
 
 
+def _make_rate_limited_request(
+    session: requests.Session,
+    url: str,
+    max_retries: int = 5,
+    request_idx: int = 0,
+) -> requests.Response:
+    """Make a rate-limited HTTP request with exponential backoff and retry logic.
+
+    Args:
+        session: Requests session object
+        url: URL to request
+        max_retries: Maximum number of retry attempts
+        request_idx: Index of request (for initial jitter)
+
+    Returns:
+        Response object from successful request
+
+    Raises:
+        requests.exceptions.RequestException: If max retries exceeded
+    """
+    attempts = 0
+    success = False
+    response = None
+
+    # add initial jitter to avoid synchronized requests across parallel workers
+    if request_idx == 0:
+        initial_jitter = random.uniform(0.5, 2.0)
+        time.sleep(initial_jitter)
+
+    while attempts < max_retries and not success:
+        attempts += 1
+        logger.debug("Attempt %s for: %s", attempts, url[:100])
+
+        # exponential backoff with jitter for retries
+        if attempts > 1:
+            base_wait = min(2 ** (attempts - 1), 60)  # cap at 60 sec
+            jitter = random.uniform(0, base_wait * 0.3)  # add up to 30% jitter
+            wait_time = base_wait + jitter
+            logger.info("Waiting %.2f seconds before retry...", wait_time)
+            time.sleep(wait_time)
+
+        try:
+            response = session.get(url, timeout=20)
+
+            # check for rate limiting
+            if response.status_code == 429:
+                retry_after = response.headers.get("Retry-After")
+                if retry_after:
+                    try:
+                        wait_time = float(retry_after) + random.uniform(0.5, 2.0)
+                    except (ValueError, TypeError):
+                        wait_time = 0.5 + random.uniform(1.0, 3.0)
+                else:
+                    wait_time = 0.5 + random.uniform(1.0, 3.0)
+                logger.warning(
+                    "Rate limited (429). Waiting %.2f seconds before retry...",
+                    wait_time,
+                )
+                time.sleep(wait_time)
+                continue
+
+            # raise for other HTTP errors
+            response.raise_for_status()
+            success = True
+
+        except requests.exceptions.RequestException as e:
+            logger.warning("Request exception: %s", e)
+        except Exception as e:  # pylint: disable=broad-except
+            logger.warning("Error making request: %s", e)
+
+    if not success or response is None:
+        raise requests.exceptions.RequestException(
+            f"Max retries ({max_retries}) reached for: {url[:100]}"
+        )
+
+    return response
+
+
 def openalex_generator(
     mails: List[str],
     perpage: str,
@@ -103,26 +181,45 @@ def openalex_generator(
 
         try:
             # make a call to estimate total number of results
-            response = session.get(cursor_url.format(cursor), timeout=20)
+            response = _make_rate_limited_request(
+                session, cursor_url.format(cursor), request_idx=0
+            )
             data = response.json()
 
-            while response.status_code == 429:  # needs testing (try with 200)
-                logger.info("Waiting for 30 seconds...")
-                time.sleep(30)
-                response = session.get(cursor_url.format(cursor), timeout=20)
-                data = response.json()
-
-            logger.info("Fetching data for %s", oa_id[:50])
+            logger.info(
+                "Fetching data for %s",
+                str(oa_id)[:25] if isinstance(oa_id, str) else oa_id,
+            )
             total_results = data["meta"]["count"]
             num_calls = total_results // int(perpage) + 1
             logger.info("Total results: %s, in %s calls", total_results, num_calls)
+
+            page_count = 0
             while cursor:
-                response = session.get(cursor_url.format(cursor), timeout=20)
+                response = _make_rate_limited_request(
+                    session, cursor_url.format(cursor), request_idx=page_count
+                )
                 data = response.json()
                 results = data.get("results")
                 cursor = data["meta"].get("next_cursor", False)
+                page_count += 1
                 yield results
 
+                # add delay between successful requests to avoid throttling
+                if cursor:
+                    delay = 0.25 + random.uniform(
+                        0, 0.5
+                    )  # 0.25-0.75 seconds with jitter
+                    time.sleep(delay)
+
+        except KeyError:
+            # KeyError on "meta" indicates rate limiting
+            wait_time = 0.5 + random.uniform(1.0, 3.0)
+            logger.warning(
+                "Rate limited (KeyError on meta). Waiting %.2f seconds...", wait_time
+            )
+            time.sleep(wait_time)
+            yield []
         except Exception as e:  # pylint: disable=broad-except
             logger.error("Error fetching data for %s: %s", oa_id, e)
             yield []
@@ -137,25 +234,41 @@ def openalex_generator(
 
         try:
             # make a call to estimate total number of results
-            response = session.get(cursor_url.format(1), timeout=20)
+            response = _make_rate_limited_request(
+                session, cursor_url.format(1), request_idx=0
+            )
             data = response.json()
 
-            while response.status_code == 429:  # needs testing (try with 200)
-                logger.info("Waiting for 1 hour...")
-                time.sleep(30)
-                response = session.get(cursor_url.format(1), timeout=20)
-                data = response.json()
-
-            logger.info("Fetching data for %s", oa_id[:50])
+            logger.info(
+                "Fetching data for %s",
+                str(oa_id)[:50] if isinstance(oa_id, str) else oa_id,
+            )
             total_results = data["meta"]["count"]
             num_calls = total_results // int(perpage) + 1
             logger.info("Total results: %s, in %s calls", total_results, num_calls)
             for page in range(1, num_calls + 1):
-                response = session.get(cursor_url.format(page), timeout=20)
+                response = _make_rate_limited_request(
+                    session, cursor_url.format(page), request_idx=page - 1
+                )
                 data = response.json()
                 results = data.get("results")
                 yield results
 
+                # add delay between successful requests to avoid throttling
+                if page < num_calls:
+                    delay = 0.25 + random.uniform(
+                        0, 0.5
+                    )  # 0.25-0.75 seconds with jitter
+                    time.sleep(delay)
+
+        except KeyError:
+            # KeyError on "meta" indicates rate limiting
+            wait_time = 0.5 + random.uniform(1.0, 3.0)
+            logger.warning(
+                "Rate limited (KeyError on meta). Waiting %.2f seconds...", wait_time
+            )
+            time.sleep(wait_time)
+            yield []
         except Exception as e:  # pylint: disable=broad-except
             logger.error("Error fetching data for %s: %s", oa_id, e)
             yield []

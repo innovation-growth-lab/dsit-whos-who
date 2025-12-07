@@ -151,7 +151,9 @@ def fetch_author_work_citations(
     Fetches and processes works from OpenAlex who cite focal works.
     """
     logger.info(
-        "Beginning to fetch %s OpenAlex works from %s endpoint", len(ids), endpoint
+        "Beginning to fetch %s OpenAlex work groups from %s endpoint",
+        len(ids),
+        endpoint,
     )
 
     # slice oa_ids
@@ -256,7 +258,7 @@ def fetch_author_work_references(
             delayed(fetch_openalex_objects)(
                 oa_id, mails, perpage, filter_criteria, endpoint, **kwargs
             )
-            for oa_id in chunk[:2]
+            for oa_id in chunk
         )
 
         # clean the referenced works,
